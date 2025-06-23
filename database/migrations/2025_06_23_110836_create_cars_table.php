@@ -15,12 +15,14 @@ return new class extends Migration
             $table->id();
 
             $table->string('model');
+            $table->string('type');
             $table->integer('seats');
             $table->string('fuel_type');
             $table->integer('engine_capacity');
             $table->year('year');
             $table->string('transmission');
-            $table->string('image_url')->nullable();
+            $table->string('image')->nullable();
+            $table->json('extra_images')->nullable();
             $table->json('rental_prices');
             $table->text('description');
 

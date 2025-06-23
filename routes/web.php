@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 
 Route::get('/', [HomeController::class, 'index']);
+Route::get('/cars/{id}', [HomeController::class, 'show'])->name('cars.show');
 
 Route::get('/condition', function () {
     $lang = request()->query('lang', 'en');

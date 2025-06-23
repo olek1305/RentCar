@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Car;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 /**
@@ -11,17 +10,23 @@ use Illuminate\Database\Seeder;
  */
 class CarSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         $cars = [
             [
-                'model' => 'Combi',
+                'model' => 'Combi C3',
+                'type' => 'Combi',
                 'seats' => 5,
                 'fuel_type' => 'Diesel',
                 'engine_capacity' => 2000,
                 'year' => 2019,
                 'transmission' => 'Automată',
-                'image_url' => 'https://placehold.co/400x300?text=Combi+1',
+                'image' => 'https://placehold.co/400x300?text=Combi+1',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 70,
                     '3-7 days' => 60,
@@ -32,13 +37,19 @@ class CarSeeder extends Seeder
                 'description' => 'Skoda Superb SportLine 2019 combină eleganța cu performanța sportivă. Cu un design dinamic și elemente sportive distincte, acest model oferă un interior spațios, tehnologie avansată și confort superior. Dotat cu motoare puternice și eficiente, Superb SportLine asigură o experiență de condus captivantă și rafinată, ideală pentru entuziaști.',
             ],
             [
-                'model' => 'Sedan',
+                'model' => 'Sedan C5',
+                'type' => 'Sedan',
                 'seats' => 4,
                 'fuel_type' => 'Petrol',
                 'engine_capacity' => 1600,
                 'year' => 2021,
                 'transmission' => 'Manuală',
-                'image_url' => 'https://placehold.co/400x300?text=Sedan+2',
+                'image' => 'https://placehold.co/400x300?text=Sedan+2',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 75,
                     '3-7 days' => 65,
@@ -49,13 +60,19 @@ class CarSeeder extends Seeder
                 'description' => 'Elegancki sedan z komfortowym wnętrzem i nowoczesnymi technologiami, idealny na codzienne dojazdy i dłuższe wyjazdy.',
             ],
             [
-                'model' => 'SUV',
+                'model' => 'SUV V3',
+                'type' => 'SUV',
                 'seats' => 7,
                 'fuel_type' => 'Diesel',
                 'engine_capacity' => 2500,
                 'year' => 2020,
                 'transmission' => 'Automată',
-                'image_url' => 'https://placehold.co/400x300?text=SUV+3',
+                'image' => 'https://placehold.co/400x300?text=SUV+3',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 80,
                     '3-7 days' => 70,
@@ -66,13 +83,19 @@ class CarSeeder extends Seeder
                 'description' => 'Robust SUV perfect pentru aventuri în familie și terenuri variate, cu spațiu amplu și performanțe bune.',
             ],
             [
-                'model' => 'Hatchback',
+                'model' => 'Hatchback V32',
+                'type' => 'Hatchback',
                 'seats' => 5,
                 'fuel_type' => 'Petrol',
                 'engine_capacity' => 1400,
                 'year' => 2018,
                 'transmission' => 'Manuală',
-                'image_url' => 'https://placehold.co/400x300?text=Hatchback+4',
+                'image' => 'https://placehold.co/400x300?text=Hatchback+4',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 50,
                     '3-7 days' => 45,
@@ -83,13 +106,19 @@ class CarSeeder extends Seeder
                 'description' => 'Compact și economic, hatchback-ul este ideal pentru oraș și drumuri scurte, cu manevrabilitate excelentă.',
             ],
             [
-                'model' => 'Combi',
+                'model' => 'Combi X75',
+                'type' => 'Combi',
                 'seats' => 5,
                 'fuel_type' => 'Electric',
                 'engine_capacity' => 0,
                 'year' => 2022,
                 'transmission' => 'Automată',
-                'image_url' => 'https://placehold.co/400x300?text=Combi+5',
+                'image' => 'https://placehold.co/400x300?text=Combi+5',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 90,
                     '3-7 days' => 85,
@@ -100,13 +129,19 @@ class CarSeeder extends Seeder
                 'description' => 'Model electric modern, combinând eficiența energetică cu spațiul și confortul unui combi.',
             ],
             [
-                'model' => 'SUV',
+                'model' => 'SUV S35s',
+                'type' => 'SUV',
                 'seats' => 5,
                 'fuel_type' => 'Hybrid',
                 'engine_capacity' => 1800,
                 'year' => 2023,
                 'transmission' => 'Automată',
-                'image_url' => 'https://placehold.co/400x300?text=SUV+6',
+                'image' => 'https://placehold.co/400x300?text=SUV+6',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 85,
                     '3-7 days' => 75,
@@ -117,13 +152,19 @@ class CarSeeder extends Seeder
                 'description' => 'SUV hibrid ce oferă un mix perfect între putere și economie, ideal pentru călătorii lungi și oraș.',
             ],
             [
-                'model' => 'Sedan',
+                'model' => 'SedanCX2',
+                'type' => 'Sedan',
                 'seats' => 4,
                 'fuel_type' => 'Diesel',
                 'engine_capacity' => 2200,
                 'year' => 2017,
                 'transmission' => 'Manuală',
-                'image_url' => 'https://placehold.co/400x300?text=Sedan+7',
+                'image' => 'https://placehold.co/400x300?text=Sedan+7',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 70,
                     '3-7 days' => 65,
@@ -134,13 +175,19 @@ class CarSeeder extends Seeder
                 'description' => 'Sedan clasic cu performanțe solide și confort sporit, perfect pentru deplasări zilnice.',
             ],
             [
-                'model' => 'Hatchback',
+                'model' => 'Hatchback sd2',
+                'type' => 'Hatchback',
                 'seats' => 5,
                 'fuel_type' => 'Petrol',
                 'engine_capacity' => 1300,
                 'year' => 2016,
                 'transmission' => 'Manuală',
-                'image_url' => 'https://placehold.co/400x300?text=Hatchback+8',
+                'image' => 'https://placehold.co/400x300?text=Hatchback+8',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 45,
                     '3-7 days' => 40,
@@ -151,13 +198,19 @@ class CarSeeder extends Seeder
                 'description' => 'Hatchback economic și agil, ideal pentru oraș și parcări strâmte.',
             ],
             [
-                'model' => 'Combi',
+                'model' => 'Combi DC34',
+                'type' => 'Combi',
                 'seats' => 6,
                 'fuel_type' => 'Diesel',
                 'engine_capacity' => 2100,
                 'year' => 2015,
                 'transmission' => 'Automată',
-                'image_url' => 'https://placehold.co/400x300?text=Combi+9',
+                'image' => 'https://placehold.co/400x300?text=Combi+9',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 75,
                     '3-7 days' => 70,
@@ -168,13 +221,19 @@ class CarSeeder extends Seeder
                 'description' => 'Combi spațios, ideal pentru familii și bagaje multe, cu consum eficient.',
             ],
             [
-                'model' => 'SUV',
+                'model' => 'SUV X20',
+                'type' => 'SUV',
                 'seats' => 7,
                 'fuel_type' => 'Petrol',
                 'engine_capacity' => 3000,
                 'year' => 2014,
                 'transmission' => 'Manuală',
-                'image_url' => 'https://placehold.co/400x300?text=SUV+10',
+                'image' => 'https://placehold.co/400x300?text=SUV+10',
+                'extra_images' => json_encode([
+                    '1' => 'https://placehold.co/600x400?text=1',
+                    '2' => 'https://placehold.co/600x400?text=2',
+                    '3' => 'https://placehold.co/600x400?text=3'
+                ]),
                 'rental_prices' => json_encode([
                     '1-2 days' => 90,
                     '3-7 days' => 85,

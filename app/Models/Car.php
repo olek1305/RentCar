@@ -8,6 +8,7 @@ class Car extends Model
 {
     protected $fillable = [
         'model',
+        'type',
         'seats',
         'fuel_type',
         'engine_capacity',
@@ -19,5 +20,6 @@ class Car extends Model
 
     protected $casts = [
         'rental_prices' => 'array',
+        'extra_images' => 'array'
     ];
 }

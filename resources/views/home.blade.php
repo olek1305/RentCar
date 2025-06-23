@@ -7,32 +7,68 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @foreach ($cars as $car)
-                <div class="border rounded-lg p-4 shadow hover:shadow-lg transition duration-300">
-                    <img src="{{ $car->image_url }}" alt="{{ $car->model }}" class="w-full h-48 object-cover rounded mb-4">
+                <div class="relative border rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col text-center group">
+                    <a href="{{ route('cars.show', $car->id) }}" class="absolute inset-0 z-10"></a>
 
-                    <h2 class="text-xl font-semibold mb-1">{{ $car->model }} ({{ $car->year }})</h2>
+                    <img src="{{ $car->image }}" alt="{{ $car->model }}"
+                         class="w-full h-48 object-cover rounded mb-4 group-hover:opacity-90 transition z-0" />
 
-                    <p class="text-green-700 font-bold mb-2">
+                    <h2 class="text-xl font-semibold mb-1 z-0">{{ $car->model }} ({{ $car->year }})</h2>
+
+                    <p class="text-green-700 font-bold mb-4">
                         {{ __('messages.from_per_day', ['price' => $car->rental_prices ? json_decode($car->rental_prices)->{"1-2 days"} : 'N/A']) }}
                     </p>
 
-                    <ul class="text-gray-700 text-sm mb-4">
-                        <li><strong>{{ __('messages.type') }}:</strong> {{ $car->model }}</li>
-                        <li><strong>{{ __('messages.seats') }}:</strong> {{ $car->seats }}</li>
-                        <li><strong>{{ __('messages.fuel') }}:</strong> {{ $car->fuel_type }}</li>
-                        <li><strong>{{ __('messages.engine') }}:</strong> {{ $car->engine_capacity }} cm³</li>
-                        <li><strong>{{ __('messages.transmission') }}:</strong> {{ $car->transmission }}</li>
+                    <ul class="text-gray-700 text-sm mb-6 grid grid-cols-2 gap-y-2 gap-x-4">
+                        <li class="flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h1l2 6h12l2-6h1" />
+                                <circle cx="7.5" cy="16.5" r="1.5" />
+                                <circle cx="16.5" cy="16.5" r="1.5" />
+                            </svg>
+                            <span><strong>{{ __('messages.type') }}:</strong> {{ $car->model }}</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><strong>{{ __('messages.seats') }}:</strong> {{ $car->seats }}</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 17l4-4 4 4" />
+                            </svg>
+                            <span><strong>{{ __('messages.fuel') }}:</strong> {{ $car->fuel_type }}</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
+                            </svg>
+                            <span><strong>{{ __('messages.engine') }}:</strong> {{ $car->engine_capacity }} cm³</span>
+                        </li>
+                        <li class="flex items-center space-x-2 col-span-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h3" />
+                            </svg>
+                            <span><strong>{{ __('messages.transmission') }}:</strong> {{ $car->transmission }}</span>
+                        </li>
                     </ul>
 
-                    <div class="flex items-center space-x-4">
-                        <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition">
+                    <div class="flex space-x-4 mt-auto z-0">
+                        <a href=""
+                           class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded text-center z-20">
                             {{ __('messages.book') }}
                         </a>
 
-                        <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" title="{{ __('messages.contact_whatsapp') }}">
-                            <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M20.52 3.48A11.94 11.94 0 0012 0C5.373 0 0 5.372 0 12a11.963 11.963 0 001.657 6.03L0 24l6.088-1.588A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12 0-3.203-1.243-6.209-3.48-8.52zm-8.53 17.1a8.666 8.666 0 01-4.64-1.35l-.33-.2-3.615.947.96-3.525-.21-.35a8.652 8.652 0 1111.847 4.07l-3.202-1.63zM16.9 13.178c-.27-.13-1.59-.78-1.83-.87-.24-.09-.42-.13-.6.13-.18.27-.7.87-.86 1.05-.16.18-.32.2-.6.07a6.633 6.633 0 01-1.94-1.2 7.29 7.29 0 01-1.34-1.65c-.14-.25-.01-.38.1-.5.1-.1.24-.27.37-.41.13-.14.18-.25.27-.42.09-.18.05-.33-.02-.46-.07-.12-.6-1.44-.82-1.97-.22-.52-.45-.45-.6-.46-.15-.02-.32-.02-.5-.02a1.06 1.06 0 00-.77.36c-.26.27-1 1-1 2.5 0 1.48 1.03 2.92 1.18 3.13.15.2 2.04 3.1 4.95 4.34a18.45 18.45 0 002.34 1.06c.31.13.6.11.82.07.25-.05.77-.31.88-.62.11-.31.11-.58.08-.62-.02-.04-.25-.08-.53-.16z"/>
-                            </svg>
+                        <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer"
+                           class="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-2 rounded transition flex items-center justify-center z-20">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"></svg>
+                            {{ __('messages.contact_whatsapp') }}
                         </a>
                     </div>
                 </div>

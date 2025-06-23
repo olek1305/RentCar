@@ -27,14 +27,14 @@ return [
     'liability_title' => '4. Liability and Insurance',
     'liability_list' => [
         'The renter is responsible for damages caused by their fault.',
-        'Cars are insured, but a deductible may apply.',
+        'cars are insured, but a deductible may apply.',
     ],
 
     'final_title' => '5. Final Provisions',
     'final_text' => 'In case of violation of rental terms, CarShop reserves the right to terminate the agreement. Details of the regulations are available on our website or from a consultant.',
     'welcome' => 'Hello CarShop',
     'subtitle' => 'Find your dream car today!',
-    'from_per_day' => 'From :price/day',
+    'from_per_day' => 'From :price €/day',
     'type' => 'Type',
     'seats' => 'Seats',
     'fuel' => 'Fuel',
