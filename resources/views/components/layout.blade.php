@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{ $title ?? 'CarShop' }}</title>
+    <title>{{ $title ?? 'RentCar' }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -35,7 +35,7 @@
 
         <!-- Logo -->
         <a href="/" class="text-2xl font-bold text-gray-800">
-            🚗 CarShop
+            🚗 RentCar
         </a>
 
         <!-- Menu -->

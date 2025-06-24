@@ -2,7 +2,7 @@
 
 return [
     'rental_conditions' => 'Warunki Wynajmu',
-    'welcome_text' => 'Witamy w CarShop! Poniżej znajdziesz zasady i warunki wypożyczenia naszych samochodów.',
+    'welcome_text' => 'Witamy w RentCar! Poniżej znajdziesz zasady i warunki wypożyczenia naszych samochodów.',
 
     'requirements_title' => '1. Wymagania dotyczące najemcy',
     'requirements_list' => [
@@ -32,7 +32,7 @@ return [
 
     'final_title' => '5. Postanowienia końcowe',
     'final_text' => 'W przypadku naruszenia warunków najmu, CarShop zastrzega sobie prawo do rozwiązania umowy. Szczegóły regulaminu są dostępne na naszej stronie lub u konsultanta.',
-    'welcome' => 'Witaj w CarShop',
+    'welcome' => 'Witaj w RentCar',
     'subtitle' => 'Znajdź swój wymarzony samochód już dziś!',
     'from_per_day' => 'Od :price €/dzień',
     'type' => 'Typ',

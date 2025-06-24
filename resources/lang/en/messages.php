@@ -2,7 +2,7 @@
 
 return [
     'rental_conditions' => 'Rental Conditions',
-    'welcome_text' => 'Welcome to CarShop! Below you will find the terms and conditions for renting our cars.',
+    'welcome_text' => 'Welcome to RentCar! Below you will find the terms and conditions for renting our cars.',
 
     'requirements_title' => '1. Renter Requirements',
     'requirements_list' => [
@@ -32,7 +32,7 @@ return [
 
     'final_title' => '5. Final Provisions',
     'final_text' => 'In case of violation of rental terms, CarShop reserves the right to terminate the agreement. Details of the regulations are available on our website or from a consultant.',
-    'welcome' => 'Hello CarShop',
+    'welcome' => 'Hello RentCar',
     'subtitle' => 'Find your dream car today!',
     'from_per_day' => 'From :price €/day',
     'type' => 'Type',
