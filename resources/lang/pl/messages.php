@@ -30,9 +30,9 @@ return [
         'Samochody są ubezpieczone, ale udział własny może obowiązywać.',
     ],
 
+    'registration_from' => 'Rok produkcji',
     'final_title' => '5. Postanowienia końcowe',
     'final_text' => 'W przypadku naruszenia warunków najmu, CarShop zastrzega sobie prawo do rozwiązania umowy. Szczegóły regulaminu są dostępne na naszej stronie lub u konsultanta.',
-    'welcome' => 'Witaj w RentCar',
     'subtitle' => 'Znajdź swój wymarzony samochód już dziś!',
     'from_per_day' => 'Od :price €/dzień',
     'type' => 'Typ',

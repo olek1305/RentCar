@@ -1,25 +1,38 @@
 <x-layout>
     <x-slot:title>{{ __('messages.welcome') }}</x-slot:title>
 
-    <section class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6">{{ __('messages.welcome') }}</h1>
-        <p class="text-gray-700 mb-8">{{ __('messages.subtitle') }}</p>
+    <section class="container mx-auto p-4">
+        <section class="relative">
+            <div style="background-image: url('{{ asset('images/Theme.webp') }}');"
+                 class="bg-cover bg-center h-96 w-full">
+                <div class="text-5xl p-4 text-center">
+                    <p class="mb-8 text-black">{{ __('messages.subtitle') }}</p>
+                </div>
+            </div>
+        </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             @foreach ($cars as $car)
-                <div class="relative border rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col text-center group">
+                <div class="relative border rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col text-center">
                     <a href="{{ route('cars.show', $car->id) }}" class="absolute inset-0 z-10"></a>
 
                     <img src="{{ $car->image }}" alt="{{ $car->model }}"
                          class="w-full h-48 object-cover rounded mb-4 group-hover:opacity-90 transition z-0" />
 
-                    <h2 class="text-xl font-semibold mb-1 z-0">{{ $car->model }} ({{ $car->year }})</h2>
+                    <h2 class="text-xl font-semibold mb-1 z-0">{{ $car->model }}</h2>
 
                     <p class="text-green-700 font-bold mb-4">
                         {{ __('messages.from_per_day', ['price' => $car->rental_prices ? json_decode($car->rental_prices)->{"1-2 days"} : 'N/A']) }}
                     </p>
 
-                    <ul class="text-gray-700 text-sm mb-6 grid grid-cols-2 gap-y-2 gap-x-4">
+                    <ul class="text-gray-700 text-sm mb-6 grid grid-flow-col grid-rows-3 gap-y-2 gap-x-4">
+                        <li class="flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span><strong>{{ __('messages.registration_from') }}:</strong> {{ $car->year }}</span>
+                        </li>
                         <li class="flex items-center space-x-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

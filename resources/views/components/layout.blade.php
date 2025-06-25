@@ -15,7 +15,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
 </head>
-<body>
+<body class="bg-slate-100">
 <nav class="bg-gray-900 text-white text-sm font-semibold shadow-md">
     <div class="container px-4 py-4 flex justify-end gap-6">
         <a href="https://instagram.com/afdfawerawerawer" target="_blank" class="hover:underline flex items-center gap-1">

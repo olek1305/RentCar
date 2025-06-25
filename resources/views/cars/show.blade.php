@@ -25,6 +25,10 @@
         <h2 class="text-xl font-semibold mb-2">{{ __('messages.specifications') }}</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6 text-center">
             <div class="bg-[#e3171e] text-white p-4 rounded shadow">
+                <strong>{{ __('messages.registration_from') }}:</strong><br>
+                {{ $car->year }}
+            </div>
+            <div class="bg-[#e3171e] text-white p-4 rounded shadow">
                 <strong>{{ __('messages.type') }}:</strong><br>
                 {{ $car->type ?? __('messages.universal') }}
             </div>
@@ -43,10 +47,6 @@
             <div class="bg-[#e3171e] text-white p-4 rounded shadow">
                 <strong>{{ __('messages.transmission') }}:</strong><br>
                 {{ $car->transmission }}
-            </div>
-            <div class="bg-[#e3171e] text-white p-4 rounded shadow">
-                <strong>{{ __('messages.year') }}:</strong><br>
-                {{ $car->year }}
             </div>
         </div>
 
