@@ -19,13 +19,4 @@ class HomeController extends Controller
 
         return view('home', compact('cars', 'lang'));
     }
-
-    public function show(Request $request, $id): Factory|Application|View
-    {
-        $lang = $request->query('lang', 'en');
-        app()->setLocale($lang);
-
-        $car = Car::findOrFail($id);
-        return view('cars.show', compact('car'));
-    }
 }

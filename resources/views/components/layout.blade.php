@@ -27,6 +27,14 @@
         <a href="tel:+48123456789" class="hover:underline flex items-center gap-1">
             📞 <span>+48 123 456 789</span>
         </a>
+        @auth
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="hover:text-blue-600">Logout ({{ auth()->user()->name ?? 'Null' }})</button>
+            </form>
+        @else
+            <a href="{{ route('login') }}" class="hover:text-blue-600">Login</a>
+        @endauth
     </div>
 </nav>
 
@@ -54,8 +62,19 @@
                 🇵🇱 <span>PL</span>
             </a>
         </div>
-
     </div>
+
+    <!-- For Admin -->
+    @auth
+    <div class="container mx-auto px-4 py-3 flex items-center justify-center">
+        Panel Admin:
+
+        <ul class="flex space-x-8 text-gray-700 font-medium ml-6">
+            <li><a href="{{ route('cars.create') }}" class="hover:text-blue-600">Create an offer</a></li>
+        </ul>
+    </div>
+    @endauth
+
 </nav>
 
 
