@@ -8,6 +8,8 @@
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+
             <div class="mb-4">
                 <label for="email">Email</label>
                 <input name="email" type="email" class="w-full border rounded px-3 py-2" required>

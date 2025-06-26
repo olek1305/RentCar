@@ -19,4 +19,20 @@ class HomeController extends Controller
 
         return view('home', compact('cars', 'lang'));
     }
+
+    public function condition(): Factory|Application|View
+    {
+        $lang = request()->query('lang', 'en');
+        app()->setLocale($lang);
+
+        return view('condition', ['lang' => $lang]);
+    }
+
+    public function contact(): Factory|Application|View
+    {
+        $lang = request()->query('lang', 'en');
+        app()->setLocale($lang);
+
+        return view('contact', ['lang' => $lang]);
+    }
 }

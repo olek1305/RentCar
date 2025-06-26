@@ -48,9 +48,9 @@
 
         <!-- Menu -->
         <ul class="flex space-x-8 text-gray-700 font-medium">
-            <li><a href="/" class="hover:text-blue-600">Home</a></li>
-            <li><a href="/condition" class="hover:text-blue-600">Condition</a></li>
-            <li><a href="/contact" class="hover:text-blue-600">Contact</a></li>
+            <li><a href="{{ route('home') }}" class="hover:text-blue-600">Home</a></li>
+            <li><a href="{{ route('condition') }}" class="hover:text-blue-600">Condition</a></li>
+            <li><a href="{{ route('contact') }}" class="hover:text-blue-600">Contact</a></li>
         </ul>
 
         <!-- Language switcher -->
@@ -70,7 +70,7 @@
         Panel Admin:
 
         <ul class="flex space-x-8 text-gray-700 font-medium ml-6">
-            <li><a href="{{ route('cars.create') }}" class="hover:text-blue-600">Create an offer</a></li>
+            <li><a href="{{ route('cars.create') }}" class="hover:text-blue-600">Add rental car</a></li>
         </ul>
     </div>
     @endauth
