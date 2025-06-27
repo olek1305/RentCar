@@ -14,13 +14,15 @@ class Car extends Model
         'engine_capacity',
         'year',
         'transmission',
+        'main_image',
+        'gallery_images',
         'image_url',
         'description',
         'rental_prices'
     ];
 
     protected $casts = [
+        'gallery_images' => 'array',
         'rental_prices' => 'array',
-        'extra_images' => 'array'
     ];
 }

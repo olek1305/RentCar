@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCarRequest;
+use App\Http\Requests\UpdateCarRequest;
 use App\Models\Car;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -9,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Storage;
 
 class CarController extends Controller
 {
@@ -17,13 +20,35 @@ class CarController extends Controller
         return view('cars.create');
     }
 
-    public function store(Request $request): Application|Redirector|RedirectResponse
+    public function store(StoreCarRequest $request): Application|Redirector|RedirectResponse
     {
-        $validated = $this->validateCarRequest($request);
+        $validated = $request->validated();
 
-        Car::create($validated);
+        if ($request->hasFile('main_image')) {
+            $validated['main_image'] = $request->file('main_image')
+                ->store('cars/main', 'public');
+        }
 
-        return redirect('/')->with('success', 'Car created successfully.');
+        if ($request->hasFile('gallery_images')) {
+            $galleryPaths = [];
+            foreach ($request->file('gallery_images') as $image) {
+                $galleryPaths[] = $image->store('cars/gallery', 'public');
+            }
+            $validated['gallery_images'] = $galleryPaths;
+        }
+
+        $validated['rental_prices'] = json_encode([
+            '1-2' => $validated['daily_price'],
+            '3-6' => $validated['daily_price'] * 0.9,
+            '7+' => $validated['daily_price'] * 0.8
+        ]);
+
+        unset($validated['daily_price']);
+
+        $car = Car::create($validated);
+
+        return redirect()->route('cars.show', $car->id)
+            ->with('success', __('Car created successfully!'));
     }
 
     public function show(Request $request, $id): Factory|Application|View
@@ -43,14 +68,43 @@ class CarController extends Controller
         return view('cars.edit',  compact('car'));
     }
 
-    public function update(Request $request, $id): RedirectResponse
+    public function update(UpdateCarRequest $request, Car $car): RedirectResponse
     {
-        $validated = $this->validateCarRequest($request);
+        $validated = $request->validated();
 
-        $car = Car::findOrFail($id);
+        if ($request->hasFile('main_image')) {
+            if ($car->main_image) {
+                Storage::disk('public')->delete($car->main_image);
+            }
+            $validated['main_image'] = $request->file('main_image')
+                ->store('cars/main', 'public');
+        }
+
+        if ($request->hasFile('gallery_images')) {
+            if ($car->gallery_images) {
+                foreach ($car->gallery_images as $oldImage) {
+                    Storage::disk('public')->delete($oldImage);
+                }
+            }
+
+            $galleryPaths = [];
+            foreach ($request->file('gallery_images') as $image) {
+                $galleryPaths[] = $image->store('cars/gallery', 'public');
+            }
+            $validated['gallery_images'] = $galleryPaths;
+        }
+
+        $validated['rental_prices'] = [
+            '1-2' => $validated['daily_price'],
+            '3-6' => $validated['daily_price'] * 0.9,
+            '7+' => $validated['daily_price'] * 0.8
+        ];
+        unset($validated['daily_price']);
+
         $car->update($validated);
 
-        return redirect()->route('cars.show', $car->id)->with('success', 'Car updated successfully.');
+        return redirect()->route('cars.show', $car->id)
+            ->with('success', __('Car updated successfully!'));
     }
 
     public function destroy($id): RedirectResponse
@@ -59,33 +113,5 @@ class CarController extends Controller
         $car->delete();
 
         return redirect()->route('home')->with('success', 'Car deleted successfully.');
-    }
-
-    /**
-     * @param Request $request
-     * @return array
-     */
-    private function validateCarRequest(Request $request): array
-    {
-        $validated = $request->validate([
-            'model' => 'required|string|max:255',
-            'type' => 'required|string|in:Sedan,SUV,Hatchback,Coupe',
-            'year' => 'required|integer|min:1900',
-            'seats' => 'required|integer|min:1|max:9',
-            'fuel_type' => 'required|string',
-            'engine_capacity' => 'required|integer',
-            'transmission' => 'required|string',
-            'description' => 'nullable|string',
-            'image' => 'nullable|url',
-            'daily_price' => 'required|numeric|min:1'
-        ]);
-
-        $validated['rental_prices'] = json_encode([
-            '1-2' => $validated['daily_price'],
-            '3-6' => $validated['daily_price'] * 0.9,
-            '7+' => $validated['daily_price'] * 0.8
-        ]);
-
-        return $validated;
     }
 }

@@ -3,23 +3,35 @@
 
     <section class="container mx-auto p-6 max-w-3xl">
         <h1 class="text-3xl font-bold mb-4">{{ $car->model }} ({{ $car->year }})</h1>
+
         <div class="relative w-full h-64 rounded overflow-hidden mb-6">
             @php
+                $gallery = is_array($car->gallery_images)
+                    ? $car->gallery_images
+                    : json_decode($car->gallery_images, true) ?? [];
+
                 $images = array_merge(
-                    [$car->image],
-                    $car->extra_images ? json_decode($car->extra_images, true) : []
+                    [$car->main_image],
+                    $gallery
                 );
+                $images = array_filter($images);
             @endphp
 
             @foreach ($images as $index => $img)
                 <img
-                    src="{{ $img }}"
+                    src="{{ Storage::url($img) }}"
                     alt="Car image {{ $index + 1 }}"
                     class="absolute inset-0 w-full h-64 object-cover rounded transition-opacity duration-1000"
                     style="opacity: {{ $index === 0 ? '1' : '0' }};"
                     data-slide-index="{{ $index }}"
                 />
             @endforeach
+
+            @if(empty($images))
+                <div class="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                    <span class="text-gray-500">No images available</span>
+                </div>
+            @endif
         </div>
 
         <h2 class="text-xl font-semibold mb-2">{{ __('messages.specifications') }}</h2>
@@ -28,22 +40,27 @@
                 <strong>{{ __('messages.registration_from') }}:</strong><br>
                 {{ $car->year }}
             </div>
+
             <div class="bg-[#e3171e] text-white p-4 rounded shadow">
                 <strong>{{ __('messages.type') }}:</strong><br>
                 {{ $car->type ?? __('messages.universal') }}
             </div>
+
             <div class="bg-[#e3171e] text-white p-4 rounded shadow">
                 <strong>{{ __('messages.seats') }}:</strong><br>
                 {{ $car->seats }}
             </div>
+
             <div class="bg-[#e3171e] text-white p-4 rounded shadow">
                 <strong>{{ __('messages.fuel') }}:</strong><br>
                 {{ $car->fuel_type }}
             </div>
+
             <div class="bg-[#e3171e] text-white p-4 rounded shadow">
                 <strong>{{ __('messages.engine') }}:</strong><br>
                 {{ $car->engine_capacity }} cm³
             </div>
+
             <div class="bg-[#e3171e] text-white p-4 rounded shadow">
                 <strong>{{ __('messages.transmission') }}:</strong><br>
                 {{ $car->transmission }}
@@ -58,12 +75,22 @@
 
         <h2 class="text-xl font-semibold mb-2">{{ __('messages.rental_prices') }}</h2>
         @php
-            $prices = $car->rental_prices ? json_decode($car->rental_prices, true) : [];
+            $prices = is_array($car->rental_prices)
+                ? $car->rental_prices
+                : (json_decode($car->rental_prices, true) ?? [
+                    '1-2' => 0,
+                    '3-6' => 0,
+                    '7+' => 0
+                ]);
+
+            $price1 = $prices['1-2'] ?? 0;
+            $price2 = $prices['3-6'] ?? 0;
+            $price3 = $prices['7+'] ?? 0;
         @endphp
         <ul class="mb-6 space-y-1 text-gray-700">
-            @foreach ($prices as $range => $price)
-                <li>{{ $range }}: €{{ $price }}</li>
-            @endforeach
+            <li>1-2 {{ __('messages.days') }}: €{{ $price1 }}</li>
+            <li>3-6 {{ __('messages.days') }}: €{{ $price2 }}</li>
+            <li>7+ {{ __('messages.days') }}: €{{ $price3 }}</li>
         </ul>
 
         <form method="POST" action="" class="space-y-4">

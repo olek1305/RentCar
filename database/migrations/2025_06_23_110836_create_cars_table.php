@@ -21,8 +21,8 @@ return new class extends Migration
             $table->integer('engine_capacity');
             $table->year('year');
             $table->string('transmission');
-            $table->string('image')->nullable();
-            $table->json('extra_images')->nullable();
+            $table->string('main_image')->nullable();
+            $table->json('gallery_images')->nullable();
             $table->json('rental_prices');
             $table->text('description');
 
