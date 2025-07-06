@@ -13,11 +13,40 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             @foreach ($cars as $car)
-                <div class="relative border rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col text-center">
+                @php
+                    $gallery = is_array($car->gallery_images)
+                        ? $car->gallery_images
+                        : json_decode($car->gallery_images, true) ?? [];
+
+                    $images = array_merge([$car->main_image], $gallery);
+                    $images = array_filter($images);
+                @endphp
+
+                <div class="relative border rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col text-center group car-item">
                     <a href="{{ route('cars.show', $car->id) }}" class="absolute inset-0 z-10"></a>
 
-                    <img src="{{ $car->main_image_url }}" alt="{{ $car->model }}"
-                         class="w-full h-48 object-cover rounded mb-4 group-hover:opacity-90 transition z-0" />
+                    <div class="relative w-full h-48 rounded overflow-hidden mb-4">
+                        @foreach ($images as $index => $img)
+                            <img src="{{ $index === 0 ? Storage::url($img) : '' }}"
+                                 alt="Car image {{ $index + 1 }}"
+                                 class="absolute inset-0 w-full h-48 object-cover rounded transition-opacity duration-500 ease-in-out"
+                                 style="opacity: {{ $index === 0 ? '1' : '0' }};"
+                                 data-slide-index="{{ $index }}"
+                                 data-car-id="{{ $car->id }}"
+                                 loading="lazy"
+                                 @if($index > 0)
+                                     data-src="{{ Storage::url($img) }}"
+                                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3C/svg%3E"
+                                @endif
+                            />
+                        @endforeach
+
+                        @if(empty($images))
+                            <div class="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                                <span class="text-gray-500">No images available</span>
+                            </div>
+                        @endif
+                    </div>
 
                     <h2 class="text-xl font-semibold mb-1 z-0">{{ $car->model }}</h2>
 
@@ -92,4 +121,68 @@
             {{ $cars->links() }}
         </div>
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const carItems = document.querySelectorAll('.car-item');
+
+            carItems.forEach(carItem => {
+                const images = carItem.querySelectorAll('img[data-slide-index]');
+                let currentIndex = 0;
+                let hoverTimeout;
+                let hasLoadedAllImages = false;
+
+                if (images.length > 1) {
+                    const loadImage = (img) => {
+                        if (img.dataset.src && !img.src.includes('base64')) {
+                            img.src = img.dataset.src;
+                            return new Promise((resolve) => {
+                                img.onload = resolve;
+                                img.onerror = resolve; // Continue even if image fails to load
+                            });
+                        }
+                        return Promise.resolve();
+                    };
+
+                    const showSlide = async (index) => {
+                        const img = images[index];
+                        await loadImage(img);
+
+                        images.forEach((img, i) => {
+                            img.style.opacity = i === index ? '1' : '0';
+                        });
+                    };
+
+                    // On hover, load all images first, then cycle through them
+                    carItem.addEventListener('mouseenter', async () => {
+                        // Load all images first
+                        if (!hasLoadedAllImages) {
+                            const loadPromises = [];
+                            for (let i = 0; i < images.length; i++) {
+                                loadPromises.push(loadImage(images[i]));
+                            }
+                            await Promise.all(loadPromises);
+                            hasLoadedAllImages = true;
+                        }
+
+                        // Then start cycling
+                        let hoverIndex = 0;
+                        const cycleImages = async () => {
+                            await showSlide(hoverIndex);
+                            hoverIndex = (hoverIndex + 1) % images.length;
+                            hoverTimeout = setTimeout(cycleImages, 1500);
+                        };
+                        await cycleImages();
+                    });
+
+                    // On mouse leave, reset to first image
+                    carItem.addEventListener('mouseleave', () => {
+                        clearTimeout(hoverTimeout);
+                        showSlide(0);
+                        currentIndex = 0;
+                    });
+                }
+            });
+        });
+    </script>
 </x-layout>
