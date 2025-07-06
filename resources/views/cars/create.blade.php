@@ -2,92 +2,112 @@
     <x-slot:title>{{ __('Create Car') }}</x-slot:title>
 
     <section class="container mx-auto p-6 max-w-3xl">
-        <h1 class="text-2xl font-bold mb-6">
+        <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">
             {{ __('Create New Car') }}
         </h1>
 
-        <form method="POST" action="{{ route('cars.store') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('cars.store') }}" enctype="multipart/form-data" class="bg-white p-6 rounded-xl shadow-md space-y-6">
             @csrf
 
-            <label class="block mb-4">
-                <span>Model *</span>
+            {{-- Model --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Model *</label>
                 <input type="text" name="model" value="{{ old('model') }}" required
-                       class="block w-full rounded border-gray-300">
-            </label>
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-4 py-2">
+            </div>
 
-            <label class="block mb-4">
-                <span>Type *</span>
-                <select name="type" required class="block w-full rounded border-gray-300">
+            {{-- Type --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Type *</label>
+                <select name="type" required
+                        class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-4 py-2">
                     <option value="">Select type</option>
-                    <option value="Sedan" {{ old('type') == 'Sedan' ? 'selected' : '' }}>Sedan</option>
-                    <option value="SUV" {{ old('type') == 'SUV' ? 'selected' : '' }}>SUV</option>
-                    <option value="Hatchback" {{ old('type') == 'Hatchback' ? 'selected' : '' }}>Hatchback</option>
-                    <option value="Coupe" {{ old('type') == 'Coupe' ? 'selected' : '' }}>Coupe</option>
+                    @foreach(['Sedan', 'SUV', 'Hatchback', 'Coupe'] as $type)
+                        <option value="{{ $type }}" {{ old('type') == $type ? 'selected' : '' }}>{{ $type }}</option>
+                    @endforeach
                 </select>
-            </label>
+            </div>
 
-            <label class="block mb-4">
-                <span>Year *</span>
+            {{-- Year --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Year *</label>
                 <input type="number" name="year" value="{{ old('year') }}" required
-                       class="block w-full rounded border-gray-300">
-            </label>
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-4 py-2">
+            </div>
 
-            <label class="block mb-4">
-                <span>Seats *</span>
-                <input type="number" name="seats" value="{{ old('seats') }}" required
-                       class="block w-full rounded border-gray-300" min="1" max="9">
-            </label>
+            {{-- Seats --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Seats *</label>
+                <input type="number" name="seats" value="{{ old('seats') }}" min="1" max="9" required
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-4 py-2">
+            </div>
 
-            <label class="block mb-4">
-                <span>Fuel Type *</span>
-                <select name="fuel_type" required class="block w-full rounded border-gray-300">
+            {{-- Fuel Type --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Fuel Type *</label>
+                <select name="fuel_type" required
+                        class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-4 py-2">
                     <option value="">Select fuel type</option>
-                    <option value="Gasoline" {{ old('fuel_type') == 'Gasoline' ? 'selected' : '' }}>Gasoline</option>
-                    <option value="Diesel" {{ old('fuel_type') == 'Diesel' ? 'selected' : '' }}>Diesel</option>
-                    <option value="Hybrid" {{ old('fuel_type') == 'Hybrid' ? 'selected' : '' }}>Hybrid</option>
-                    <option value="Electric" {{ old('fuel_type') == 'Electric' ? 'selected' : '' }}>Electric</option>
+                    @foreach(['Gasoline', 'Diesel', 'Hybrid', 'Electric'] as $fuel)
+                        <option value="{{ $fuel }}" {{ old('fuel_type') == $fuel ? 'selected' : '' }}>{{ $fuel }}</option>
+                    @endforeach
                 </select>
-            </label>
+            </div>
 
-            <label class="block mb-4">
-                <span>Engine Capacity *</span>
+            {{-- Engine Capacity --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Engine Capacity *</label>
                 <input type="number" name="engine_capacity" value="{{ old('engine_capacity') }}" required
-                       class="block w-full rounded border-gray-300">
-            </label>
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-4 py-2">
+            </div>
 
-            <label class="block mb-4">
-                <span>Transmission *</span>
-                <select name="transmission" required class="block w-full rounded border-gray-300">
+            {{-- Transmission --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Transmission *</label>
+                <select name="transmission" required
+                        class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-4 py-2">
                     <option value="">Select transmission</option>
                     <option value="Manual" {{ old('transmission') == 'Manual' ? 'selected' : '' }}>Manual</option>
                     <option value="Automatic" {{ old('transmission') == 'Automatic' ? 'selected' : '' }}>Automatic</option>
                 </select>
-            </label>
+            </div>
 
-            <label class="block mb-4">
-                <span>Description</span>
-                <textarea name="description" class="block w-full rounded border-gray-300">{{ old('description') }}</textarea>
-            </label>
+            {{-- Description --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Description</label>
+                <textarea name="description"
+                          class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-4 py-2"
+                          rows="4">{{ old('description') }}</textarea>
+            </div>
 
-            <label class="block mb-4">
-                <span>Main Image *</span>
-                <input type="file" name="main_image" accept="image/*" required class="block w-full">
-            </label>
+            {{-- Main Image --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Main Image *</label>
+                <input type="file" name="main_image" accept="image/*" required
+                       class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:rounded-lg file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            </div>
 
-            <label class="block mb-4">
-                <span>Gallery Images</span>
-                <input type="file" name="gallery_images[]" multiple accept="image/*" class="block w-full">
-            </label>
+            {{-- Gallery Images --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Gallery Images</label>
+                <input type="file" name="gallery_images[]" multiple accept="image/*"
+                       class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:rounded-lg file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            </div>
 
-            <label class="block mb-4">
-                <span>Daily Price (USD) *</span>
-                <input type="number" name="daily_price" value="{{ old('daily_price') }}" required
-                       class="block w-full rounded border-gray-300" min="1" step="0.01">
-            </label>
+            {{-- Daily Price --}}
+            <div>
+                <label class="block mb-1 font-medium text-gray-700">Daily Price (USD) *</label>
+                <input type="number" name="daily_price" value="{{ old('daily_price') }}" min="1" step="0.01" required
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none px-4 py-2">
+            </div>
 
-            <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-                {{ __('Create') }}
-            </button>
+            {{-- Submit --}}
+            <div class="pt-4">
+                <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-300">
+                    {{ __('Create') }}
+                </button>
+            </div>
         </form>
     </section>
 </x-layout>

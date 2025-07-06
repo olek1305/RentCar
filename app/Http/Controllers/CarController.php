@@ -15,6 +15,25 @@ use Illuminate\Support\Facades\Storage;
 
 class CarController extends Controller
 {
+    public function index(Request $request): Factory|Application|View
+    {
+        $lang = $request->query('lang', 'en');
+        app()->setLocale($lang);
+
+        $cars = Car::visible()->orderBy('created_at', 'desc')->paginate(12);
+
+        $cars->getCollection()->transform(function ($car) {
+            $car->main_image_url = Storage::url($car->main_image);
+
+            if (is_string($car->rental_prices)) {
+                $car->rental_prices = json_decode($car->rental_prices, true);
+            }
+
+            return $car;
+        });
+        return view('cars.index', compact('cars', 'lang'));
+    }
+
     public function create(): Factory|Application|View
     {
         return view('cars.create');
@@ -47,8 +66,7 @@ class CarController extends Controller
 
         $car = Car::create($validated);
 
-        return redirect()->route('cars.show', $car->id)
-            ->with('success', __('Car created successfully!'));
+        return redirect()->route('cars.show', $car->id)->with('success', __('Car created successfully!'));
     }
 
     public function show(Request $request, $id): Factory|Application|View
@@ -57,6 +75,11 @@ class CarController extends Controller
         app()->setLocale($lang);
 
         $car = Car::findOrFail($id);
+
+        // for auth
+        if ($car->hidden && !auth()->check()) {
+            abort(404);
+        }
 
         return view('cars.show', compact('car'));
     }
@@ -103,8 +126,7 @@ class CarController extends Controller
 
         $car->update($validated);
 
-        return redirect()->route('cars.show', $car->id)
-            ->with('success', __('Car updated successfully!'));
+        return redirect()->route('cars.show', $car->id)->with('success', __('Car updated successfully!'));
     }
 
     public function destroy($id): RedirectResponse
@@ -112,6 +134,17 @@ class CarController extends Controller
         $car = Car::findOrFail($id);
         $car->delete();
 
-        return redirect()->route('home')->with('success', 'Car deleted successfully.');
+        return redirect()->route('cars')->with('success', 'Car deleted successfully.');
+    }
+
+    // Switch hide the car
+    public function toggleVisibility(Car $car): RedirectResponse
+    {
+        $car->update(['hidden' => !$car->hidden]);
+
+        return back()->with([
+            'success' => 'Car visibility updated',
+            'scroll_position' => request()->header('Referer') . '#car-' . $car->id
+        ]);
     }
 }

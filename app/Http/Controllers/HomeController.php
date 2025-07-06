@@ -11,25 +11,10 @@ use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
-    public function index(Request $request): Factory|Application|View
+    public function index(): Factory|Application|View
     {
-        $lang = $request->query('lang', 'en');
-        app()->setLocale($lang);
-
-        $cars = Car::orderBy('created_at', 'desc')->paginate(12);
-
-        $cars->getCollection()->transform(function ($car) {
-            $car->main_image_url = Storage::url($car->main_image);
-
-            if (is_string($car->rental_prices)) {
-                $car->rental_prices = json_decode($car->rental_prices, true);
-            }
-
-            return $car;
-        });
-        return view('home', compact('cars', 'lang'));
+        return view('home');
     }
-
     public function condition(): Factory|Application|View
     {
         $lang = request()->query('lang', 'en');

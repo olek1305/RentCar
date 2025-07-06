@@ -18,11 +18,20 @@ class Car extends Model
         'gallery_images',
         'image_url',
         'description',
-        'rental_prices'
+        'rental_prices',
+        'hidden'
     ];
 
     protected $casts = [
         'gallery_images' => 'array',
         'rental_prices' => 'array',
     ];
+
+    public function scopeVisible($query)
+    {
+        if (!auth()->check()) {
+            return $query->where('hidden', false);
+        }
+        return $query;
+    }
 }
