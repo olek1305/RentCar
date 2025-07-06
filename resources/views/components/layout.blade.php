@@ -17,7 +17,7 @@
 </head>
 <body class="bg-slate-100">
 <nav class="bg-gray-900 text-white text-sm font-semibold shadow-md">
-    <div class="container px-4 py-4 flex justify-end gap-6">
+    <div class="w-full px-4 py-4 flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-6">
         <a href="https://instagram.com/afdfawerawerawer" target="_blank" class="hover:underline flex items-center gap-1">
             📷 <span>Instagram</span>
         </a>
@@ -30,10 +30,10 @@
         @auth
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="hover:text-blue-600">Logout ({{ auth()->user()->name ?? 'Null' }})</button>
+                <button type="submit" class="hover:text-blue-400">Logout ({{ auth()->user()->name ?? 'Null' }})</button>
             </form>
         @else
-            <a href="{{ route('login') }}" class="hover:text-blue-600">Login</a>
+            <a href="{{ route('login') }}" class="hover:text-blue-400">Login</a>
         @endauth
     </div>
 </nav>
