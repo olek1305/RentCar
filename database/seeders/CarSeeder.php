@@ -21,9 +21,9 @@ class CarSeeder extends Seeder
 
     public function run(): void
     {
-        $types = ['Sedan', 'SUV', 'Hatchback', 'Combi', 'Coupe', 'Convertible'];
-        $fuelTypes = ['Gasoline', 'Diesel', 'Electric', 'Hybrid', 'BioDiesel'];
-        $transmissions = ['Automatic', 'Manual'];
+        $types = CAR::TYPES;
+        $fuelTypes = CAR::fuelTypes;
+        $transmissions = CAR::transmissions;
 
         for ($i = 0; $i < 30; $i++) {
             $model = $this->generateModelName();

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Car;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCarRequest extends FormRequest
 {
@@ -31,12 +33,12 @@ class StoreCarRequest extends FormRequest
     {
         return [
             'model' => 'required|string|max:255|unique:cars,model',
-            'type' => 'required|string|in:Sedan,SUV,Hatchback,Coupe',
-            'year' => 'required|integer|min:1900',
+            'type' => ['required', 'string', Rule::in(Car::TYPES)],
+            'year' => 'required|integer|min:1880|max:' . date('Y'),
             'seats' => 'required|integer|min:1|max:9',
-            'fuel_type' => 'required|string|in:Gasoline,Diesel,Hybrid,Electric',
+            'fuel_type' => ['required', 'string', Rule::in(Car::fuelTypes)],
             'engine_capacity' => 'required|integer|min:500|max:8000',
-            'transmission' => 'required|string|in:Manual,Automatic',
+            'transmission' => ['required', 'string', Rule::in(Car::transmissions)],
             'description' => 'nullable|string',
             'main_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',

@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    /**
+     * @param Request $request
+     * @return RedirectResponse
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([

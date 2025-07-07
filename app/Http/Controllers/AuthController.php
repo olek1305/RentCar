@@ -12,11 +12,18 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    /**
+     * @return Factory|Application|View
+     */
     public function showLogin(): Factory|Application|View
     {
         return view('auth.login');
     }
 
+    /**
+     * @param Request $request
+     * @return Application|Redirector|RedirectResponse
+     */
     public function login(Request $request): Application|Redirector|RedirectResponse
     {
         $credentials = $request->validate([
@@ -34,6 +41,10 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
+    /**
+     * @param Request $request
+     * @return Application|Redirector|RedirectResponse
+     */
     public function logout(Request $request): Application|Redirector|RedirectResponse
     {
         Auth::logout();

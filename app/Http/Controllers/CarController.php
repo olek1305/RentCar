@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Storage;
 
 class CarController extends Controller
 {
-    public function index(Request $request): Factory|Application|View
+    /**
+     * @return Factory|Application|View
+     */
+    public function index(): Factory|Application|View
     {
-        $lang = $request->query('lang', 'en');
-        app()->setLocale($lang);
-
         $cars = Car::visible()->orderBy('created_at', 'desc')->paginate(12);
 
         $cars->getCollection()->transform(function ($car) {
@@ -31,14 +31,22 @@ class CarController extends Controller
 
             return $car;
         });
-        return view('cars.index', compact('cars', 'lang'));
+        return view('cars.index', compact('cars'));
     }
 
     public function create(): Factory|Application|View
     {
-        return view('cars.create');
+        $types = Car::TYPES;
+        $fuelTypes = Car::fuelTypes;
+        $transmissions = Car::transmissions;
+
+        return view('cars.create', compact('types', 'fuelTypes', 'transmissions'));
     }
 
+    /**
+     * @param StoreCarRequest $request
+     * @return Application|Redirector|RedirectResponse
+     */
     public function store(StoreCarRequest $request): Application|Redirector|RedirectResponse
     {
         $validated = $request->validated();
@@ -69,13 +77,12 @@ class CarController extends Controller
         return redirect()->route('cars.show', $car->id)->with('success', __('Car created successfully!'));
     }
 
-    public function show(Request $request, $id): Factory|Application|View
+    /**
+     * @param Car $car
+     * @return Factory|Application|View
+     */
+    public function show(Car $car): Factory|Application|View
     {
-        $lang = $request->query('lang', 'en');
-        app()->setLocale($lang);
-
-        $car = Car::findOrFail($id);
-
         // for auth
         if ($car->hidden && !auth()->check()) {
             abort(404);
@@ -84,17 +91,62 @@ class CarController extends Controller
         return view('cars.show', compact('car'));
     }
 
-    public function edit($id): Factory|Application|View
+    /**
+     * @param Car $car
+     * @return Factory|Application|View
+     */
+    public function edit(Car $car): Factory|Application|View
     {
-        $car = Car::findOrFail($id);
+        $types = Car::TYPES;
+        $fuelTypes = Car::fuelTypes;
+        $transmissions = Car::transmissions;
 
-        return view('cars.edit',  compact('car'));
+        return view('cars.edit',  compact('car', 'types', 'fuelTypes', 'transmissions'));
     }
 
+    /**
+     * @param UpdateCarRequest $request
+     * @param Car $car
+     * @return RedirectResponse
+     */
     public function update(UpdateCarRequest $request, Car $car): RedirectResponse
     {
         $validated = $request->validated();
 
+        // Handle main image deletion
+        if ($request->has('delete_main_image')) {
+            Storage::disk('public')->delete($car->main_image);
+            $validated['main_image'] = null;
+        }
+
+        // Handle new main image from gallery
+        if ($request->new_main_image) {
+            // Delete old main image if exists
+            if ($car->main_image) {
+                Storage::disk('public')->delete($car->main_image);
+            }
+
+            // Set new main image
+            $validated['main_image'] = $request->new_main_image;
+
+            // Remove from gallery
+            $gallery = $car->gallery_images ?? [];
+            $gallery = array_diff($gallery, [$request->new_main_image]);
+            $validated['gallery_images'] = array_values($gallery); // Reindex array
+        }
+
+        // Handle gallery images deletion
+        if ($request->delete_gallery_images) {
+            foreach ($request->delete_gallery_images as $imageToDelete) {
+                Storage::disk('public')->delete($imageToDelete);
+            }
+
+            $gallery = $car->gallery_images ?? [];
+            $gallery = array_diff($gallery, $request->delete_gallery_images);
+            $validated['gallery_images'] = array_values($gallery); // Reindex array
+        }
+
+        // Handle new main image upload
         if ($request->hasFile('main_image')) {
             if ($car->main_image) {
                 Storage::disk('public')->delete($car->main_image);
@@ -103,20 +155,16 @@ class CarController extends Controller
                 ->store('cars/main', 'public');
         }
 
+        // Handle new gallery images upload
         if ($request->hasFile('gallery_images')) {
-            if ($car->gallery_images) {
-                foreach ($car->gallery_images as $oldImage) {
-                    Storage::disk('public')->delete($oldImage);
-                }
-            }
-
-            $galleryPaths = [];
+            $gallery = $validated['gallery_images'] ?? [];
             foreach ($request->file('gallery_images') as $image) {
-                $galleryPaths[] = $image->store('cars/gallery', 'public');
+                $gallery[] = $image->store('cars/gallery', 'public');
             }
-            $validated['gallery_images'] = $galleryPaths;
+            $validated['gallery_images'] = $gallery;
         }
 
+        // Update rental prices
         $validated['rental_prices'] = [
             '1-2' => $validated['daily_price'],
             '3-6' => $validated['daily_price'] * 0.9,
@@ -126,18 +174,26 @@ class CarController extends Controller
 
         $car->update($validated);
 
-        return redirect()->route('cars.show', $car->id)->with('success', __('Car updated successfully!'));
+        return redirect()->route('cars.show', $car->id)
+            ->with('success', __('Car updated successfully!'));
     }
 
-    public function destroy($id): RedirectResponse
+    /**
+     * @param Car $car
+     * @return RedirectResponse
+     */
+    public function destroy(Car $car): RedirectResponse
     {
-        $car = Car::findOrFail($id);
         $car->delete();
 
         return redirect()->route('cars')->with('success', 'Car deleted successfully.');
     }
 
-    // Switch hide the car
+    /**
+     * Switch hide the car
+     * @param Car $car
+     * @return RedirectResponse
+     */
     public function toggleVisibility(Car $car): RedirectResponse
     {
         $car->update(['hidden' => !$car->hidden]);

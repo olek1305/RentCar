@@ -27,20 +27,25 @@
                     id="car-{{ $car->id }}">
 
                     @auth
-                        <form action="{{ route('cars.toggle-visibility', $car) }}" method="POST" class="absolute top-2 right-2 z-30">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" onclick="event.stopPropagation()"
-                                    class="text-sm {{ $car->hidden ? 'bg-green-500' : 'bg-red-500' }} text-white px-2 py-1 rounded">
-                                {{ $car->hidden ? 'Show' : 'Hide' }}
-                            </button>
-                        </form>
+                        <div class="absolute top-2 right-2 z-30 space-y-1 text-center">
+                            <form action="{{ route('cars.toggle-visibility', $car) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                        class="toggle-visibility-button {{ $car->hidden ? 'bg-green-500' : 'bg-red-500' }} text-white px-2 py-1 rounded w-full">
+                                    {{ $car->hidden ? 'Show' : 'Hide' }}
+                                </button>
+                            </form>
+                            <a href="{{ route('cars.edit', $car->id) }}"
+                               class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded inline-block w-full">
+                                Edit
+                            </a>
+                        </div>
                     @endauth
 
-                    <a href="{{ route('cars.show', $car->id) }}" class="absolute inset-0 z-10"></a>
+                    <a href="{{ route('cars.show', $car->id) }}" class="absolute top-0 left-0 right-0 bottom-20 z-10"></a>
 
                     <div class="relative w-full h-48 rounded overflow-hidden mb-4">
-
 
                         @foreach ($images as $index => $img)
                             <img src="{{ $index === 0 ? Storage::url($img) : '' }}"
@@ -70,52 +75,63 @@
                         {{ __('messages.from_per_day', ['price' => $car->rental_prices['1-2'] ?? 'N/A']) }}
                     </p>
 
-                    <ul class="text-gray-700 text-sm mb-6 grid grid-flow-col grid-rows-3 gap-y-2 gap-x-4">
-                        <li class="flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span><strong>{{ __('messages.registration_from') }}:</strong> {{ $car->year }}</span>
-                        </li>
-                        <li class="flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h1l2 6h12l2-6h1" />
-                                <circle cx="7.5" cy="16.5" r="1.5" />
-                                <circle cx="16.5" cy="16.5" r="1.5" />
-                            </svg>
-                            <span><strong>{{ __('messages.type') }}:</strong> {{ $car->type }}</span>
-                        </li>
-                        <li class="flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span><strong>{{ __('messages.seats') }}:</strong> {{ $car->seats }}</span>
-                        </li>
-                        <li class="flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 17l4-4 4 4" />
-                            </svg>
-                            <span><strong>{{ __('messages.fuel') }}:</strong> {{ $car->fuel_type }}</span>
-                        </li>
-                        <li class="flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
-                            </svg>
-                            <span><strong>{{ __('messages.engine') }}:</strong> {{ $car->engine_capacity }} cm³</span>
-                        </li>
-                        <li class="flex items-center space-x-2 col-span-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h3" />
-                            </svg>
-                            <span><strong>{{ __('messages.transmission') }}:</strong> {{ $car->transmission }}</span>
-                        </li>
-                    </ul>
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 mb-4 text-gray-700 text-sm">
+                        {{-- Left --}}
+                        <ul class="space-y-2">
+                            <li class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span><strong>{{ __('messages.registration_from') }}:</strong> {{ $car->year }}</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h1l2 6h12l2-6h1" />
+                                    <circle cx="7.5" cy="16.5" r="1.5" />
+                                    <circle cx="16.5" cy="16.5" r="1.5" />
+                                </svg>
+                                <span><strong>{{ __('messages.type') }}:</strong> {{ $car->type }}</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span><strong>{{ __('messages.seats') }}:</strong> {{ $car->seats }}</span>
+                            </li>
+                        </ul>
+
+                        {{-- Right --}}
+                        <ul class="space-y-2">
+                            <li class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 17l4-4 4 4" />
+                                </svg>
+                                <span><strong>{{ __('messages.fuel_type') }}:</strong> {{ $car->fuel_type }}</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
+                                </svg>
+                                <span><strong>{{ __('messages.engine_capacity') }}:</strong> {{ $car->engine_capacity }} cm³</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h3" />
+                                </svg>
+                                <div class="flex flex-col">
+                                    <span class="font-semibold">{{ __('messages.transmission') }}:</span>
+                                    <span class="break-words max-w-[160px]">{{ $car->transmission }}</span>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
 
                     <div class="flex space-x-4 mt-auto z-0">
                         <a href="{{ route('cars.show', $car->id) }}"
@@ -218,7 +234,7 @@
                 }
             });
 
-            document.querySelectorAll('.car-item form button').forEach(button => {
+            document.querySelectorAll('.toggle-visibility-button').forEach(button => {
                 button.addEventListener('click', (e) => {
                     e.stopPropagation();
                 });

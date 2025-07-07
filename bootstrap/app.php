@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -26,10 +27,12 @@ return Application::configure(basePath: dirname(__DIR__))
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
+            SetLocale::class
         ]);
 
         $middleware->alias([
             'auth' => Authenticate::class,
+            'locale' => SetLocale::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

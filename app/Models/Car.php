@@ -27,6 +27,44 @@ class Car extends Model
         'rental_prices' => 'array',
     ];
 
+    public const TYPES = [
+        'SEDAN',
+        'COUPE',
+        'SUV',
+        'HATCHBACK',
+        'CONVERTIBLE',
+        'WAGON',
+        'VAN',
+        'PICKUP',
+        'MINIVAN',
+        'ROADSTER',
+        'CROSSOVER',
+        'LUXURY',
+        'SPORTS CAR',
+        'DIESEL',
+        'ELECTRIC',
+        'HYBRID'
+    ];
+
+    public const fuelTypes = [
+        'GASOLINE',
+        'DIESEL',
+        'ELECTRIC',
+        'HYBRID',
+        'BIODIESEL',
+        'CNG',
+        'LPG',
+        'HYDROGEN',
+        'E85',
+        'METHANOL',
+    ];
+
+    public const transmissions = [
+        'AUTOMATIC',
+        'MANUAL',
+        'SEMI-AUTOMATIC'
+    ];
+
     public function scopeVisible($query)
     {
         if (!auth()->check()) {

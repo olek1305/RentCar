@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', $lang ?? app()->getLocale()) }}">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -30,10 +30,10 @@
         @auth
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="hover:text-blue-400">Logout ({{ auth()->user()->name ?? 'Null' }})</button>
+                <button type="submit" class="hover:text-blue-400">{{ __('messages.logout') }} ({{ auth()->user()->name ?? 'Null' }})</button>
             </form>
         @else
-            <a href="{{ route('login') }}" class="hover:text-blue-400">Login</a>
+            <a href="{{ route('login') }}" class="hover:text-blue-400">{{ __('messages.login') }}</a>
         @endauth
     </div>
 </nav>
@@ -43,15 +43,15 @@
 
         <!-- Logo -->
         <a href="/" class="text-2xl font-bold text-gray-800">
-            🚗 RentCar
+            RentCar
         </a>
 
         <!-- Menu -->
         <ul class="flex space-x-8 text-gray-700 font-medium">
-            <li><a href="{{ route('home') }}" class="hover:text-blue-600">Home</a></li>
-            <li><a href="{{ route('cars') }}" class="hover:text-blue-600">Cars rent</a></li>
-            <li><a href="{{ route('condition') }}" class="hover:text-blue-600">Condition</a></li>
-            <li><a href="{{ route('contact') }}" class="hover:text-blue-600">Contact</a></li>
+            <li><a href="{{ route('home') }}" class="hover:text-blue-600">{{ __('messages.home') }}</a></li>
+            <li><a href="{{ route('cars') }}" class="hover:text-blue-600">{{ __('messages.cars_rent') }}</a></li>
+            <li><a href="{{ route('condition') }}" class="hover:text-blue-600">{{ __('messages.condition') }}</a></li>
+            <li><a href="{{ route('contact') }}" class="hover:text-blue-600">{{ __('messages.contact') }}</a></li>
         </ul>
 
         <!-- Language switcher -->
@@ -69,17 +69,50 @@
     @auth
     <div class="container mx-auto px-4 py-3 flex items-center justify-center">
         Panel Admin:
-
         <ul class="flex space-x-8 text-gray-700 font-medium ml-6">
-            <li><a href="{{ route('cars.create') }}" class="hover:text-blue-600">Add rental car</a></li>
+            <li><a href="{{ route('cars.create') }}" class="hover:text-blue-600">{{ __('messages.add_rental_car') }}</a></li>
+            <li><a href="{{ route('admin.orders.index') }}" class="hover:text-blue-600">{{ __('messages.order_panel') }}</a></li>
         </ul>
     </div>
     @endauth
 
 </nav>
-
-
 <main>
+    {{-- Global Alert Messages --}}
+    @if(session('success'))
+        <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
+            <div class="flex items-center justify-between">
+                <div>{{ session('success') }}</div>
+                <button onclick="this.parentElement.remove()" class="text-green-700 hover:text-green-900">
+                    &times;
+                </button>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
+            <div class="flex items-center justify-between">
+                <div>{{ session('error') }}</div>
+                <button onclick="this.parentElement.remove()" class="text-red-700 hover:text-red-900">
+                    &times;
+                </button>
+            </div>
+        </div>
+    @endif
+
+    @if($errors->any()))
+    <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
+        <div class="font-bold mb-2">Please fix the following errors:</div>
+        <ul class="list-disc list-inside">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    {{-- Page Content --}}
     {{ $slot }}
 </main>
 </body>

@@ -22,8 +22,26 @@ class Order extends Model
         'status'
     ];
 
+    protected $casts = [
+        'rental_date' => 'date',
+        'rental_time' => 'datetime:H:i',
+        'return_time' => 'datetime:H:i',
+        'extra_delivery_fee' => 'boolean',
+        'airport_delivery' => 'boolean',
+    ];
+
     public function car(): BelongsTo
     {
         return $this->belongsTo(Car::class);
+    }
+
+    public static function statuses(): array
+    {
+        return [
+            'pending' => 'Oczekujące',
+            'confirmed' => 'Potwierdzone',
+            'completed' => 'Zakończone',
+            'cancelled' => 'Anulowane'
+        ];
     }
 }

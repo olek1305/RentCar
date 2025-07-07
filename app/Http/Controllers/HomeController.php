@@ -11,23 +11,27 @@ use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
+    /**
+     * @return Factory|Application|View
+     */
     public function index(): Factory|Application|View
     {
         return view('home');
     }
+
+    /**
+     * @return Factory|Application|View
+     */
     public function condition(): Factory|Application|View
     {
-        $lang = request()->query('lang', 'en');
-        app()->setLocale($lang);
-
-        return view('condition', ['lang' => $lang]);
+        return view('condition');
     }
 
+    /**
+     * @return Factory|Application|View
+     */
     public function contact(): Factory|Application|View
     {
-        $lang = request()->query('lang', 'en');
-        app()->setLocale($lang);
-
-        return view('contact', ['lang' => $lang]);
+        return view('contact');
     }
 }

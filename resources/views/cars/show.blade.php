@@ -1,42 +1,55 @@
 <x-layout>
-    @if (session('error'))
-        <div class="mb-6 p-4 rounded bg-red-100 text-red-800 border border-red-300 container mx-auto text-center">
-            {{ session('error') }}
-        </div>
-    @endif
-
-    @if (session('success'))
-        <div class="mb-6 p-4 rounded bg-green-100 text-green-800 border border-green-300 container mx-auto text-center">
-            {{ session('success') }}
-        </div>
-    @endif
     <x-slot:title>{{ $car->model }} - {{ __('messages.details') }}</x-slot:title>
 
     <section class="container mx-auto p-6 max-w-3xl">
         <h1 class="text-3xl font-bold mb-6 text-gray-800">{{ $car->model }} ({{ $car->year }})</h1>
 
         {{-- Image slider --}}
-        <div class="relative w-full h-64 rounded overflow-hidden mb-8 shadow-lg">
+        <div class="mb-8">
             @php
                 $gallery = is_array($car->gallery_images)
                     ? $car->gallery_images
                     : json_decode($car->gallery_images, true) ?? [];
-
                 $images = array_filter(array_merge([$car->main_image], $gallery));
             @endphp
 
             @if(count($images) > 0)
-                @foreach ($images as $index => $img)
-                    <img
-                        src="{{ Storage::url($img) }}"
-                        alt="Car image {{ $index + 1 }}"
-                        class="absolute inset-0 w-full h-64 object-cover rounded transition-opacity duration-700"
-                        style="opacity: {{ $index === 0 ? '1' : '0' }};"
-                        data-slide-index="{{ $index }}"
-                    />
-                @endforeach
+                {{-- Main Image Display --}}
+                <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-4 cursor-zoom-in"
+                     onclick="openModal('{{ Storage::url($images[0]) }}')">
+                    <img id="main-car-image"
+                         src="{{ Storage::url($images[0]) }}"
+                         alt="{{ $car->model }}"
+                         class="w-full h-full object-cover transition-opacity duration-500">
+                </div>
+
+                {{-- Thumbnail Navigation --}}
+                <div class="grid grid-cols-4 gap-2">
+                    @foreach ($images as $index => $img)
+                        <div class="thumbnail-container relative h-20 cursor-pointer hover:opacity-80 transition border-2 rounded {{ $index === 0 ? 'border-blue-500' : 'border-transparent' }}"
+                             onclick="manualChangeImage('{{ Storage::url($img) }}', {{ $index }})">
+                            <img src="{{ Storage::url($img) }}"
+                                 alt="Thumbnail {{ $index + 1 }}"
+                                 class="w-full h-full object-cover">
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- Auto-rotate controls --}}
+                <div class="mt-2 flex justify-center space-x-4">
+                    <button id="pause-rotation"
+                            class="text-gray-600 hover:text-gray-900 {{ count($images) > 1 ? '' : 'hidden' }}"
+                            onclick="toggleRotation()">
+                        <i class="fas fa-pause"></i> {{ __('messages.pause') }}
+                    </button>
+                    <button id="play-rotation"
+                            class="text-gray-600 hover:text-gray-900 hidden"
+                            onclick="toggleRotation()">
+                        <i class="fas fa-play"></i> {{ __('messages.play') }}
+                    </button>
+                </div>
             @else
-                <div class="absolute inset-0 bg-gray-200 flex items-center justify-center rounded">
+                <div class="bg-gray-200 h-64 flex items-center justify-center rounded-lg">
                     <span class="text-gray-500 text-lg">{{ __('messages.no_images_available') }}</span>
                 </div>
             @endif
@@ -50,8 +63,8 @@
                     __('messages.registration_from') => $car->year,
                     __('messages.type') => $car->type ?? __('messages.universal'),
                     __('messages.seats') => $car->seats,
-                    __('messages.fuel') => $car->fuel_type,
-                    __('messages.engine') => $car->engine_capacity ? $car->engine_capacity . ' cm³' : '-',
+                    __('messages.fuel_type') => $car->fuel_type,
+                    __('messages.engine_capacity') => $car->engine_capacity ? $car->engine_capacity . ' cm³' : '-',
                     __('messages.transmission') => $car->transmission ?? '-',
                 ];
             @endphp
@@ -126,14 +139,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label class="block">
                     <span class="font-medium text-gray-700">{{ __('messages.rental_time') }} <span class="text-red-500">*</span></span>
-                    <input type="time" name="rental_time" required
-                           class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
+                    <input type="text" name="rental_time" required
+                           class="timepicker mt-1 block w-full rounded border border-gray-300 px-3 py-2">
                 </label>
 
                 <label class="block">
                     <span class="font-medium text-gray-700">{{ __('messages.return_time') }} <span class="text-red-500">*</span></span>
-                    <input type="time" name="return_time" required
-                           class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
+                    <input type="text" name="return_time" required
+                           class="timepicker mt-1 block w-full rounded border border-gray-300 px-3 py-2">
                 </label>
             </div>
 
@@ -162,23 +175,99 @@
         </form>
     </section>
 
+    {{-- Image Modal --}}
+    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center">
+        <div class="absolute top-4 right-4 z-50">
+            <button onclick="closeModal()" class="text-white text-3xl hover:text-gray-300">&times;</button>
+        </div>
+        <div class="max-w-4xl w-full p-4">
+            <img id="modal-image" src="" alt="" class="max-w-full max-h-screen mx-auto">
+        </div>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const slides = document.querySelectorAll('[data-slide-index]');
-            let current = 0;
-            const total = slides.length;
+        let currentImageIndex = 0;
+        let images = @json($images);
+        let rotationInterval;
+        let isRotating = images.length > 1;
 
-            function showSlide(index) {
-                slides.forEach((slide, i) => {
-                    slide.style.opacity = i === index ? '1' : '0';
-                });
+        if (isRotating) {
+            startRotation();
+        }
+
+        function startRotation() {
+            isRotating = true;
+            rotationInterval = setInterval(() => {
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                changeMainImage(StorageUrl(images[currentImageIndex]), currentImageIndex);
+            }, 3500);
+            updateRotationButtons();
+        }
+
+        function stopRotation() {
+            isRotating = false;
+            clearInterval(rotationInterval);
+            updateRotationButtons();
+        }
+
+        function toggleRotation() {
+            if (isRotating) {
+                stopRotation();
+            } else {
+                startRotation();
             }
+        }
 
-            if (total > 1) {
-                setInterval(() => {
-                    current = (current + 1) % total;
-                    showSlide(current);
-                }, 3500);
+        function updateRotationButtons() {
+            document.getElementById('play-rotation').classList.toggle('hidden', isRotating);
+            document.getElementById('pause-rotation').classList.toggle('hidden', !isRotating);
+        }
+
+        function manualChangeImage(src, index) {
+            stopRotation();
+            changeMainImage(src, index);
+        }
+
+        function changeMainImage(src, index) {
+            document.getElementById('main-car-image').src = src;
+            currentImageIndex = index; // update the current index
+
+            // Highlight the active thumbnail
+            document.querySelectorAll('.thumbnail-container').forEach((container, i) => {
+                container.classList.toggle('border-blue-500', i === index);
+                container.classList.toggle('border-transparent', i !== index);
+            });
+        }
+
+        function StorageUrl(path) {
+            return "{{ Storage::url('') }}" + path;
+        }
+
+        // Fix: use the currently displayed image when opening modal
+        function openModal() {
+            stopRotation();
+            document.getElementById('modal-image').src = StorageUrl(images[currentImageIndex]);
+            document.getElementById('image-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('image-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            if (images.length > 1) {
+                startRotation();
+            }
+        }
+
+        document.getElementById('image-modal').addEventListener('click', function (e) {
+            if (e.target.id === 'image-modal') {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !document.getElementById('image-modal').classList.contains('hidden')) {
+                closeModal();
             }
         });
     </script>
