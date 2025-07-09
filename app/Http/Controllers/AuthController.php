@@ -33,12 +33,10 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect('/')->with('success', 'Logged in!');
+            return redirect('/')->with('success', __('messages.login_success'));
         }
 
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        return back()->with('error', __('messages.auth_error'));
     }
 
     /**
@@ -50,6 +48,6 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/')->with('success', 'Logout!');
+        return redirect('/')->with('success', __('messages.logout_success'));
     }
 }

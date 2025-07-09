@@ -42,14 +42,14 @@
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
 
         <!-- Logo -->
-        <a href="/" class="text-2xl font-bold text-gray-800">
+        <a href="{{ route('home') }}" class="text-2xl font-bold text-gray-800">
             RentCar
         </a>
 
         <!-- Menu -->
         <ul class="flex space-x-8 text-gray-700 font-medium">
             <li><a href="{{ route('home') }}" class="hover:text-blue-600">{{ __('messages.home') }}</a></li>
-            <li><a href="{{ route('cars') }}" class="hover:text-blue-600">{{ __('messages.cars_rent') }}</a></li>
+            <li><a href="{{ route('cars.index') }}" class="hover:text-blue-600">{{ __('messages.cars_rent') }}</a></li>
             <li><a href="{{ route('condition') }}" class="hover:text-blue-600">{{ __('messages.condition') }}</a></li>
             <li><a href="{{ route('contact') }}" class="hover:text-blue-600">{{ __('messages.contact') }}</a></li>
         </ul>
@@ -82,7 +82,7 @@
     @if(session('success'))
         <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
             <div class="flex items-center justify-between">
-                <div>{{ session('success') }}</div>
+                <div class="flex-1 text-center">{{ session('success') }}</div>
                 <button onclick="this.parentElement.remove()" class="text-green-700 hover:text-green-900">
                     &times;
                 </button>
@@ -93,7 +93,7 @@
     @if(session('error'))
         <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
             <div class="flex items-center justify-between">
-                <div>{{ session('error') }}</div>
+                <div class="flex-1 text-center">{{ session('error') }}</div>
                 <button onclick="this.parentElement.remove()" class="text-red-700 hover:text-red-900">
                     &times;
                 </button>
@@ -101,14 +101,16 @@
         </div>
     @endif
 
-    @if($errors->any()))
+    @if($errors->any())
     <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
-        <div class="font-bold mb-2">Please fix the following errors:</div>
-        <ul class="list-disc list-inside">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
+        <div class="flex items-center justify-between">
+            <ul class="flex-1 text-center">
+                <div class="font-bold">Please fix the following errors:</div>
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     </div>
     @endif
 

@@ -7,7 +7,7 @@ use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/cars', [CarController::class, 'index'])->name('cars');
+Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
 Route::get('/condition', [HomeController::class, 'condition'])->name('condition');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 
@@ -39,4 +39,9 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         ->name('admin.orders.show');
     Route::patch('/orders/{order}/status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])
         ->name('admin.orders.update-status');
+});
+
+
+Route::get('/test-success', function () {
+    return redirect()->route('home')->with('success', __('messages.order_created'));
 });

@@ -16,8 +16,9 @@ return [
     'delete_image' => 'Delete image',
     'confirm_set_main_image' => 'Are you sure you want to set this image as the main image?',
     'image_will_be_main' => 'This image will be set as the main image when you save changes.',
+    'confirm_delete_car' => 'Are you sure you want to delete this car? This action cannot be undone.',
 
-    // Admin
+    // Admin Page
     'login' => 'Login',
     'logout' => 'Log Out',
     'admin_panel' => 'Admin Panel',
@@ -30,9 +31,9 @@ return [
     'condition' => 'Condition',
     'contact' => 'Contact',
 
-    // Car
-    'create_car' => 'Add Car',
-    'edit_car' => 'Edit Car',
+    // Car Page
+    'car_create' => 'Add Car',
+    'car_edit' => 'Edit Car',
     'type' => 'Type',
     'select_type' => 'Select Type',
     'model' => 'Model',
@@ -51,7 +52,7 @@ return [
     'daily_price' => 'Daily Price',
     'registration_from' => 'Year of Manufacture',
 
-    // Booking
+    // Booking in Car Page
     'rental_prices' => 'Rental Prices',
     'description' => 'Description',
     'specifications' => 'Specifications',
@@ -131,4 +132,15 @@ return [
 
     'final_title' => '5. Final Provisions',
     'final_text' => 'In case of rental condition violations, RentCar reserves the right to terminate the contract. Full terms are available on our website or from a representative.',
+
+    // session success and errors
+    'login_success' => 'Logged in successfully!',
+    'logout_success' => 'Logged out successfully!',
+    'car_created' => 'Car has been created successfully!',
+    'car_updated' => 'Car has been updated successfully!',
+    'car_deleted' => 'Car has been deleted successfully.',
+    'auth_error' => 'Authentication failed',
+    'order_already' => 'You have already placed an order today. Please try again tomorrow.',
+    'order_unavailable' => 'This car is currently unavailable for rental.',
+    'order_created' => 'The order has been placed! We will be in contact shortly.',
 ];

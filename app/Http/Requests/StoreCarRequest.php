@@ -41,7 +41,7 @@ class StoreCarRequest extends FormRequest
             'transmission' => ['required', 'string', Rule::in(Car::transmissions)],
             'description' => 'nullable|string',
             'main_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'daily_price' => 'required|numeric|min:1'
         ];
     }

@@ -36,11 +36,11 @@ class CarController extends Controller
 
     public function create(): Factory|Application|View
     {
-        $types = Car::TYPES;
-        $fuelTypes = Car::fuelTypes;
-        $transmissions = Car::transmissions;
-
-        return view('cars.create', compact('types', 'fuelTypes', 'transmissions'));
+        return view('cars.create', [
+            'types' => Car::TYPES,
+            'fuelTypes' => Car::fuelTypes,
+            'transmissions' => Car::transmissions
+        ]);
     }
 
     /**
@@ -74,7 +74,7 @@ class CarController extends Controller
 
         $car = Car::create($validated);
 
-        return redirect()->route('cars.show', $car->id)->with('success', __('Car created successfully!'));
+        return redirect()->route('cars.show', $car->id)->with('success', __('messages.car_created'));
     }
 
     /**
@@ -97,11 +97,20 @@ class CarController extends Controller
      */
     public function edit(Car $car): Factory|Application|View
     {
-        $types = Car::TYPES;
-        $fuelTypes = Car::fuelTypes;
-        $transmissions = Car::transmissions;
+        if (is_string($car->rental_prices)) {
+            $car->rental_prices = json_decode($car->rental_prices, true);
+        }
 
-        return view('cars.edit',  compact('car', 'types', 'fuelTypes', 'transmissions'));
+        if (is_string($car->gallery_images)) {
+            $car->gallery_images = json_decode($car->gallery_images, true) ?? [];
+        }
+
+        return view('cars.edit', [
+            'car' => $car,
+            'types' => Car::TYPES,
+            'fuelTypes' => Car::fuelTypes,
+            'transmissions' => Car::transmissions
+        ]);
     }
 
     /**
@@ -113,26 +122,39 @@ class CarController extends Controller
     {
         $validated = $request->validated();
 
-        // Handle main image deletion
-        if ($request->has('delete_main_image')) {
-            Storage::disk('public')->delete($car->main_image);
-            $validated['main_image'] = null;
+        // Ensure gallery_images is always an array
+        $galleryImages = [];
+        if (!empty($car->gallery_images)) {
+            if (is_array($car->gallery_images)) {
+                $galleryImages = $car->gallery_images;
+            } else {
+                $decoded = json_decode($car->gallery_images, true);
+                $galleryImages = is_array($decoded) ? $decoded : [];
+            }
         }
 
         // Handle new main image from gallery
         if ($request->new_main_image) {
-            // Delete old main image if exists
-            if ($car->main_image) {
+            // Delete old main image if exists and checkbox is checked
+            if ($car->main_image && $request->has('delete_old_main_image')) {
                 Storage::disk('public')->delete($car->main_image);
+            } elseif ($car->main_image) {
+                // Add current main image to gallery if not deleting
+                $galleryImages[] = $car->main_image;
             }
 
             // Set new main image
             $validated['main_image'] = $request->new_main_image;
 
-            // Remove from gallery
-            $gallery = $car->gallery_images ?? [];
-            $gallery = array_diff($gallery, [$request->new_main_image]);
-            $validated['gallery_images'] = array_values($gallery); // Reindex array
+            // Remove new main image from gallery
+            $galleryImages = array_diff($galleryImages, [$request->new_main_image]);
+            $validated['gallery_images'] = array_values(array_filter($galleryImages));
+        }
+
+        // Handle main image deletion
+        if ($request->has('delete_main_image')) {
+            Storage::disk('public')->delete($car->main_image);
+            $validated['main_image'] = null;
         }
 
         // Handle gallery images deletion
@@ -141,14 +163,15 @@ class CarController extends Controller
                 Storage::disk('public')->delete($imageToDelete);
             }
 
-            $gallery = $car->gallery_images ?? [];
-            $gallery = array_diff($gallery, $request->delete_gallery_images);
-            $validated['gallery_images'] = array_values($gallery); // Reindex array
+            $galleryImages = array_diff($galleryImages, $request->delete_gallery_images);
+            $validated['gallery_images'] = array_values($galleryImages); // Reindex array
         }
 
         // Handle new main image upload
         if ($request->hasFile('main_image')) {
+            // Add current main image to gallery if exists
             if ($car->main_image) {
+                $galleryImages[] = $car->main_image;
                 Storage::disk('public')->delete($car->main_image);
             }
             $validated['main_image'] = $request->file('main_image')
@@ -157,11 +180,10 @@ class CarController extends Controller
 
         // Handle new gallery images upload
         if ($request->hasFile('gallery_images')) {
-            $gallery = $validated['gallery_images'] ?? [];
             foreach ($request->file('gallery_images') as $image) {
-                $gallery[] = $image->store('cars/gallery', 'public');
+                $galleryImages[] = $image->store('cars/gallery', 'public');
             }
-            $validated['gallery_images'] = $gallery;
+            $validated['gallery_images'] = $galleryImages;
         }
 
         // Update rental prices
@@ -175,7 +197,7 @@ class CarController extends Controller
         $car->update($validated);
 
         return redirect()->route('cars.show', $car->id)
-            ->with('success', __('Car updated successfully!'));
+            ->with('success', __('messages.car_updated'));
     }
 
     /**
@@ -186,7 +208,7 @@ class CarController extends Controller
     {
         $car->delete();
 
-        return redirect()->route('cars')->with('success', 'Car deleted successfully.');
+        return redirect()->route('cars.index')->with('success', __('messages.car_deleted'));
     }
 
     /**

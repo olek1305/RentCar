@@ -1,9 +1,9 @@
 <x-layout>
-    <x-slot:title>{{ __('messages.create_car') }}</x-slot:title>
+    <x-slot:title>{{ __('messages.car_create') }}</x-slot:title>
 
     <section class="container mx-auto p-6 max-w-3xl">
         <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">
-            {{ __('messages.create_car') }}
+            {{ __('messages.car_create') }}
         </h1>
 
         <form method="POST" action="{{ route('cars.store') }}" enctype="multipart/form-data" class="bg-white p-6 rounded-xl shadow-md space-y-6">

@@ -40,9 +40,12 @@ class UpdateCarRequest extends FormRequest
             'engine_capacity' => 'required|integer|min:500|max:8000',
             'transmission' => ['required', 'string', Rule::in(Car::transmissions)],
             'description' => 'nullable|string',
-            'image' => 'nullable|url', 'main_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'daily_price' => 'required|numeric|min:1'
+            'main_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'daily_price' => 'required|numeric|min:1',
+            'delete_gallery_images' => 'nullable|array',
+            'delete_gallery_images.*' => 'string',
+            'new_main_image' => 'nullable|string'
         ];
     }
 

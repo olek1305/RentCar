@@ -16,8 +16,9 @@ return [
     'delete_image' => 'Usuń zdjęcie',
     'confirm_set_main_image' => 'Czy na pewno chcesz ustawić to zdjęcie jako główne?',
     'image_will_be_main' => 'To zdjęcie zostanie ustawione jako główne po zapisaniu zmian.',
+    'confirm_delete_car' => 'Czy na pewno chcesz usunąć ten samochód? Tej czynności nie można cofnąć.',
 
-    // Admin
+    // Admin na stronie
     'login' => 'Zaloguj',
     'logout' => 'Wyloguj',
     'admin_panel' => 'Panel Administracyjny',
@@ -30,9 +31,9 @@ return [
     'condition' => 'Warunek',
     'contact' => 'Kontakt',
 
-    // Samochód
-    'create_car' => 'Dodaj samochód',
-    'edit_car' => 'Edytuj samochód',
+    // Samochód na stronie
+    'car_create' => 'Dodaj samochód',
+    'car_edit' => 'Edytuj samochód',
     'type' => 'Typ',
     'select_type' => 'Wybierz typ',
     'model' => 'Model',
@@ -51,7 +52,7 @@ return [
     'daily_price' => 'Cena za dzień',
     'registration_from' => 'Rok produkcji',
 
-    // Rezerwacja
+    // Rezerwacja na stronie samochodu
     'rental_prices' => 'Ceny wynajmu',
     'description' => 'Opis',
     'specifications' => 'Specyfikacja',
@@ -131,4 +132,15 @@ return [
 
     'final_title' => '5. Postanowienia końcowe',
     'final_text' => 'W przypadku naruszenia warunków najmu, RentCar zastrzega sobie prawo do rozwiązania umowy. Szczegóły regulaminu są dostępne na naszej stronie lub u konsultanta.',
+
+    // session success and errors
+    'login_success' => 'Zalogowano pomyślnie!',
+    'logout_success' => 'Wylogowano pomyślnie!',
+    'car_created' => 'Samochód został utworzony!',
+    'car_updated' => 'Samochód został zaktulizowany!',
+    'car_deleted' => 'Samochód został usunięty!',
+    'auth_error' => 'Błąd uwierzytelniania',
+    'order_already' => 'Złożyłeś już dzisiaj zamówienie. Spróbuj ponownie jutro.',
+    'order_unavailable' => 'Ten samochód jest obecnie niedostępny do wypożyczenia.',
+    'order_created' => 'Zamówienie zostało złożone! Wkrótce się z Tobą skontaktujemy.',
 ];

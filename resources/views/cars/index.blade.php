@@ -40,6 +40,14 @@
                                class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded inline-block w-full">
                                 Edit
                             </a>
+                            <form action="{{ route('cars.destroy', $car->id) }}" method="POST" class="delete-form">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" onclick="confirmDelete(this)"
+                                        class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded w-full">
+                                    Delete
+                                </button>
+                            </form>
                         </div>
                     @endauth
 
@@ -157,6 +165,12 @@
     <script>
         function saveScrollPosition() {
             sessionStorage.setItem('scrollPosition', window.scrollY);
+        }
+
+        function confirmDelete(button) {
+            if (confirm('{{ __("messages.confirm_delete_car") }}')) {
+                button.closest('form').submit();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {

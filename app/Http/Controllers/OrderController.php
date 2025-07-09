@@ -37,20 +37,20 @@ class OrderController extends Controller
             ->exists();
 
         if ($alreadyOrdered) {
-            return back()->with('error', __('You have already placed an order today. Please try again tomorrow.'));
+            return back()->with('error', __('message.order_already'));
         }
 
         $car = Car::findOrFail($validated['car_id']);
 
         if ($car->hidden) {
             return redirect()->route('cars.show', $car->id)
-                ->with('error', __('This car is currently unavailable for rental.'));
+                ->with('error', __('message.order_unavailable'));
         }
 
         Order::create($validated);
 
         $car->update(['hidden' => 1]);
 
-        return redirect()->route('home')->with('success', 'The order has been placed! We will be in contact shortly.');
+        return redirect()->route('home')->with('success', __('messages.order_created'));
     }
 }
