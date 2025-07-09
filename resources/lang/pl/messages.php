@@ -17,6 +17,7 @@ return [
     'confirm_set_main_image' => 'Czy na pewno chcesz ustawić to zdjęcie jako główne?',
     'image_will_be_main' => 'To zdjęcie zostanie ustawione jako główne po zapisaniu zmian.',
     'confirm_delete_car' => 'Czy na pewno chcesz usunąć ten samochód? Tej czynności nie można cofnąć.',
+    'welcome' => 'Witamy na stronie głównej',
 
     // Admin na stronie
     'login' => 'Zaloguj',
@@ -32,6 +33,7 @@ return [
     'contact' => 'Kontakt',
 
     // Samochód na stronie
+    'car_index' => 'Lista samochodów',
     'car_create' => 'Dodaj samochód',
     'car_edit' => 'Edytuj samochód',
     'type' => 'Typ',

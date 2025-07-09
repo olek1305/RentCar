@@ -1,6 +1,6 @@
 @php use Carbon\Carbon; @endphp
 <x-layout>
-    <x-slot:title>__('messages.orders') - Admin Panel</x-slot:title>
+    <x-slot:title>{{ __('messages.orders.title') }} - Admin Panel</x-slot:title>
 
     <section class="container mx-auto p-6">
         <h1 class="text-2xl font-bold mb-6">Customer Orders</h1>

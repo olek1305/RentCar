@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>{{ __('messages.welcome') }}</x-slot:title>
+    <x-slot:title>{{ __('messages.car_index') }}</x-slot:title>
 
     <section class="container mx-auto p-4">
         <section class="relative">

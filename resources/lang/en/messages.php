@@ -17,6 +17,7 @@ return [
     'confirm_set_main_image' => 'Are you sure you want to set this image as the main image?',
     'image_will_be_main' => 'This image will be set as the main image when you save changes.',
     'confirm_delete_car' => 'Are you sure you want to delete this car? This action cannot be undone.',
+    'welcome' => 'Welcome to the homepage',
 
     // Admin Page
     'login' => 'Login',
@@ -32,6 +33,7 @@ return [
     'contact' => 'Contact',
 
     // Car Page
+    'car_index' => 'Cars Index',
     'car_create' => 'Add Car',
     'car_edit' => 'Edit Car',
     'type' => 'Type',
