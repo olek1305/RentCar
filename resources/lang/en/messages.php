@@ -17,7 +17,6 @@ return [
     'confirm_set_main_image' => 'Are you sure you want to set this image as the main image?',
     'image_will_be_main' => 'This image will be set as the main image when you save changes.',
     'confirm_delete_car' => 'Are you sure you want to delete this car? This action cannot be undone.',
-    'welcome' => 'Welcome to the homepage',
 
     // Admin Page
     'login' => 'Login',
@@ -146,4 +145,21 @@ return [
     'order_already' => 'You have already placed an order today. Please try again tomorrow.',
     'order_unavailable' => 'This car is currently unavailable for rental.',
     'order_created' => 'The order has been placed! We will be in contact shortly.',
+
+    // homepage
+    'welcome' => 'Welcome to RentCar',
+    'hero_title' => 'Experience comfort and freedom on the road',
+    'browse_cars' => 'Browse Our Cars',
+    'why_choose_us' => 'Why Choose Us',
+    'feature1_title' => 'Easy Booking',
+    'feature1_text' => 'Simple online reservation system available 24/7',
+    'feature2_title' => 'Best Prices',
+    'feature2_text' => 'Competitive rates with no hidden fees',
+    'feature3_title' => 'Fully Insured',
+    'feature3_text' => 'All vehicles come with comprehensive insurance',
+    'feature4_title' => 'Flexible Payment',
+    'feature4_text' => 'Multiple payment options available',
+    'ready_to_rent' => 'Ready to Rent Your Perfect Car?',
+    'cta_text' => 'Choose from our wide selection of vehicles for your next adventure',
+    'view_cars' => 'View Available Cars',
 ];

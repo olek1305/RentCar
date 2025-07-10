@@ -17,7 +17,6 @@ return [
     'confirm_set_main_image' => 'Czy na pewno chcesz ustawić to zdjęcie jako główne?',
     'image_will_be_main' => 'To zdjęcie zostanie ustawione jako główne po zapisaniu zmian.',
     'confirm_delete_car' => 'Czy na pewno chcesz usunąć ten samochód? Tej czynności nie można cofnąć.',
-    'welcome' => 'Witamy na stronie głównej',
 
     // Admin na stronie
     'login' => 'Zaloguj',
@@ -146,4 +145,21 @@ return [
     'order_already' => 'Złożyłeś już dzisiaj zamówienie. Spróbuj ponownie jutro.',
     'order_unavailable' => 'Ten samochód jest obecnie niedostępny do wypożyczenia.',
     'order_created' => 'Zamówienie zostało złożone! Wkrótce się z Tobą skontaktujemy.',
+
+    // Strona główna
+    'welcome' => 'Witamy w RentCar',
+    'hero_title' => 'Doświadcz komfortu i wolności na drodze',
+    'browse_cars' => 'Przeglądaj nasze samochody',
+    'why_choose_us' => 'Dlaczego warto nas wybrać',
+    'feature1_title' => 'Łatwa rezerwacja',
+    'feature1_text' => 'Prosty system rezerwacji online dostępny 24/7',
+    'feature2_title' => 'Najlepsze ceny',
+    'feature2_text' => 'Konkurencyjne ceny bez ukrytych kosztów',
+    'feature3_title' => 'Pełne ubezpieczenie',
+    'feature3_text' => 'Wszystkie pojazdy z pełnym ubezpieczeniem',
+    'feature4_title' => 'Elastyczna płatność',
+    'feature4_text' => 'Wiele opcji płatności dostępnych',
+    'ready_to_rent' => 'Gotowy wynająć wymarzony samochód?',
+    'cta_text' => 'Wybierz z naszej szerokiej oferty pojazdów na Twoją następną przygodę',
+    'view_cars' => 'Zobacz dostępne samochody',
 ];
