@@ -22,12 +22,22 @@ class OrderController extends Controller
             'phone' => 'required|string|max:20',
             'car_id' => 'required|exists:cars,id',
             'rental_date' => 'required|date|after_or_equal:today',
-            'rental_time' => 'required',
-            'return_time' => 'required',
+            'rental_time_hour' => 'required|string|size:2',
+            'rental_time_minute' => 'required|string|size:2',
+            'return_time_hour' => 'required|string|size:2',
+            'return_time_minute' => 'required|string|size:2',
             'extra_delivery_fee' => 'boolean',
             'airport_delivery' => 'boolean',
             'additional_info' => 'nullable|string',
         ]);
+
+        // Combine time fields
+        $validated['rental_time'] = $validated['rental_time_hour'] . ':' . $validated['rental_time_minute'];
+        $validated['return_time'] = $validated['return_time_hour'] . ':' . $validated['return_time_minute'];
+
+        // Remove the individual time components
+        unset($validated['rental_time_hour'], $validated['rental_time_minute'],
+            $validated['return_time_hour'], $validated['return_time_minute']);
 
         $alreadyOrdered = Order::where(function ($query) use ($validated) {
             $query->where('email', $validated['email'])

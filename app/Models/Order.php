@@ -24,8 +24,8 @@ class Order extends Model
 
     protected $casts = [
         'rental_date' => 'date',
-        'rental_time' => 'datetime:H:i',
-        'return_time' => 'datetime:H:i',
+        'rental_time' => 'string',
+        'return_time' => 'string',
         'extra_delivery_fee' => 'boolean',
         'airport_delivery' => 'boolean',
     ];
