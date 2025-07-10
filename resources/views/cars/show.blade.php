@@ -125,13 +125,13 @@
                 <div>
                     <label class="block font-medium text-gray-700">{{ __('messages.first_name') }} <span
                             class="text-red-500">*</span></label>
-                    <input type="text" name="first_name" required
+                    <input type="text" name="first_name" required value="{{ old('first_name') }}"
                            class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
                 </div>
                 <div>
                     <label class="block font-medium text-gray-700">{{ __('messages.last_name') }} <span
                             class="text-red-500">*</span></label>
-                    <input type="text" name="last_name" required
+                    <input type="text" name="last_name" required value="{{ old('last_name') }}"
                            class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
                 </div>
             </div>
@@ -140,13 +140,13 @@
                 <div>
                     <label class="block font-medium text-gray-700">{{ __('messages.email') }} <span
                             class="text-red-500">*</span></label>
-                    <input type="email" name="email" required
+                    <input type="email" name="email" required value="{{ old('email') }}"
                            class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
                 </div>
                 <div>
                     <label class="block font-medium text-gray-700">{{ __('messages.phone') }} <span
                             class="text-red-500">*</span></label>
-                    <input type="tel" name="phone" required
+                    <input type="tel" name="phone" required value="{{ old('phone') }}"
                            class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
                 </div>
             </div>
@@ -154,7 +154,7 @@
             <label class="block">
                 <span class="font-medium text-gray-700">{{ __('messages.rental_date') }} <span
                         class="text-red-500">*</span></span>
-                <input type="date" name="rental_date" required min="{{ date('Y-m-d') }}"
+                <input type="date" name="rental_date" required min="{{ date('Y-m-d') }}" value="{{ old('rental_date') }}"
                        class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
             </label>
 
@@ -177,6 +177,7 @@
                             <input
                                 type="text"
                                 name="rental_time_hour"
+                                value="{{ old('rental_time_hour') }}"
                                 readonly
                                 class="w-full h-12 text-center text-xl font-semibold border border-gray-300 rounded-md bg-white cursor-default"
                             />
@@ -204,6 +205,7 @@
                             <input
                                 type="text"
                                 name="rental_time_minute"
+                                value="{{ old('rental_time_minute') }}"
                                 readonly
                                 class="w-full h-12 text-center text-xl font-semibold border border-gray-300 rounded-md bg-white cursor-default"
                             />
@@ -238,6 +240,7 @@
                             <input
                                 type="text"
                                 name="return_time_hour"
+                                value="{{ old('return_time_hour') }}"
                                 required
                                 readonly
                                 class="w-full h-12 text-center text-xl font-semibold border border-gray-300 rounded-md bg-white cursor-default"
@@ -268,6 +271,7 @@
                             <input
                                 type="text"
                                 name="return_time_minute"
+                                value="{{ old('return_time_minute') }}"
                                 required
                                 readonly
                                 class="w-full h-12 text-center text-xl font-semibold border border-gray-300 rounded-md bg-white cursor-default"
@@ -288,12 +292,14 @@
 
             <div class="space-y-2">
                 <label class="flex items-center space-x-3">
-                    <input type="checkbox" name="extra_delivery_fee" value="1" class="form-checkbox text-blue-600"/>
+                    <input type="checkbox" name="extra_delivery_fee" value="1" class="form-checkbox text-blue-600"
+                        {{ old('extra_delivery_fee') ? 'checked' : '' }}/>
                     <span class="text-gray-700">{{ __('messages.extra_delivery_fee') }}</span>
                 </label>
 
                 <label class="flex items-center space-x-3">
-                    <input type="checkbox" name="airport_delivery" value="1" class="form-checkbox text-blue-600"/>
+                    <input type="checkbox" name="airport_delivery" value="1" class="form-checkbox text-blue-600"
+                        {{ old('airport_delivery') ? 'checked' : '' }}/>
                     <span class="text-gray-700">{{ __('messages.airport_delivery_included') }}</span>
                 </label>
             </div>
@@ -301,7 +307,7 @@
             <label class="block">
                 <span class="font-medium text-gray-700">{{ __('messages.additional_info') }}</span>
                 <textarea name="additional_info" rows="3"
-                          class="mt-1 block w-full rounded border border-gray-300 px-3 py-2"></textarea>
+                          class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">{{ old('additional_info') }}</textarea>
             </label>
 
             <button type="submit"
@@ -312,7 +318,7 @@
     </section>
 
     {{-- Image Modal --}}
-    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center">
+    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center">
         <div class="absolute top-4 right-4 z-50">
             <button onclick="closeModal()" class="text-white text-3xl hover:text-gray-300">&times;</button>
         </div>
@@ -332,8 +338,7 @@
             document.querySelector('input[name="rental_time_minute"]').value = minutes;
 
             // Set return time to 1 hour later by default
-            const returnHours = ((now.getHours() + 1) % 24).toString().padStart(2, '0');
-            document.querySelector('input[name="return_time_hour"]').value = returnHours;
+            document.querySelector('input[name="return_time_hour"]').value = ((now.getHours() + 1) % 24).toString().padStart(2, '0');
             document.querySelector('input[name="return_time_minute"]').value = minutes;
         });
 
@@ -341,7 +346,7 @@
         let currentImageIndex = 0;
         let images = @json($images);
         let rotationInterval;
-        let isRotating = images.length > 1;
+        let isRotating = length > 1;
 
         if (isRotating) {
             startRotation();
@@ -396,8 +401,10 @@
 
         function openModal() {
             stopRotation();
+            const modal = document.getElementById('image-modal');
             document.getElementById('modal-image').src = StorageUrl(images[currentImageIndex]);
-            document.getElementById('image-modal').classList.remove('hidden');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
         }
 

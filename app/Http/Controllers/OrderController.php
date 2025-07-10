@@ -2,34 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
 use App\Models\Car;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
     /**
-     * @param Request $request
+     * @param StoreOrderRequest $request
      * @return RedirectResponse
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreOrderRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'car_id' => 'required|exists:cars,id',
-            'rental_date' => 'required|date|after_or_equal:today',
-            'rental_time_hour' => 'required|string|size:2',
-            'rental_time_minute' => 'required|string|size:2',
-            'return_time_hour' => 'required|string|size:2',
-            'return_time_minute' => 'required|string|size:2',
-            'extra_delivery_fee' => 'boolean',
-            'airport_delivery' => 'boolean',
-            'additional_info' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         // Combine time fields
         $validated['rental_time'] = $validated['rental_time_hour'] . ':' . $validated['rental_time_minute'];

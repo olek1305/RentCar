@@ -68,7 +68,8 @@ return [
     'additional_info' => 'Additional Info',
 
     // Customer Form
-    'name' => 'Full Name',
+    'first_name' => 'First name',
+    'last_name' => 'Last name',
     'email' => 'Email',
     'phone' => 'Phone',
     'address' => 'Address',

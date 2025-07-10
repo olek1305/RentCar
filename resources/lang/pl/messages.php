@@ -68,7 +68,8 @@ return [
     'additional_info' => 'Dodatkowe informacje',
 
     // Formularz klienta
-    'name' => 'Imię i nazwisko',
+    'first_name' => 'Imię',
+    'last_name' => 'Nazwisko',
     'email' => 'Email',
     'phone' => 'Telefon',
     'address' => 'Adres',
