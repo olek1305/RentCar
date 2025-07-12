@@ -31,7 +31,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-500">Total Revenue</p>
-                        <p class="text-2xl font-semibold text-gray-800">${{ number_format(App\Models\Order::where('status', 'completed')->count() * 150, 2) }}</p>
+                        <p class="text-2xl font-semibold text-gray-800">{{ $currency->currency_symbol }}{{ number_format(App\Models\Order::where('status', 'completed')->count() * 150, 2) }}</p>
                     </div>
                 </div>
             </div>

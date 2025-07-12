@@ -80,7 +80,7 @@
                     <h2 class="text-xl font-semibold mb-1 z-0">{{ $car->model }}</h2>
 
                     <p class="text-green-700 font-bold mb-4">
-                        {{ __('messages.from_per_day', ['price' => $car->rental_prices['1-2'] ?? 'N/A']) }}
+                        {{ trans_currency('messages.from_per_day', $car->rental_prices['1-2'] ?? 0) }}
                     </p>
 
                     <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 mb-4 text-gray-700 text-sm">

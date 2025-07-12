@@ -3,7 +3,7 @@
 return [
     // Ogólne
     'subtitle' => 'Znajdź swój wymarzony samochód już dziś!',
-    'from_per_day' => 'Od :price €/dzień',
+    'from_per_day' => 'Od :price/dzień',
     'book' => 'Zarezerwuj',
     'contact_whatsapp' => 'Skontaktuj się z nami przez WhatsApp',
     'error' => 'Przepraszamy, szukana strona nie została znaleziona.',
