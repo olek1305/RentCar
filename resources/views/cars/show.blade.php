@@ -111,9 +111,9 @@
             $price3 = $prices['7+'] ?? 0;
         @endphp
         <ul class="mb-8 space-y-1 text-gray-700">
-            <li>1-2 {{ __('messages.days') }}: €{{ number_format($price1, 2) }}</li>
-            <li>3-6 {{ __('messages.days') }}: €{{ number_format($price2, 2) }}</li>
-            <li>7+ {{ __('messages.days') }}: €{{ number_format($price3, 2) }}</li>
+            <li>1-2 {{ __('messages.days') }}: {{ $currency->currency_symbol }}{{ number_format($price1, 2) }}</li>
+            <li>3-6 {{ __('messages.days') }}: {{ $currency->currency_symbol }}{{ number_format($price2, 2) }}</li>
+            <li>7+ {{ __('messages.days') }}: {{ $currency->currency_symbol }}{{ number_format($price3, 2) }}</li>
         </ul>
 
         {{-- Booking Form --}}

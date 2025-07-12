@@ -29,12 +29,12 @@
             📞 <span>+48 123 456 789</span>
         </a>
         @auth
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ route('admin.logout') }}">
                 @csrf
                 <button type="submit" class="hover:text-blue-400">{{ __('messages.logout') }} ({{ auth()->user()->name ?? 'Null' }})</button>
             </form>
         @else
-            <a href="{{ route('login') }}" class="hover:text-blue-400">{{ __('messages.login') }}</a>
+            <a href="{{ route('admin.login') }}" class="hover:text-blue-400">{{ __('messages.login') }}</a>
         @endauth
     </div>
 </nav>

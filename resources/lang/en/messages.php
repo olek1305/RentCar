@@ -3,7 +3,7 @@
 return [
     // General
     'subtitle' => 'Find your dream car today!',
-    'from_per_day' => 'From :price €/day',
+    'from_per_day' => 'From :price/day',
     'book' => 'Book Now',
     'contact_whatsapp' => 'Contact us via WhatsApp',
     'error' => 'Sorry, the page you are looking for could not be found.',

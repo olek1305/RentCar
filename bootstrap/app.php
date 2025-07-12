@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Middleware\SetGlobalCurrency;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -27,7 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
-            SetLocale::class
+            SetLocale::class,
+            SetGlobalCurrency::class
         ]);
 
         $middleware->alias([
