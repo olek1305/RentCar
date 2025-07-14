@@ -34,7 +34,7 @@
                 <button type="submit" class="hover:text-blue-400">{{ __('messages.logout') }} ({{ auth()->user()->name ?? 'Null' }})</button>
             </form>
         @else
-            <a href="{{ route('admin.login') }}" class="hover:text-blue-400">{{ __('messages.login') }}</a>
+            <a href="{{ route('login') }}" class="hover:text-blue-400">{{ __('messages.login') }}</a>
         @endauth
     </div>
 </nav>

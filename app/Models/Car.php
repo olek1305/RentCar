@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Car extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'model',
         'type',
@@ -64,12 +67,4 @@ class Car extends Model
         'MANUAL',
         'SEMI-AUTOMATIC'
     ];
-
-    public function scopeVisible($query)
-    {
-        if (!auth()->check()) {
-            return $query->where('hidden', false);
-        }
-        return $query;
-    }
 }
