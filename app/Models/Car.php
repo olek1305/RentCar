@@ -26,6 +26,7 @@ class Car extends Model
     ];
 
     protected $casts = [
+        'hidden' => 'boolean',
         'gallery_images' => 'array',
         'rental_prices' => 'array',
     ];
