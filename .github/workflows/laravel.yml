@@ -14,9 +14,10 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_DATABASE: laravel_testing
-          MYSQL_USER: user
+          MYSQL_DATABASE: laravel_testing  # This creates the database
+          MYSQL_USER: tester  # Changed from 'user' to avoid conflicts
           MYSQL_PASSWORD: password
+          MYSQL_ROOT_HOST: '%'  # Allow root access from any host
         ports:
           - 3306:3306
         options: >-
@@ -48,8 +49,8 @@ jobs:
           echo "DB_CONNECTION=mysql" >> .env.testing
           echo "DB_HOST=127.0.0.1" >> .env.testing
           echo "DB_PORT=3306" >> .env.testing
-          echo "DB_DATABASE=laravel_testing" >> .env.testing
-          echo "DB_USERNAME=user" >> .env.testing
+          echo "DB_DATABASE=laravel_testing" >> .env.testing  # Must match service definition
+          echo "DB_USERNAME=tester" >> .env.testing  # Changed to match service user
           echo "DB_PASSWORD=password" >> .env.testing
           php artisan key:generate --env=testing
 
@@ -58,10 +59,18 @@ jobs:
           mkdir -p storage/framework/{sessions,views,cache}
           chmod -R 777 storage bootstrap/cache
 
+      - name: Verify MySQL privileges
+        run: |
+          mysql -h 127.0.0.1 -uroot -prootpassword -e "
+            CREATE USER IF NOT EXISTS 'tester'@'%' IDENTIFIED BY 'password';
+            GRANT ALL PRIVILEGES ON laravel_testing.* TO 'tester'@'%';
+            FLUSH PRIVILEGES;
+          "
+
       - name: Wait for MySQL to be ready
         run: |
           for i in {1..30}; do
-            if mysqladmin ping -h127.0.0.1 -uuser -p password --silent; then
+            if mysqladmin ping -h127.0.0.1 -utester -ppassword --silent; then
               echo "MySQL is ready!"
               break
             fi
@@ -69,9 +78,9 @@ jobs:
             sleep 2
           done
 
-      - name: Verify MySQL connection
+      - name: Verify database access
         run: |
-          mysql -h 127.0.0.1 -u user -p password laravel_testing -e "SHOW TABLES;"
+          mysql -h 127.0.0.1 -utester -ppassword laravel_testing -e "SHOW TABLES;"
 
       - name: Run database migrations and seed
         run: php artisan migrate:fresh --seed --env=testing
