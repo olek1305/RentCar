@@ -61,7 +61,7 @@ jobs:
       - name: Wait for MySQL to be ready
         run: |
           for i in {1..30}; do
-            if mysqladmin ping -h127.0.0.1 -uuser -ppassword --silent; then
+            if mysqladmin ping -h127.0.0.1 -uuser -p password --silent; then
               echo "MySQL is ready!"
               break
             fi
@@ -71,7 +71,7 @@ jobs:
 
       - name: Verify MySQL connection
         run: |
-          mysql -h 127.0.0.1 -u user -ppassword laravel_testing -e "SHOW TABLES;"
+          mysql -h 127.0.0.1 -u user -p password laravel_testing -e "SHOW TABLES;"
 
       - name: Run database migrations and seed
         run: php artisan migrate:fresh --seed --env=testing
