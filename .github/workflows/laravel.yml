@@ -1,0 +1,71 @@
+name: Laravel CI
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: laravel
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, mysql, sqlite, curl, xml
+        coverage: pcov
+        tools: composer:v2
+
+    - name: Copy .env
+      run: |
+        cp .env.example .env
+        echo "APP_KEY=" >> .env
+        echo "DB_CONNECTION=mysql" >> .env
+        echo "DB_HOST=127.0.0.1" >> .env
+        echo "DB_PORT=3306" >> .env
+        echo "DB_DATABASE=laravel" >> .env
+        echo "DB_USERNAME=root" >> .env
+        echo "DB_PASSWORD=password" >> .env
+        echo "CACHE_DRIVER=array" >> .env
+        echo "SESSION_DRIVER=array" >> .env
+        echo "QUEUE_CONNECTION=sync" >> .env
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Generate app key
+      run: php artisan key:generate
+
+    - name: Set directory permissions
+      run: |
+        mkdir -p storage/framework/{sessions,views,cache}
+        chmod -R 777 storage bootstrap/cache
+
+    - name: Run database migrations and seed
+      run: php artisan migrate:fresh --seed --force
+
+    - name: Execute tests
+      run: vendor/bin/phpunit --coverage-clover clover.xml
+
+    - name: Upload code coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: clover.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
