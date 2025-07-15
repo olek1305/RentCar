@@ -14,10 +14,10 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_DATABASE: laravel_testing  # This creates the database
-          MYSQL_USER: tester  # Changed from 'user' to avoid conflicts
+          MYSQL_DATABASE: testing
+          MYSQL_USER: tester
           MYSQL_PASSWORD: password
-          MYSQL_ROOT_HOST: '%'  # Allow root access from any host
+          MYSQL_ROOT_HOST: '%'
         ports:
           - 3306:3306
         options: >-
@@ -49,8 +49,8 @@ jobs:
           echo "DB_CONNECTION=mysql" >> .env.testing
           echo "DB_HOST=127.0.0.1" >> .env.testing
           echo "DB_PORT=3306" >> .env.testing
-          echo "DB_DATABASE=laravel_testing" >> .env.testing  # Must match service definition
-          echo "DB_USERNAME=tester" >> .env.testing  # Changed to match service user
+          echo "DB_DATABASE=testing" >> .env.testing  # Changed to match service
+          echo "DB_USERNAME=tester" >> .env.testing
           echo "DB_PASSWORD=password" >> .env.testing
           php artisan key:generate --env=testing
 
@@ -63,7 +63,8 @@ jobs:
         run: |
           mysql -h 127.0.0.1 -uroot -prootpassword -e "
             CREATE USER IF NOT EXISTS 'tester'@'%' IDENTIFIED BY 'password';
-            GRANT ALL PRIVILEGES ON laravel_testing.* TO 'tester'@'%';
+            CREATE DATABASE IF NOT EXISTS testing;
+            GRANT ALL PRIVILEGES ON testing.* TO 'tester'@'%';
             FLUSH PRIVILEGES;
           "
 
@@ -80,7 +81,7 @@ jobs:
 
       - name: Verify database access
         run: |
-          mysql -h 127.0.0.1 -utester -ppassword laravel_testing -e "SHOW TABLES;"
+          mysql -h 127.0.0.1 -utester -ppassword testing -e "SHOW TABLES;"
 
       - name: Run database migrations and seed
         run: php artisan migrate:fresh --seed --env=testing
