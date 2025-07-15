@@ -23,7 +23,7 @@ jobs:
           --health-cmd="mysqladmin ping -uroot -prootpassword"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=10
           --health-start-period=30s
 
     steps:
@@ -46,7 +46,7 @@ jobs:
           cp .env.example .env.testing
           echo "APP_ENV=testing" >> .env.testing
           echo "DB_CONNECTION=mysql" >> .env.testing
-          echo "DB_HOST=mysql" >> .env.testing
+          echo "DB_HOST=127.0.0.1" >> .env.testing
           echo "DB_PORT=3306" >> .env.testing
           echo "DB_DATABASE=laravel_testing" >> .env.testing
           echo "DB_USERNAME=user" >> .env.testing
@@ -60,14 +60,18 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          for i in {1..10}; do
-            if mysqladmin ping -h"mysql" -u"user" -p"password" --silent; then
+          for i in {1..30}; do
+            if mysqladmin ping -h127.0.0.1 -uuser -ppassword --silent; then
               echo "MySQL is ready!"
               break
             fi
-            echo "Waiting for MySQL... Attempt $i/10"
+            echo "Waiting for MySQL... Attempt $i/30"
             sleep 2
           done
+
+      - name: Verify MySQL connection
+        run: |
+          mysql -h 127.0.0.1 -u user -ppassword laravel_testing -e "SHOW TABLES;"
 
       - name: Run database migrations and seed
         run: php artisan migrate:fresh --seed --env=testing
