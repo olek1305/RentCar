@@ -72,6 +72,17 @@ return [
     'email' => 'Email',
     'phone' => 'Telefon',
     'address' => 'Adres',
+    'verification_method' => 'Metoda weryfikacji',
+    'verify_via_sms' => 'Weryfikuj przez SMS',
+    'verify_via_email' => 'Weryfikuj przez e-mail',
+    'sms_verification_code' => 'Kod weryfikacyjny SMS',
+    'send_code' => 'Wyślij kod',
+    'sms_code_instructions' => 'Wyślemy kod weryfikacyjny na Twój telefon',
+    'please_enter_phone' => 'Najpierw wprowadź swój numer telefonu',
+    'sending' => 'Wysyłanie',
+    'sms_code_sent' => 'Kod weryfikacyjny został wysłany na Twój telefon',
+    'sms_send_error' => 'Błąd podczas wysyłania kodu weryfikacyjnego',
+    'invalid_verification_code' => 'Nieprawidłowy kod weryfikacyjny',
 
     // Zamówienia
     'orders' => [

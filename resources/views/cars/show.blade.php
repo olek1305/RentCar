@@ -310,6 +310,34 @@
                           class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">{{ old('additional_info') }}</textarea>
             </label>
 
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-700 mb-3">{{ __('messages.verification_method') }}</h3>
+
+                <div class="space-y-3">
+                    <label class="flex items-center space-x-3">
+                        <input type="radio" name="verification_method" value="sms" checked class="form-radio text-blue-600">
+                        <span class="text-gray-700">{{ __('messages.verify_via_sms') }}</span>
+                    </label>
+
+                    <label class="flex items-center space-x-3">
+                        <input type="radio" name="verification_method" value="email" class="form-radio text-blue-600">
+                        <span class="text-gray-700">{{ __('messages.verify_via_email') }}</span>
+                    </label>
+                </div>
+
+                <!-- SMS Verification Code Input (hidden by default) -->
+                <div id="sms-verification-container" class="mt-4 hidden">
+                    <label class="block font-medium text-gray-700 mb-1">{{ __('messages.sms_verification_code') }}</label>
+                    <div class="flex space-x-2">
+                        <input type="text" name="sms_code" class="w-32 rounded border border-gray-300 px-3 py-2">
+                        <button type="button" id="send-sms-code" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                            {{ __('messages.send_code') }}
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">{{ __('messages.sms_code_instructions') }}</p>
+                </div>
+            </div>
+
             <button type="submit"
                     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
                 {{ __('messages.book_now') }}
@@ -479,5 +507,72 @@
 
             input.value = value.toString().padStart(2, '0');
         }
+
+        // verify sms
+        document.addEventListener('DOMContentLoaded', function() {
+            const verificationMethodRadios = document.querySelectorAll('input[name="verification_method"]');
+            const smsVerificationContainer = document.getElementById('sms-verification-container');
+            const sendSmsCodeBtn = document.getElementById('send-sms-code');
+            const phoneInput = document.querySelector('input[name="phone"]');
+
+            // Handle verification method change
+            verificationMethodRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'sms') {
+                        smsVerificationContainer.classList.remove('hidden');
+                    } else {
+                        smsVerificationContainer.classList.add('hidden');
+                        // Clear the SMS code input when switching to email
+                        document.querySelector('input[name="sms_code"]').value = '';
+                    }
+                });
+            });
+
+            // Handle SMS code sending
+            sendSmsCodeBtn.addEventListener('click', function() {
+                const phone = phoneInput.value;
+
+                if (!phone) {
+                    alert('{{ __("messages.please_enter_phone") }}');
+                    return;
+                }
+
+                // Disable button to prevent multiple clicks
+                sendSmsCodeBtn.disabled = true;
+                sendSmsCodeBtn.textContent = '{{ __("messages.sending") }}...';
+
+                // Send verification code
+                fetch('{{ route("send-verification-code") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ phone: phone })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('{{ __("messages.sms_code_sent") }}');
+                        } else {
+                            alert(data.message || '{{ __("messages.sms_send_error") }}');
+                        }
+                    })
+                    .catch(error => {
+                        alert('{{ __("messages.sms_send_error") }}');
+                    })
+                    .finally(() => {
+                        sendSmsCodeBtn.disabled = false;
+                        sendSmsCodeBtn.textContent = '{{ __("messages.send_code") }}';
+                    });
+            });
+
+            // Show SMS verification if phone changes and method is SMS
+            phoneInput.addEventListener('change', function() {
+                if (document.querySelector('input[name="verification_method"]:checked').value === 'sms') {
+                    smsVerificationContainer.classList.remove('hidden');
+                }
+            });
+        });
     </script>
 </x-layout>

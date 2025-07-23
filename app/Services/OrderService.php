@@ -8,8 +8,44 @@ use Carbon\Carbon;
 
 class OrderService
 {
+    /**
+     * @param MailService $mailService
+     * @param SmsService $smsService
+     */
+    public function __construct(protected MailService $mailService, protected SmsService $smsService)
+    {
+        //
+    }
+
+    /**
+     * @return MailService
+     */
+    public function getMailService(): MailService
+    {
+        return $this->mailService;
+    }
+
+    /**
+     * @return SmsService
+     */
+    public function getSmsService(): SmsService
+    {
+        return $this->smsService;
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     */
     public function createOrder(array $data): array
     {
+        // Verify SMS code if SMS method was selected
+        if (isset($data['verification_method']) && $data['verification_method'] === 'sms') {
+            if (empty($data['sms_code']) || !$this->smsService->verifyCode($data['phone'], $data['sms_code'])) {
+                return ['success' => false, 'message' => __('Invalid verification code')];
+            }
+        }
+
         $data['rental_time'] = $data['rental_time_hour'] . ':' . $data['rental_time_minute'];
         $data['return_time'] = $data['return_time_hour'] . ':' . $data['return_time_minute'];
         unset($data['rental_time_hour'], $data['rental_time_minute'], $data['return_time_hour'], $data['return_time_minute']);
@@ -24,12 +60,26 @@ class OrderService
             return ['success' => false, 'message' => __('message.order_unavailable')];
         }
 
-        Order::create($data);
+        $order = Order::create($data);
         $car->update(['hidden' => true]);
 
-        return ['success' => true, 'message' => __('messages.order_created')];
+        // Send email verification if email method was selected
+        if ($data['verification_method'] === 'email') {
+            $this->mailService->sendVerificationEmail($order);
+        }
+
+        return [
+            'success' => true,
+            'message' => __('messages.order_created'),
+            'order' => $order,
+            'requires_verification' => $data['verification_method'] === 'email'
+        ];
     }
 
+    /**
+     * @param array $data
+     * @return bool
+     */
     protected function hasDuplicateOrder(array $data): bool
     {
         return Order::where(function ($query) use ($data) {
@@ -38,5 +88,46 @@ class OrderService
         })
             ->whereDate('created_at', Carbon::today())
             ->exists();
+    }
+
+    /**
+     * @param $token
+     * @return array
+     */
+    public function verifyEmailToken($token): array
+    {
+        $order = Order::where('email_verification_token', $token)->first();
+
+        if (!$order) {
+            return ['success' => false, 'message' => __('Invalid verification token')];
+        }
+
+        $order->update([
+            'email_verified_at' => now(),
+            'email_verification_token' => null
+        ]);
+
+        return ['success' => true, 'message' => __('Email verified successfully'), 'order' => $order];
+    }
+
+    /**
+     * @param $orderId
+     * @param $code
+     * @return array
+     */
+    public function verifySmsCode($orderId, $code): array
+    {
+        $order = Order::findOrFail($orderId);
+
+        if ($order->sms_verification_code != $code) {
+            return ['success' => false, 'message' => __('Invalid verification code')];
+        }
+
+        $order->update([
+            'phone_verified_at' => now(),
+            'sms_verification_code' => null
+        ]);
+
+        return ['success' => true, 'message' => __('Phone verified successfully'), 'order' => $order];
     }
 }

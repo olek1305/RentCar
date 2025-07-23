@@ -16,14 +16,13 @@ use Illuminate\Support\Facades\Storage;
 
 class CarController extends Controller
 {
-    protected CarService $carService;
 
     /**
      * @param CarService $carService
      */
-    public function __construct(CarService $carService)
+    public function __construct(protected CarService $carService)
     {
-        $this->carService = $carService;
+        //
     }
 
 

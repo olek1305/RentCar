@@ -22,7 +22,7 @@ class StoreOrderRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -36,6 +36,21 @@ class StoreOrderRequest extends FormRequest
             'extra_delivery_fee' => 'boolean',
             'airport_delivery' => 'boolean',
             'additional_info' => 'nullable|string',
+            'verification_method' => 'required|in:sms,email',
+        ];
+
+        if ($this->input('verification_method') === 'sms') {
+            $rules['sms_code'] = 'required|digits:5';
+        }
+
+        return $rules;
+    }
+
+    public function messages(): array
+    {
+        return [
+            'sms_code.required_if' => __('The SMS verification code is required when using SMS verification'),
+            'sms_code.digits' => __('The verification code must be 5 digits')
         ];
     }
 }

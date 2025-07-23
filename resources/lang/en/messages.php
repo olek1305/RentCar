@@ -72,6 +72,17 @@ return [
     'email' => 'Email',
     'phone' => 'Phone',
     'address' => 'Address',
+    'verification_method' => 'Verification Method',
+    'verify_via_sms' => 'Verify via SMS',
+    'verify_via_email' => 'Verify via Email',
+    'sms_verification_code' => 'SMS Verification Code',
+    'send_code' => 'Send Code',
+    'sms_code_instructions' => 'We will send a verification code to your phone',
+    'please_enter_phone' => 'Please enter your phone number first',
+    'sending' => 'Sending',
+    'sms_code_sent' => 'Verification code has been sent to your phone',
+    'sms_send_error' => 'Error sending verification code',
+    'invalid_verification_code' => 'Invalid verification code',
 
     // Orders
     'orders' => [
@@ -162,4 +173,23 @@ return [
     'ready_to_rent' => 'Ready to Rent Your Perfect Car?',
     'cta_text' => 'Choose from our wide selection of vehicles for your next adventure',
     'view_cars' => 'View Available Cars',
+
+    // verifications page
+    'Order Verification' => 'Order Verification',
+    'Thank you for your order! Please verify your contact information.' => 'Thank you for your order! Please verify your contact information.',
+    'Email Verification' => 'Email Verification',
+    'Pending' => 'Pending',
+    'We sent a verification link to' => 'We sent a verification link to',
+    'Please check your inbox and click the verification link.' => 'Please check your inbox and click the verification link.',
+    'Resend Verification Email' => 'Resend Verification Email',
+    'Email Verified' => 'Email Verified',
+    'Verified at' => 'Verified at',
+    'Phone Verification' => 'Phone Verification',
+    'Your phone number needs verification.' => 'Your phone number needs verification.',
+    'Verification Code' => 'Verification Code',
+    'Verify Phone' => 'Verify Phone',
+    'Phone Verified' => 'Phone Verified',
+    'Verification Complete!' => 'Verification Complete!',
+    'Your order is now fully verified. We will contact you soon with further details.' => 'Your order is now fully verified. We will contact you soon with further details.',
+    'Back to Home' => 'Back to Home',
 ];

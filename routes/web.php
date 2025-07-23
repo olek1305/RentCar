@@ -40,3 +40,10 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
 });
+
+// verify email/sms
+Route::get('/orders/{order}/verification', [OrderController::class, 'verification'])->name('orders.verification');
+Route::get('/orders/verify-email/{token}', [OrderController::class, 'verifyEmail'])->name('orders.verify-email');
+Route::post('/orders/{order}/verify-sms', [OrderController::class, 'verifySms'])->name('orders.verify-sms');
+Route::post('/orders/{order}/resend/{type}', [OrderController::class, 'resendVerification'])->name('orders.resend')->middleware('throttle:verification');;
+Route::post('/send-verification-code', [OrderController::class, 'sendVerificationCode'])->name('send-verification-code');
