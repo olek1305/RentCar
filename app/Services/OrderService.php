@@ -39,13 +39,9 @@ class OrderService
      */
     public function createOrder(array $data): array
     {
-        // Verify SMS code if SMS method was selected
-        if (isset($data['verification_method']) && $data['verification_method'] === 'sms') {
-            if (empty($data['sms_code']) || !$this->smsService->verifyCode($data['phone'], $data['sms_code'])) {
-                return ['success' => false, 'message' => __('Invalid verification code')];
-            }
-        }
+        $verificationMethod = $data['verification_method'];
 
+        // Process order data
         $data['rental_time'] = $data['rental_time_hour'] . ':' . $data['rental_time_minute'];
         $data['return_time'] = $data['return_time_hour'] . ':' . $data['return_time_minute'];
         unset($data['rental_time_hour'], $data['rental_time_minute'], $data['return_time_hour'], $data['return_time_minute']);
@@ -60,20 +56,34 @@ class OrderService
             return ['success' => false, 'message' => __('message.order_unavailable')];
         }
 
-        $order = Order::create($data);
+        $order = Order::create([
+            ...$data,
+            'status' => 'pending_verification',
+            'verification_method' => $verificationMethod,
+            'email_verified_at' => null,
+            'phone_verified_at' => $verificationMethod === 'sms' ? now() : null,
+        ]);
         $car->update(['hidden' => true]);
 
-        // Send email verification if email method was selected
-        if ($data['verification_method'] === 'email') {
+        // Handle verification based on method
+        if ($verificationMethod === 'email') {
             $this->mailService->sendVerificationEmail($order);
+            return [
+                'success' => true,
+                'message' => __('Verification email sent. Please check your inbox.'),
+                'order' => $order,
+                'requires_verification' => true,
+                'verification_method' => 'email'
+            ];
+        } else {
+            return [
+                'success' => true,
+                'message' => __('Order created successfully.'),
+                'order' => $order,
+                'requires_verification' => false,
+                'verification_method' => 'sms'
+            ];
         }
-
-        return [
-            'success' => true,
-            'message' => __('messages.order_created'),
-            'order' => $order,
-            'requires_verification' => $data['verification_method'] === 'email'
-        ];
     }
 
     /**
@@ -102,9 +112,14 @@ class OrderService
             return ['success' => false, 'message' => __('Invalid verification token')];
         }
 
+        if ($order->email_verified_at) {
+            return ['success' => false, 'message' => __('Email already verified')];
+        }
+
         $order->update([
             'email_verified_at' => now(),
-            'email_verification_token' => null
+            'email_verification_token' => null,
+            'status' => 'pending'
         ]);
 
         return ['success' => true, 'message' => __('Email verified successfully'), 'order' => $order];
@@ -123,9 +138,14 @@ class OrderService
             return ['success' => false, 'message' => __('Invalid verification code')];
         }
 
+        if ($order->phone_verified_at) {
+            return ['success' => false, 'message' => __('Phone already verified')];
+        }
+
         $order->update([
             'phone_verified_at' => now(),
-            'sms_verification_code' => null
+            'sms_verification_code' => null,
+            'status' => 'pending'
         ]);
 
         return ['success' => true, 'message' => __('Phone verified successfully'), 'order' => $order];

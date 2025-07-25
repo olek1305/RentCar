@@ -37,13 +37,13 @@ class OrderController extends Controller
 
         if ($result['requires_verification']) {
             return redirect()->route('orders.verification', $result['order']->id)
-                ->with('success', $result['message']);
+                ->with('success', $result['message'])
+                ->with('verification_method', $result['verification_method']);
         }
 
         return redirect()->route('home')
             ->with('success', __('messages.order_created'));
     }
-
 
     /**
      * @param $orderId
@@ -68,6 +68,7 @@ class OrderController extends Controller
         }
 
         return redirect()->route('orders.verification', $result['order']->id)
+            ->with('verifiedEmail', true)
             ->with('success', $result['message']);
     }
 
@@ -87,6 +88,7 @@ class OrderController extends Controller
         }
 
         return redirect()->route('orders.verification', $result['order']->id)
+            ->with('verifiedSms', true)
             ->with('success', $result['message']);
     }
 

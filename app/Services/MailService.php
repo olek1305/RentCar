@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Mail\OrderVerificationMail;
 use App\Models\Order;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
@@ -17,10 +18,11 @@ class MailService
     public function sendVerificationEmail(Order $order): bool
     {
         $token = Str::random(32);
-        $order->update([
+
+        $order->forceFill([
             'email_verification_token' => $token,
             'email_verified_at' => null
-        ]);
+        ])->save();
 
         $verificationUrl = URL::signedRoute(
             'orders.verify-email',
