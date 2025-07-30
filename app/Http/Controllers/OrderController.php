@@ -6,12 +6,15 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
 use App\Models\Car;
 use App\Services\OrderService;
+use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class OrderController extends Controller
 {
@@ -24,8 +27,12 @@ class OrderController extends Controller
     }
 
     /**
-     * @param StoreOrderRequest $request
+     * Store a newly created order in storage.
+     *
+     * @param StoreOrderRequest $request Validated request data
      * @return RedirectResponse
+     *
+     * @throws Exception
      */
     public function store(StoreOrderRequest $request): RedirectResponse
     {
@@ -45,8 +52,11 @@ class OrderController extends Controller
             ->with('success', __('messages.order_created'));
     }
 
+
     /**
-     * @param $orderId
+     * Display the order verification page.
+     *
+     * @param int $orderId
      * @return Factory|View|Application
      */
     public function verification($orderId): Factory|View|Application
@@ -56,28 +66,51 @@ class OrderController extends Controller
     }
 
     /**
-     * @param $token
+     * Verify email using the signed URL token
+     *
+     * @param Request $request
+     * @param string $token
      * @return RedirectResponse
      */
-    public function verifyEmail($token): RedirectResponse
+    public function verifyEmail(Request $request, string $token)
     {
-        $result = $this->orderService->verifyEmailToken($token);
+        if (!URL::hasValidSignature($request)) {
+            $expires = $request->query('expires');
 
-        if (!$result['success']) {
-            return redirect()->route('home')->with('error', $result['message']);
+            if ($expires && now()->getTimestamp() > $expires) {
+                return redirect()->route('home')
+                    ->with('error', __('The verification link has expired. Please request a new one.'));
+            }
+
+            return redirect()->route('home')
+                ->with('error', __('The verification link is invalid. Please try again.'));
         }
 
-        return redirect()->route('orders.verification', $result['order']->id)
-            ->with('verifiedEmail', true)
-            ->with('success', $result['message']);
+        $order = Order::where('email_verification_token', $token)->first();
+
+        if (!$order) {
+            return redirect()->route('home')
+                ->with('error', __('Invalid verification token.'));
+        }
+
+        $order->update([
+            'email_verified_at' => now(),
+            'email_verification_token' => null,
+            'status' => 'pending'
+        ]);
+
+        return redirect()->route('orders.verification', $order->id)
+            ->with('success', __('Email verified successfully!'));
     }
 
     /**
+     * Verify SMS code for order confirmation.
+     *
      * @param Request $request
-     * @param $orderId
+     * @param int $orderId
      * @return RedirectResponse
      */
-    public function verifySms(Request $request, $orderId): RedirectResponse
+    public function verifySms(Request $request, int $orderId): RedirectResponse
     {
         $request->validate(['code' => 'required|digits:4']);
 
@@ -93,11 +126,13 @@ class OrderController extends Controller
     }
 
     /**
-     * @param $orderId
-     * @param $type
+     * Resend verification code (email or SMS).
+     *
+     * @param int $orderId
+     * @param string $type 'email' or 'sms'
      * @return RedirectResponse
      */
-    public function resendVerification($orderId, $type): RedirectResponse
+    public function resendVerification(int $orderId, string $type): RedirectResponse
     {
         $order = Order::findOrFail($orderId);
 
@@ -109,7 +144,10 @@ class OrderController extends Controller
         return back()->with('error', __('Invalid verification type.'));
     }
 
+
     /**
+     * Send SMS verification code to phone number.
+     *
      * @param Request $request
      * @return JsonResponse
      */

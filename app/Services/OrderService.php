@@ -101,12 +101,15 @@ class OrderService
     }
 
     /**
+     * @param $order
      * @param $token
      * @return array
      */
-    public function verifyEmailToken($token): array
+    public function verifyEmailToken($order, $token): array
     {
-        $order = Order::where('email_verification_token', $token)->first();
+        $order = Order::where('id', $order)
+            ->where('email_verification_token', $token)
+            ->first();
 
         if (!$order) {
             return ['success' => false, 'message' => __('Invalid verification token')];

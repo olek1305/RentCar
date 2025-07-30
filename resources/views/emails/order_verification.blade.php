@@ -21,6 +21,13 @@
                         </a>
                     </div>
 
+                    <div class="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p class="text-yellow-700 text-sm">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            {{ __('This verification link will expire in 24 hours.') }}
+                        </p>
+                    </div>
+
                     <p class="text-gray-500 text-sm mt-4">
                         {{ __('If you did not request this email, you can safely ignore it.') }}
                     </p>

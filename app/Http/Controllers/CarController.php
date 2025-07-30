@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCarRequest;
 use App\Http\Requests\UpdateCarRequest;
 use App\Models\Car;
+use App\Models\Order;
 use App\Services\CarService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -54,7 +55,7 @@ class CarController extends Controller
 
     /**
      * @param StoreCarRequest $request
-     * @return Application|Redirector|RedirectResponse
+     * @return RedirectResponse
      */
     public function store(StoreCarRequest $request): RedirectResponse
     {
@@ -66,14 +67,15 @@ class CarController extends Controller
 
     /**
      * @param Car $car
+     * @param Order $order
      * @return Factory|Application|View
      */
-    public function show(Car $car): View|Application|Factory
+    public function show(Car $car, Order $order): View|Application|Factory
     {
         $this->carService->checkCarVisibility($car);
         $car = $this->carService->prepareCarForDisplay($car);
 
-        return view('cars.show', compact('car'));
+        return view('cars.show', compact('car', 'order'));
     }
 
     /**
