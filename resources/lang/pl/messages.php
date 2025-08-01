@@ -153,7 +153,7 @@ return [
     'car_updated' => 'Samochód został zaktulizowany!',
     'car_deleted' => 'Samochód został usunięty!',
     'auth_error' => 'Błąd uwierzytelniania',
-    'order_already' => 'Złożyłeś już dzisiaj zamówienie. Spróbuj ponownie jutro.',
+    'order_already' => 'Jeśli potrzebujesz więcej niż 3 zamówienia, skontaktuj się z właścicielem.',
     'order_unavailable' => 'Ten samochód jest obecnie niedostępny do wypożyczenia.',
     'order_created' => 'Zamówienie zostało złożone! Wkrótce się z Tobą skontaktujemy.',
 

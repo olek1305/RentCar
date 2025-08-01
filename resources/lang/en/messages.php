@@ -153,7 +153,7 @@ return [
     'car_updated' => 'Car has been updated successfully!',
     'car_deleted' => 'Car has been deleted successfully.',
     'auth_error' => 'Authentication failed',
-    'order_already' => 'You have already placed an order today. Please try again tomorrow.',
+    'order_already' => 'Maksymalnie 3 zamówienia dziennie. Jeśli potrzebujesz więcej niż 3 zamówienia, skontaktuj się z właścicielem.',
     'order_unavailable' => 'This car is currently unavailable for rental.',
     'order_created' => 'The order has been placed! We will be in contact shortly.',
 

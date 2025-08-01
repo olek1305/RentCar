@@ -34,6 +34,8 @@ class OrderService
     }
 
     /**
+     * Create a new order with verification process.
+     *
      * @param array $data
      * @return array
      */
@@ -46,8 +48,12 @@ class OrderService
         $data['return_time'] = $data['return_time_hour'] . ':' . $data['return_time_minute'];
         unset($data['rental_time_hour'], $data['rental_time_minute'], $data['return_time_hour'], $data['return_time_minute']);
 
-        if ($this->hasDuplicateOrder($data)) {
-            return ['success' => false, 'message' => __('message.order_already')];
+        $limitCheck = $this->checkOrderLimits($data);
+        if ($limitCheck['limited']) {
+            return [
+                'success' => false,
+                'message' => $limitCheck['message']
+            ];
         }
 
         $car = Car::findOrFail($data['car_id']);
@@ -87,29 +93,51 @@ class OrderService
     }
 
     /**
+     * Check order limits for the current day.
+     *
      * @param array $data
-     * @return bool
+     * @return array
      */
-    protected function hasDuplicateOrder(array $data): bool
+    protected function checkOrderLimits(array $data): array
     {
-        return Order::where(function ($query) use ($data) {
+        $count = Order::where(function ($query) use ($data) {
             $query->where('email', $data['email'])
                 ->orWhere('phone', $data['phone']);
         })
             ->whereDate('created_at', Carbon::today())
-            ->exists();
+            ->count();
+
+        if ($count >= 3) {
+            return [
+                'limited' => true,
+                'message' => __('order_already'),
+                'count' => $count
+            ];
+        }
+
+        return [
+            'limited' => false,
+            'message' => null,
+            'count' => $count
+        ];
     }
 
     /**
-     * @param $order
-     * @param $token
+     * Verify an email token and activate the order.
+     *
+     * @param int|null $orderId
+     * @param string $token
      * @return array
      */
-    public function verifyEmailToken($order, $token): array
+    public function verifyEmailToken(?int $orderId, string $token): array
     {
-        $order = Order::where('id', $order)
-            ->where('email_verification_token', $token)
-            ->first();
+        $query = Order::where('email_verification_token', $token);
+
+        if ($orderId) {
+            $query->where('id', $orderId);
+        }
+
+        $order = $query->first();
 
         if (!$order) {
             return ['success' => false, 'message' => __('Invalid verification token')];
@@ -129,6 +157,8 @@ class OrderService
     }
 
     /**
+     * Verify SMS code and activate the order.
+     *
      * @param $orderId
      * @param $code
      * @return array

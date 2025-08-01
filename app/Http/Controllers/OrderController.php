@@ -72,7 +72,7 @@ class OrderController extends Controller
      * @param string $token
      * @return RedirectResponse
      */
-    public function verifyEmail(Request $request, string $token)
+    public function verifyEmail(Request $request, string $token): RedirectResponse
     {
         if (!URL::hasValidSignature($request)) {
             $expires = $request->query('expires');
@@ -86,20 +86,14 @@ class OrderController extends Controller
                 ->with('error', __('The verification link is invalid. Please try again.'));
         }
 
-        $order = Order::where('email_verification_token', $token)->first();
+        $result = $this->orderService->verifyEmailToken(null, $token);
 
-        if (!$order) {
+        if (!$result['success']) {
             return redirect()->route('home')
-                ->with('error', __('Invalid verification token.'));
+                ->with('error', $result['message']);
         }
 
-        $order->update([
-            'email_verified_at' => now(),
-            'email_verification_token' => null,
-            'status' => 'pending'
-        ]);
-
-        return redirect()->route('orders.verification', $order->id)
+        return redirect()->route('orders.verification', $result['order']->id)
             ->with('success', __('Email verified successfully!'));
     }
 
