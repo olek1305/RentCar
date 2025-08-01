@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as OrderAdminController;
@@ -18,6 +19,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
 Route::get('/condition', [HomeController::class, 'condition'])->name('condition');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
 Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/admin/login', [AuthController::class, 'login']);
@@ -28,7 +30,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cars', [CarController::class, 'store'])->name('cars.store');
     Route::put('/cars/{car}', [CarController::class, 'update'])->name('cars.update');
     Route::delete('/cars/{car}', [CarController::class, 'destroy'])->name('cars.destroy');
-
     Route::patch('/cars/{car}/toggle-visibility', [CarController::class, 'toggleVisibility'])
         ->middleware('auth')->name('cars.toggle-visibility');
 });
@@ -43,7 +44,6 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/orders/{order}', [OrderAdminController::class, 'show'])->name('admin.orders.show');
     Route::patch('/orders/{order}/status', [OrderAdminController::class, 'updateStatus'])
         ->name('admin.orders.update-status');
-
     Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
 });
 

@@ -17,6 +17,15 @@ return [
     'confirm_set_main_image' => 'Czy na pewno chcesz ustawić to zdjęcie jako główne?',
     'image_will_be_main' => 'To zdjęcie zostanie ustawione jako główne po zapisaniu zmian.',
     'confirm_delete_car' => 'Czy na pewno chcesz usunąć ten samochód? Tej czynności nie można cofnąć.',
+    'phone' => 'Telefon',
+
+    // Kontakt
+    'contact_description' => 'Masz pytania? Skorzystaj z poniższych danych lub wyślij nam wiadomość za pomocą formularza.',
+    'instagram' => 'Instagram',
+    'send_message' => 'Wyślij wiadomość',
+    'name' => 'Twoje imię',
+    'message' => 'Wiadomość',
+    'send' => 'Wyślij wiadomość',
 
     // Admin na stronie
     'login' => 'Zaloguj',
@@ -69,8 +78,6 @@ return [
     // Formularz klienta
     'first_name' => 'Imię',
     'last_name' => 'Nazwisko',
-    'email' => 'Email',
-    'phone' => 'Telefon',
     'address' => 'Adres',
     'verification_method' => 'Metoda weryfikacji',
     'verify_via_sms' => 'Weryfikuj przez SMS',

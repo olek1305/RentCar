@@ -17,6 +17,14 @@ return [
     'confirm_set_main_image' => 'Are you sure you want to set this image as the main image?',
     'image_will_be_main' => 'This image will be set as the main image when you save changes.',
     'confirm_delete_car' => 'Are you sure you want to delete this car? This action cannot be undone.',
+    'phone' => 'Phone',
+
+    // Contact
+    'contact_description' => 'If you have any questions, feel free to reach out using the details below or send us a message directly.',
+    'send_message' => 'Send us a message',
+    'name' => 'Your Name',
+    'message' => 'Message',
+    'send' => 'Send Message',
 
     // Admin Page
     'login' => 'Login',
@@ -69,8 +77,6 @@ return [
     // Customer Form
     'first_name' => 'First name',
     'last_name' => 'Last name',
-    'email' => 'Email',
-    'phone' => 'Phone',
     'address' => 'Address',
     'verification_method' => 'Verification Method',
     'verify_via_sms' => 'Verify via SMS',

@@ -1,4 +1,4 @@
-<x-layout>
+<x-layout-email>
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
             <div class="p-6">
@@ -44,4 +44,4 @@
             </div>
         </div>
     </div>
-</x-layout>
+</x-layout-email>

@@ -138,7 +138,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block font-medium text-gray-700">{{ __('messages.email') }} <span
+                    <label class="block font-medium text-gray-700">Email <span
                             class="text-red-500">*</span></label>
                     <input type="email" name="email" required value="{{ old('email') }}"
                            class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
