@@ -74,6 +74,11 @@ class OrderController extends Controller
      */
     public function verifyEmail(Request $request, string $token): RedirectResponse
     {
+        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+            return redirect()->route('home')
+                ->with('error', __('Invalid verification token format.'));
+        }
+
         if (!URL::hasValidSignature($request)) {
             $expires = $request->query('expires');
 
@@ -91,6 +96,12 @@ class OrderController extends Controller
         if (!$result['success']) {
             return redirect()->route('home')
                 ->with('error', $result['message']);
+        }
+
+        // Additional check if email was already verified
+        if ($result['order']->email_verified_at) {
+            return redirect()->route('orders.verification', $result['order']->id)
+                ->with('info', __('Email was already verified.'));
         }
 
         return redirect()->route('orders.verification', $result['order']->id)

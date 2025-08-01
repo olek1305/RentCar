@@ -2,24 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SendContactRequest;
 use App\Mail\ContactFormMail;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
     /**
-     * @param Request $request
+     * @param SendContactRequest $request
      * @return RedirectResponse
      */
-    public function send(Request $request): RedirectResponse
+    public function send(SendContactRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'message' => 'required|string|max:2000',
-        ]);
+        $validated = $request->validated();
 
         Mail::to('contact@carshop.pl')->send(new ContactFormMail($validated));
 

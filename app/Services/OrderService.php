@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\Car;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderService
 {
@@ -131,7 +133,15 @@ class OrderService
      */
     public function verifyEmailToken(?int $orderId, string $token): array
     {
-        $query = Order::where('email_verification_token', $token);
+        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+            return ['success' => false, 'message' => __('Invalid token format')];
+        }
+
+        $query = Order::query()
+            ->where(function($q) use ($token) {
+                $q->where('email_verification_token', hash('sha256', $token))
+                    ->orWhere('email_verification_token', $token); // Backward compatibility
+            });
 
         if ($orderId) {
             $query->where('id', $orderId);
@@ -143,17 +153,45 @@ class OrderService
             return ['success' => false, 'message' => __('Invalid verification token')];
         }
 
-        if ($order->email_verified_at) {
-            return ['success' => false, 'message' => __('Email already verified')];
+        if ($order->email_verification_sent_at &&
+            $order->email_verification_sent_at->addHours(24)->isPast()) {
+            return [
+                'success' => false,
+                'message' => __('The verification link has expired. Please request a new one.')
+            ];
         }
 
-        $order->update([
-            'email_verified_at' => now(),
-            'email_verification_token' => null,
-            'status' => 'pending'
-        ]);
+        if ($order->email_verified_at) {
+            return [
+                'success' => false,
+                'message' => __('Email already verified'),
+                'order' => $order
+            ];
+        }
 
-        return ['success' => true, 'message' => __('Email verified successfully'), 'order' => $order];
+        try {
+            DB::transaction(function() use ($order) {
+                $order->update([
+                    'email_verified_at' => now(),
+                    'email_verification_token' => null,
+                    'status' => 'pending'
+                ]);
+
+                // If you want to use events, you'll need to:
+                // 1. Keep this line
+                // 2. Create a listener (see next step)
+                // event(new EmailVerified($order));
+            });
+        } catch (\Exception $e) {
+            Log::error("Email verification failed for order {$order->id}: " . $e->getMessage());
+            return ['success' => false, 'message' => __('Verification failed. Please try again.')];
+        }
+
+        return [
+            'success' => true,
+            'message' => __('Email verified successfully'),
+            'order' => $order->fresh()
+        ];
     }
 
     /**
