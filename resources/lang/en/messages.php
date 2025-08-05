@@ -18,6 +18,7 @@ return [
     'image_will_be_main' => 'This image will be set as the main image when you save changes.',
     'confirm_delete_car' => 'Are you sure you want to delete this car? This action cannot be undone.',
     'phone' => 'Phone',
+    'disable' => 'Disable',
 
     // Contact
     'contact_description' => 'If you have any questions, feel free to reach out using the details below or send us a message directly.',
