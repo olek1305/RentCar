@@ -369,9 +369,9 @@
             document.querySelector('input[name="rental_time_hour"]').value = hours;
             document.querySelector('input[name="rental_time_minute"]').value = minutes;
 
-            // Set return time to 1 hour later by default
-            document.querySelector('input[name="return_time_hour"]').value = ((now.getHours() + 1) % 24).toString().padStart(2, '0');
-            document.querySelector('input[name="return_time_minute"]').value = minutes;
+            const returnTime = new Date(now.getTime() + 60 * 60 * 1000);
+            document.querySelector('input[name="return_time_hour"]').value = returnTime.getHours().toString().padStart(2, '0');
+            document.querySelector('input[name="return_time_minute"]').value = (Math.floor(returnTime.getMinutes() / 5) * 5).toString().padStart(2, '0');
         });
 
         // Image gallery functions
@@ -493,7 +493,7 @@
                 if (value > 23) value = 0;
                 if (value < 0) value = 23;
             } else { // minute
-                if (value > 55) {
+                if (value >= 60) {
                     value = 0;
                     const hourInput = document.querySelector(`input[name="${type}_time_hour"]`);
                     let hourValue = parseInt(hourInput.value) + 1;
@@ -502,11 +502,14 @@
                 }
                 if (value < 0) {
                     value = 55;
+                    // Decrement hour when minutes underflow
                     const hourInput = document.querySelector(`input[name="${type}_time_hour"]`);
                     let hourValue = parseInt(hourInput.value) - 1;
                     if (hourValue < 0) hourValue = 23;
                     hourInput.value = hourValue.toString().padStart(2, '0');
                 }
+
+                value = Math.floor(value / 5) * 5;
             }
 
             input.value = value.toString().padStart(2, '0');
