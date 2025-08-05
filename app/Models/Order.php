@@ -19,7 +19,13 @@ class Order extends Model
         'extra_delivery_fee',
         'airport_delivery',
         'additional_info',
-        'status'
+        'status',
+        'email_verification_token',
+        'email_verification_sent_at',
+        'email_verified_at',
+        'sms_verification_code',
+        'sms_verified_at',
+        'sms_verification_sent_at',
     ];
 
     protected $casts = [
@@ -28,6 +34,10 @@ class Order extends Model
         'return_time' => 'string',
         'extra_delivery_fee' => 'boolean',
         'airport_delivery' => 'boolean',
+        'email_verified_at' => 'datetime',
+        'email_verification_sent_at' => 'datetime',
+        'sms_verified_at' => 'datetime',
+        'sms_verification_sent_at' => 'datetime',
     ];
 
     public function car(): BelongsTo
@@ -38,6 +48,7 @@ class Order extends Model
     public static function statuses(): array
     {
         return [
+            'pending_verification' => 'Oczekiwanie na Weryfikację',
             'pending' => 'Oczekujące',
             'confirmed' => 'Potwierdzone',
             'completed' => 'Zakończone',

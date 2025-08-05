@@ -3,29 +3,35 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as OrderAdminController;
+use App\Models\Order;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
 Route::get('/condition', [HomeController::class, 'condition'])->name('condition');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
 Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/admin/login', [AuthController::class, 'login']);
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/cars/create', [CarController::class, 'create'])->name('cars.create');
     Route::get('/car/edit/{car}', [CarController::class, 'edit'])->name('cars.edit');
     Route::post('/cars', [CarController::class, 'store'])->name('cars.store');
     Route::put('/cars/{car}', [CarController::class, 'update'])->name('cars.update');
     Route::delete('/cars/{car}', [CarController::class, 'destroy'])->name('cars.destroy');
-
     Route::patch('/cars/{car}/toggle-visibility', [CarController::class, 'toggleVisibility'])
-        ->middleware('auth')
-        ->name('cars.toggle-visibility');
+        ->middleware('auth')->name('cars.toggle-visibility');
 });
 
 Route::get('/cars/{car}', [CarController::class, 'show'])->name('cars.show');
@@ -36,7 +42,20 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.index');
     Route::get('/orders', [OrderAdminController::class, 'index'])->name('admin.orders.index');
     Route::get('/orders/{order}', [OrderAdminController::class, 'show'])->name('admin.orders.show');
-    Route::patch('/orders/{order}/status', [OrderAdminController::class, 'updateStatus'])->name('admin.orders.update-status');
-
+    Route::patch('/orders/{order}/status', [OrderAdminController::class, 'updateStatus'])
+        ->name('admin.orders.update-status');
     Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
 });
+
+// verify email/sms
+Route::get('/orders/verify-email/{orderId}/{token}', [OrderController::class, 'verifyEmail'])
+    ->name('orders.verify-email');
+Route::get('/orders/{order}/verification', [OrderController::class, 'verification'])
+    ->name('orders.verification');
+Route::post('/orders/{order}/verify-sms', [OrderController::class, 'verifySms'])
+    ->name('orders.verify-sms');
+Route::post('/orders/{order}/resend/{type}', [OrderController::class, 'resendVerification'])
+    ->name('orders.resend')
+    ->middleware('throttle:verification');
+Route::post('/send-verification-code', [OrderController::class, 'sendVerificationCode'])
+    ->name('send-verification-code');

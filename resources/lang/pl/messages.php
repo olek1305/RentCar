@@ -17,6 +17,16 @@ return [
     'confirm_set_main_image' => 'Czy na pewno chcesz ustawić to zdjęcie jako główne?',
     'image_will_be_main' => 'To zdjęcie zostanie ustawione jako główne po zapisaniu zmian.',
     'confirm_delete_car' => 'Czy na pewno chcesz usunąć ten samochód? Tej czynności nie można cofnąć.',
+    'phone' => 'Telefon',
+    'disable' => 'Wyłączony',
+
+    // Kontakt
+    'contact_description' => 'Masz pytania? Skorzystaj z poniższych danych lub wyślij nam wiadomość za pomocą formularza.',
+    'instagram' => 'Instagram',
+    'send_message' => 'Wyślij wiadomość',
+    'name' => 'Twoje imię',
+    'message' => 'Wiadomość',
+    'send' => 'Wyślij wiadomość',
 
     // Admin na stronie
     'login' => 'Zaloguj',
@@ -69,9 +79,18 @@ return [
     // Formularz klienta
     'first_name' => 'Imię',
     'last_name' => 'Nazwisko',
-    'email' => 'Email',
-    'phone' => 'Telefon',
     'address' => 'Adres',
+    'verification_method' => 'Metoda weryfikacji',
+    'verify_via_sms' => 'Weryfikuj przez SMS',
+    'verify_via_email' => 'Weryfikuj przez e-mail',
+    'sms_verification_code' => 'Kod weryfikacyjny SMS',
+    'send_code' => 'Wyślij kod',
+    'sms_code_instructions' => 'Wyślemy kod weryfikacyjny na Twój telefon',
+    'please_enter_phone' => 'Najpierw wprowadź swój numer telefonu',
+    'sending' => 'Wysyłanie',
+    'sms_code_sent' => 'Kod weryfikacyjny został wysłany na Twój telefon',
+    'sms_send_error' => 'Błąd podczas wysyłania kodu weryfikacyjnego',
+    'invalid_verification_code' => 'Nieprawidłowy kod weryfikacyjny',
 
     // Zamówienia
     'orders' => [
@@ -142,7 +161,7 @@ return [
     'car_updated' => 'Samochód został zaktulizowany!',
     'car_deleted' => 'Samochód został usunięty!',
     'auth_error' => 'Błąd uwierzytelniania',
-    'order_already' => 'Złożyłeś już dzisiaj zamówienie. Spróbuj ponownie jutro.',
+    'order_already' => 'Jeśli potrzebujesz więcej niż 3 zamówienia, skontaktuj się z właścicielem.',
     'order_unavailable' => 'Ten samochód jest obecnie niedostępny do wypożyczenia.',
     'order_created' => 'Zamówienie zostało złożone! Wkrótce się z Tobą skontaktujemy.',
 

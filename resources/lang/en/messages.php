@@ -17,6 +17,15 @@ return [
     'confirm_set_main_image' => 'Are you sure you want to set this image as the main image?',
     'image_will_be_main' => 'This image will be set as the main image when you save changes.',
     'confirm_delete_car' => 'Are you sure you want to delete this car? This action cannot be undone.',
+    'phone' => 'Phone',
+    'disable' => 'Disable',
+
+    // Contact
+    'contact_description' => 'If you have any questions, feel free to reach out using the details below or send us a message directly.',
+    'send_message' => 'Send us a message',
+    'name' => 'Your Name',
+    'message' => 'Message',
+    'send' => 'Send Message',
 
     // Admin Page
     'login' => 'Login',
@@ -69,9 +78,18 @@ return [
     // Customer Form
     'first_name' => 'First name',
     'last_name' => 'Last name',
-    'email' => 'Email',
-    'phone' => 'Phone',
     'address' => 'Address',
+    'verification_method' => 'Verification Method',
+    'verify_via_sms' => 'Verify via SMS',
+    'verify_via_email' => 'Verify via Email',
+    'sms_verification_code' => 'SMS Verification Code',
+    'send_code' => 'Send Code',
+    'sms_code_instructions' => 'We will send a verification code to your phone',
+    'please_enter_phone' => 'Please enter your phone number first',
+    'sending' => 'Sending',
+    'sms_code_sent' => 'Verification code has been sent to your phone',
+    'sms_send_error' => 'Error sending verification code',
+    'invalid_verification_code' => 'Invalid verification code',
 
     // Orders
     'orders' => [
@@ -142,7 +160,7 @@ return [
     'car_updated' => 'Car has been updated successfully!',
     'car_deleted' => 'Car has been deleted successfully.',
     'auth_error' => 'Authentication failed',
-    'order_already' => 'You have already placed an order today. Please try again tomorrow.',
+    'order_already' => 'Maksymalnie 3 zamówienia dziennie. Jeśli potrzebujesz więcej niż 3 zamówienia, skontaktuj się z właścicielem.',
     'order_unavailable' => 'This car is currently unavailable for rental.',
     'order_created' => 'The order has been placed! We will be in contact shortly.',
 
@@ -162,4 +180,23 @@ return [
     'ready_to_rent' => 'Ready to Rent Your Perfect Car?',
     'cta_text' => 'Choose from our wide selection of vehicles for your next adventure',
     'view_cars' => 'View Available Cars',
+
+    // verifications page
+    'Order Verification' => 'Order Verification',
+    'Thank you for your order! Please verify your contact information.' => 'Thank you for your order! Please verify your contact information.',
+    'Email Verification' => 'Email Verification',
+    'Pending' => 'Pending',
+    'We sent a verification link to' => 'We sent a verification link to',
+    'Please check your inbox and click the verification link.' => 'Please check your inbox and click the verification link.',
+    'Resend Verification Email' => 'Resend Verification Email',
+    'Email Verified' => 'Email Verified',
+    'Verified at' => 'Verified at',
+    'Phone Verification' => 'Phone Verification',
+    'Your phone number needs verification.' => 'Your phone number needs verification.',
+    'Verification Code' => 'Verification Code',
+    'Verify Phone' => 'Verify Phone',
+    'Phone Verified' => 'Phone Verified',
+    'Verification Complete!' => 'Verification Complete!',
+    'Your order is now fully verified. We will contact you soon with further details.' => 'Your order is now fully verified. We will contact you soon with further details.',
+    'Back to Home' => 'Back to Home',
 ];
