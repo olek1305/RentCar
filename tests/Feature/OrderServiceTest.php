@@ -3,8 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Car;
-use App\Models\User;
+use App\Services\MailService;
 use App\Services\OrderService;
+use App\Services\SmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -14,11 +15,17 @@ class OrderServiceTest extends TestCase
     use RefreshDatabase;
 
     protected OrderService $orderService;
+    protected MailService $mailService;
+    protected SmsService $smsService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->orderService = new OrderService();
+
+        $this->mailService = new MailService();
+        $this->smsService = new SmsService();
+
+        $this->orderService = new OrderService($this->mailService, $this->smsService);
     }
 
     #[Test]
@@ -39,6 +46,7 @@ class OrderServiceTest extends TestCase
             'return_time_minute' => '00',
             'airport_delivery' => false,
             'additional_info' => 'Test order',
+            'verification_method' => 'email'
         ];
 
         $result = $this->orderService->createOrder($orderData);
@@ -65,7 +73,8 @@ class OrderServiceTest extends TestCase
             'return_time_hour' => '12',
             'return_time_minute' => '00',
             'airport_delivery' => false,
-            'additional_info' => 'Test order'
+            'additional_info' => 'Test order',
+            'verification_method' => 'email'
         ];
 
         $result = $this->orderService->createOrder($orderData);

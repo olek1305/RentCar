@@ -21,9 +21,11 @@ class Order extends Model
         'additional_info',
         'status',
         'email_verification_token',
+        'email_verification_sent_at',
         'email_verified_at',
         'sms_verification_code',
-        'phone_verified_at'
+        'sms_verified_at',
+        'sms_verification_sent_at',
     ];
 
     protected $casts = [
@@ -33,7 +35,9 @@ class Order extends Model
         'extra_delivery_fee' => 'boolean',
         'airport_delivery' => 'boolean',
         'email_verified_at' => 'datetime',
-        'phone_verified_at' => 'datetime',
+        'email_verification_sent_at' => 'datetime',
+        'sms_verified_at' => 'datetime',
+        'sms_verification_sent_at' => 'datetime',
     ];
 
     public function car(): BelongsTo

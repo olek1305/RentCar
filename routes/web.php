@@ -24,7 +24,7 @@ Route::post('/contact', [ContactController::class, 'send'])->name('contact.send'
 Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/admin/login', [AuthController::class, 'login']);
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/cars/create', [CarController::class, 'create'])->name('cars.create');
     Route::get('/car/edit/{car}', [CarController::class, 'edit'])->name('cars.edit');
     Route::post('/cars', [CarController::class, 'store'])->name('cars.store');
@@ -48,10 +48,10 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 });
 
 // verify email/sms
+Route::get('/orders/verify-email/{orderId}/{token}', [OrderController::class, 'verifyEmail'])
+    ->name('orders.verify-email');
 Route::get('/orders/{order}/verification', [OrderController::class, 'verification'])
     ->name('orders.verification');
-Route::get('/orders/verify-email/{token}', [OrderController::class, 'verifyEmail'])
-    ->name('orders.verify-email');
 Route::post('/orders/{order}/verify-sms', [OrderController::class, 'verifySms'])
     ->name('orders.verify-sms');
 Route::post('/orders/{order}/resend/{type}', [OrderController::class, 'resendVerification'])

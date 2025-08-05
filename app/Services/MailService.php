@@ -17,15 +17,18 @@ class MailService
     public function sendVerificationEmail(Order $order): bool
     {
         $token = Str::random(32);
+        $hashedToken = hash('sha256', $token);
+
         $order->update([
-            'email_verification_token' => $token,
+            'email_verification_token' => $hashedToken,
+            'email_verification_sent_at' => now(),
             'email_verified_at' => null
         ]);
 
         $verificationUrl = URL::temporarySignedRoute(
             'orders.verify-email',
-            now()->addMinute(),
-            ['token' => $token]
+            now()->addHours(24),
+            ['orderId' => $order->id, 'token' => $token]
         );
 
         Mail::to($order->email)->send(new OrderVerificationMail($verificationUrl, $order));
