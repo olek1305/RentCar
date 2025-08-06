@@ -9,11 +9,3 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
-
-.car-item form button {
-    z-index: 40;
-    cursor: pointer;
-}
-.car-item form button:hover {
-    transform: scale(1.05);
-}
