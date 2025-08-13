@@ -87,26 +87,15 @@
                         {{-- Left --}}
                         <ul class="space-y-2">
                             <li class="flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
+                                <img src="{{ asset('images/icons/calendar.svg') }}" alt="calendar" class="h-5 w-5 text-gray-500">
                                 <span><strong>{{ __('messages.registration_from') }}:</strong> {{ $car->year }}</span>
                             </li>
                             <li class="flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h1l2 6h12l2-6h1" />
-                                    <circle cx="7.5" cy="16.5" r="1.5" />
-                                    <circle cx="16.5" cy="16.5" r="1.5" />
-                                </svg>
+                                <img src="{{ asset('images/icons/type.svg') }}" alt="type" class="h-5 w-5 text-gray-500">
                                 <span><strong>{{ __('messages.type') }}:</strong> {{ $car->type }}</span>
                             </li>
                             <li class="flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
+                                <img src="{{ asset('images/icons/seat.svg') }}" alt="seat" class="h-5 w-5 text-gray-500">
                                 <span><strong>{{ __('messages.seats') }}:</strong> {{ $car->seats }}</span>
                             </li>
                         </ul>
@@ -114,30 +103,20 @@
                         {{-- Right --}}
                         <ul class="space-y-2">
                             <li class="flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 17l4-4 4 4" />
-                                </svg>
+                                <img src="{{ asset('images/icons/fuel.svg') }}" alt="fuel" class="h-5 w-5 text-gray-500">
                                 <span><strong>{{ __('messages.fuel_type') }}:</strong> {{ $car->fuel_type }}</span>
                             </li>
                             <li class="flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
-                                </svg>
+                                <img src="{{ asset('images/icons/engine.svg') }}" alt="engine" class="h-5 w-5 text-gray-500">
                                 <span><strong>{{ __('messages.engine_capacity') }}:</strong> {{ $car->engine_capacity }} cm³</span>
                             </li>
                             <li class="flex items-start space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h3" />
-                                </svg>
+                                <img src="{{ asset('images/icons/transmission.svg') }}" alt="transmission" class="h-5 w-5 text-gray-500">
                                 <div class="flex flex-col">
                                     <span class="font-semibold">{{ __('messages.transmission') }}:</span>
                                     <span class="break-words max-w-[160px]">{{ $car->transmission }}</span>
                                 </div>
                             </li>
-
                         </ul>
                     </div>
 

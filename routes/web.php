@@ -7,13 +7,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as OrderAdminController;
-use App\Models\Order;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Str;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
