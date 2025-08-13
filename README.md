@@ -25,15 +25,14 @@ This guide covers the complete setup for running Laravel RentCar in production w
     docker compose up -d --build
 ```
 
-
-
-# 4. Install Dependencies & Build Assets
+# 4. Install Dependencies & Build Assets & Key Generate & Public Images
 ### Install dependencies
 ```bash
     docker compose exec app composer install --no-dev --optimize-autoloader
     docker compose exec app npm install
     docker compose exec app npm run build
     docker compose exec app php artisan key:generate
+    docker compose exec app php artisan storage:link
 ```
 
 # 4.1 Optional migrate from seeds for development
@@ -46,6 +45,13 @@ This guide covers the complete setup for running Laravel RentCar in production w
 ```bash
     docker compose exec app php artisan migrate --seed
 ```
+
+# 4.2 Optional make an account for admin
+```bash
+  docker compose exec app php artisan app:create-account
+```
+
+
 
 # 5. SSL & HTTP/2 Verification
 ### lace your SSL certificates in ./docker/nginx/ssl/ or generate self-signed certificates:
