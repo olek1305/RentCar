@@ -39,15 +39,18 @@ RUN addgroup -g ${WWWGROUP} app && \
     mkdir -p /var/www/html/storage/framework/{cache,sessions,views} \
              /var/www/html/storage/logs \
              /var/www/html/bootstrap/cache \
-             /var/www/html/node_modules && \
-    chown -R app:app /var/www/html && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+             /var/www/html/node_modules \
+             /home/app/.npm && \
+    chown -R 1337:${WWWGROUP} /var/www/html /home/app && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /home/app/.npm
 
 # Copy configurations
 COPY php.ini /usr/local/etc/php/conf.d/99-custom.ini
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Set npm cache directory for the app user
 USER app
+ENV npm_config_cache=/home/app/.npm
 
 EXPOSE 9000
 

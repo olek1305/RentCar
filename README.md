@@ -19,16 +19,13 @@ This guide covers the complete setup for running Laravel RentCar in production w
     cp .env.example .env
 ```
 
-# 3. Generate Application Key
+# 3. Run Docker
 ### First, start the containers temporarily
 ```bash
     docker compose up -d --build
 ```
 
-### Generate key
-```bash
-    docker compose exec app php artisan key:generate
-```
+
 
 # 4. Install Dependencies & Build Assets
 ### Install dependencies
@@ -36,15 +33,27 @@ This guide covers the complete setup for running Laravel RentCar in production w
     docker compose exec app composer install --no-dev --optimize-autoloader
     docker compose exec app npm install
     docker compose exec app npm run build
+    docker compose exec app php artisan key:generate
 ```
 
-# SSL & HTTP/3 Verification
+# 4.1 Optional migrate from seeds for development
+### First you need install composer with dev
+```bash
+    docker compose exec app composer install
+```
+
+### Migrate
+```bash
+    docker compose exec app php artisan migrate --seed
+```
+
+# 5. SSL & HTTP/2 Verification
 ### lace your SSL certificates in ./docker/nginx/ssl/ or generate self-signed certificates:
 ```bash
     mkdir -p docker/nginx/ssl
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout docker/nginx/ssl/selfsigned.key \
-        -out docker/nginx/ssl/selfsigned.crt
+        -keyout docker/nginx/ssl/key.pem \
+        -out docker/nginx/ssl/cert.pem
 ```
 
 # Network Verification
