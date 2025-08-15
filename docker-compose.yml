@@ -79,12 +79,11 @@ services:
         networks:
             - rentcar-net
         healthcheck:
-            test: ["CMD", "valkey-cli", "ping"]
+            test: [ "CMD", "valkey-cli", "-a", "password", "ping" ]
             interval: 10s
             timeout: 5s
             retries: 3
-        command: ["valkey-server", "--appendonly", "yes"]
-
+        command: valkey-server --requirepass password --maxmemory 256mb --maxmemory-policy allkeys-lru --appendonly yes
 
 networks:
     rentcar-net:
