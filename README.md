@@ -108,9 +108,3 @@ This guide covers the complete setup for running Laravel RentCar in production w
     # Test from Laravel
     docker compose exec app php artisan tinker --execute="DB::connection()->getPdo();"
 ```
-
-### Fix: Writing to directory /.config/psysh is not allowed.
-Add .env
-```env
-    XDG_CONFIG_HOME=/tmp
-```
