@@ -31,6 +31,7 @@ This guide covers the complete setup for running Laravel RentCar in production w
     docker compose exec app composer install --no-dev --optimize-autoloader
     docker compose exec app npm install
     docker compose exec app npm run build
+    docker compose exec app php artisan migrate
     docker compose exec app php artisan key:generate
     docker compose exec app php artisan storage:link
 ```
