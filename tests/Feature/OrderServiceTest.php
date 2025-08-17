@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Car;
+use App\Services\CacheService;
 use App\Services\MailService;
 use App\Services\OrderService;
 use App\Services\SmsService;
@@ -17,6 +18,7 @@ class OrderServiceTest extends TestCase
     protected OrderService $orderService;
     protected MailService $mailService;
     protected SmsService $smsService;
+    protected CacheService $cacheService;
 
     protected function setUp(): void
     {
@@ -24,8 +26,12 @@ class OrderServiceTest extends TestCase
 
         $this->mailService = new MailService();
         $this->smsService = new SmsService();
-
-        $this->orderService = new OrderService($this->mailService, $this->smsService);
+        $this->cacheService = new CacheService();
+        $this->orderService = new OrderService(
+            $this->mailService,
+            $this->smsService,
+            $this->cacheService
+        );
     }
 
     #[Test]
