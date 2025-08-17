@@ -6,44 +6,91 @@ use App\Http\Requests\StoreCarRequest;
 use App\Http\Requests\UpdateCarRequest;
 use App\Models\Car;
 use App\Models\Order;
+use App\Services\CacheService;
 use App\Services\CarService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class CarController extends Controller
 {
-
     /**
-     * @param CarService $carService
+     * Initialize controller with car service and cache service dependency injection
      */
-    public function __construct(protected CarService $carService)
-    {
+    public function __construct(
+        protected CarService $carService,
+        protected CacheService $cacheService
+    ) {
         //
     }
 
-
     /**
-     * @return Factory|Application|View
+     * Display a paginated listing of cars with caching
+     * Shows all cars for admin users, only visible cars for guests
+     *
+     * @return View|Application|Factory
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
-
     public function index(): View|Application|Factory
     {
-        $cars = $this->carService->getVisibleCars(auth()->check())
-            ->orderBy('created_at', 'desc')
-            ->paginate(12);
+        $currentPage = (int) request()->get('page', 1);
+        $perPage = 12;
 
-        $cars->getCollection()->transform(function ($car) {
-            return $this->carService->prepareCarForDisplay($car);
+        // Get cache key for current page
+        $cacheKey = $this->cacheService->getCarCacheKey($currentPage, $perPage);
+
+        // Track cache keys for easier invalidation
+        $this->cacheService->trackCacheKey($cacheKey);
+
+        // Cache the query results properly, 1 hour
+        $carsData = Cache::remember($cacheKey, 3600, function () use ($perPage, $currentPage) {
+            $query = $this->carService->getVisibleCars(auth()->check())
+                ->orderBy('created_at', 'desc');
+
+            $total = $query->count();
+            $cars = $query->skip(($currentPage - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            return [
+                'cars' => $cars,
+                'total' => $total,
+                'per_page' => $perPage,
+                'current_page' => $currentPage
+            ];
         });
+
+        // Create paginator manually to maintain correct pagination state
+        $cars = new LengthAwarePaginator(
+            $carsData['cars'],
+            $carsData['total'],
+            $carsData['per_page'],
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'page',
+            ]
+        );
+
+        // Transform cars for display
+        $cars->getCollection()->transform(fn($car) =>
+        $this->carService->prepareCarForDisplay($car)
+        );
 
         return view('cars.index', compact('cars'));
     }
 
+    /**
+     * Show the form for creating a new car
+     *
+     * @return View|Application|Factory
+     */
     public function create(): View|Application|Factory
     {
         return view('cars.create', [
@@ -54,18 +101,27 @@ class CarController extends Controller
     }
 
     /**
+     * Store a newly created car in the database
+     *
      * @param StoreCarRequest $request
      * @return RedirectResponse
      */
     public function store(StoreCarRequest $request): RedirectResponse
     {
-        $car = $this->carService->createCar($request->validated(), $request->file('main_image'), $request->file('gallery_images'));
+        $car = $this->carService->createCar(
+            $request->validated(),
+            $request->file('main_image'),
+            $request->file('gallery_images')
+        );
+        $this->cacheService->clearCarsCache();
 
         return redirect()->route('cars.show', $car->id)
             ->with('success', __('messages.car_created'));
     }
 
     /**
+     * Display the specified car with order information
+     *
      * @param Car $car
      * @param Order $order
      * @return Factory|Application|View
@@ -79,8 +135,10 @@ class CarController extends Controller
     }
 
     /**
+     * Show the form for editing the specified car
+     *
      * @param Car $car
-     * @return Factory|Application|View
+     * @return View|Application|Factory
      */
     public function edit(Car $car): View|Application|Factory
     {
@@ -95,6 +153,8 @@ class CarController extends Controller
     }
 
     /**
+     * Update the specified car in the database
+     *
      * @param UpdateCarRequest $request
      * @param Car $car
      * @return RedirectResponse
@@ -111,6 +171,7 @@ class CarController extends Controller
             $request->delete_main_image,
             $request->delete_gallery_images
         );
+        $this->cacheService->clearCarsCache();
 
         return redirect()->route('cars.show', $car->id)
             ->with('success', __('messages.car_updated'));
@@ -118,16 +179,20 @@ class CarController extends Controller
 
 
     /**
+     * Remove the specified car from the database
+     *
      * @param Car $car
      * @return RedirectResponse
      */
     public function destroy(Car $car): RedirectResponse
     {
         $this->carService->deleteCar($car);
+        $this->cacheService->clearCarsCache();
 
         return redirect()->route('cars.index')
             ->with('success', __('messages.car_deleted'));
     }
+
 
     /**
      * Switch hide the car
@@ -137,7 +202,7 @@ class CarController extends Controller
     public function toggleVisibility(Car $car): RedirectResponse
     {
         $this->carService->toggleCarVisibility($car);
-
+        $this->cacheService->clearCarsCache();
         return back()->with([
             'success' => 'Car visibility updated',
             'scroll_position' => request()->header('Referer') . '#car-' . $car->id

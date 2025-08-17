@@ -11,8 +11,12 @@ class OrderService
     /**
      * @param MailService $mailService
      * @param SmsService $smsService
+     * @param CacheService $cacheService
      */
-    public function __construct(protected MailService $mailService, protected SmsService $smsService)
+    public function __construct(protected MailService $mailService,
+                                protected SmsService $smsService,
+                                protected CacheService $cacheService
+    )
     {
         //
     }
@@ -70,6 +74,7 @@ class OrderService
             'sms_verified_at' => $verificationMethod === 'sms' ? now() : null,
         ]);
         $car->update(['hidden' => true]);
+        $this->cacheService->clearCarsCache();
 
         // Handle verification based on method
         if ($verificationMethod === 'email') {
