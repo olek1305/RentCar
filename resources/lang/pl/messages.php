@@ -1,7 +1,7 @@
 <?php
 
 return [
-    // Ogólne
+    // General
     'subtitle' => 'Znajdź swój wymarzony samochód już dziś!',
     'from_per_day' => 'Od :price/dzień',
     'book' => 'Zarezerwuj',
@@ -19,16 +19,27 @@ return [
     'confirm_delete_car' => 'Czy na pewno chcesz usunąć ten samochód? Tej czynności nie można cofnąć.',
     'phone' => 'Telefon',
     'disable' => 'Wyłączony',
+    'order' => 'Zamówienie',
+    'back' => 'Powrót',
+    'customer_data' => 'Dane klienta',
+    'rental_details' => 'Szczegóły wynajmu',
+    'change_status' => 'Zmień status',
+    'current_status' => 'Aktualny status',
+    'save' => 'Zapisz',
+    'yes' => 'Tak',
+    'no' => 'Nie',
+    'no_additional_info' => 'Brak dodatkowych informacji',
+    'additional_info' => 'Dodatkowe informacje',
+    'hours' => 'Godziny',
 
-    // Kontakt
+    // Contact
     'contact_description' => 'Masz pytania? Skorzystaj z poniższych danych lub wyślij nam wiadomość za pomocą formularza.',
-    'instagram' => 'Instagram',
     'send_message' => 'Wyślij wiadomość',
     'name' => 'Twoje imię',
     'message' => 'Wiadomość',
     'send' => 'Wyślij wiadomość',
 
-    // Admin na stronie
+    // Admin Page
     'login' => 'Zaloguj',
     'logout' => 'Wyloguj',
     'admin_panel' => 'Panel Administracyjny',
@@ -41,7 +52,7 @@ return [
     'condition' => 'Warunek',
     'contact' => 'Kontakt',
 
-    // Samochód na stronie
+    // Car Page
     'car_index' => 'Lista samochodów',
     'car_create' => 'Dodaj samochód',
     'car_edit' => 'Edytuj samochód',
@@ -63,7 +74,7 @@ return [
     'daily_price' => 'Cena za dzień',
     'registration_from' => 'Rok produkcji',
 
-    // Rezerwacja na stronie samochodu
+    // Booking in Car Page
     'rental_prices' => 'Ceny wynajmu',
     'description' => 'Opis',
     'specifications' => 'Specyfikacja',
@@ -74,11 +85,11 @@ return [
     'airport_delivery_included' => 'Dostawa na lotnisko w cenie',
     'days' => 'Dni',
     'book_now' => 'Zarezerwuj teraz',
-    'additional_info' => 'Dodatkowe informacje',
 
-    // Formularz klienta
+    // Customer Form
     'first_name' => 'Imię',
     'last_name' => 'Nazwisko',
+    'full_name' => 'Imię i nazwisko',
     'address' => 'Adres',
     'verification_method' => 'Metoda weryfikacji',
     'verify_via_sms' => 'Weryfikuj przez SMS',
@@ -92,7 +103,7 @@ return [
     'sms_send_error' => 'Błąd podczas wysyłania kodu weryfikacyjnego',
     'invalid_verification_code' => 'Nieprawidłowy kod weryfikacyjny',
 
-    // Zamówienia
+    // Orders
     'orders' => [
         'title' => 'Zamówienia',
         'customer_orders' => 'Zamówienia Klientów',
@@ -113,48 +124,42 @@ return [
         'update_status' => 'Aktualizuj Status',
     ],
 
-    // Statusy
-    'statuses' => [
-        'pending' => 'Oczekujące',
-        'confirmed' => 'Potwierdzone',
-        'completed' => 'Zakończone',
-        'cancelled' => 'Anulowane',
-    ],
+    // Statuses
+    'status_pending_verification' => 'Oczekiwanie na Weryfikację',
+    'status_pending' => 'Oczekujące',
+    'status_confirmed' => 'Potwierdzone',
+    'status_completed' => 'Zakończone',
+    'status_cancelled' => 'Anulowane',
 
-    // Warunki wynajmu
+    // Rental Conditions
     'rental_conditions' => 'Warunki Wynajmu',
     'welcome_text' => 'Witamy w RentCar! Poniżej znajdziesz zasady i warunki wypożyczenia naszych samochodów.',
-
     'requirements_title' => '1. Wymagania dotyczące najemcy',
     'requirements_list' => [
         'Najemca musi mieć ukończone 21 lat.',
         'Posiadać ważne prawo jazdy od co najmniej 2 lat.',
         'Przedstawić ważny dokument tożsamości.',
     ],
-
     'payment_title' => '2. Warunki płatności',
     'payment_list' => [
         'Płatność jest wymagana z góry za cały okres najmu.',
         'Akceptujemy płatności kartą kredytową oraz przelewem online.',
     ],
-
     'return_title' => '3. Zwrot pojazdu',
     'return_list' => [
         'Samochód należy zwrócić w umówionym terminie i miejscu.',
         'Pojazd powinien być zwrócony z pełnym bakiem paliwa.',
         'Opóźnienia w zwrocie mogą skutkować dodatkowymi opłatami.',
     ],
-
     'liability_title' => '4. Odpowiedzialność i ubezpieczenie',
     'liability_list' => [
         'Najemca odpowiada za szkody powstałe z winy użytkownika.',
         'Samochody są ubezpieczone, ale udział własny może obowiązywać.',
     ],
-
     'final_title' => '5. Postanowienia końcowe',
     'final_text' => 'W przypadku naruszenia warunków najmu, RentCar zastrzega sobie prawo do rozwiązania umowy. Szczegóły regulaminu są dostępne na naszej stronie lub u konsultanta.',
 
-    // session success and errors
+    // Session success and errors
     'login_success' => 'Zalogowano pomyślnie!',
     'logout_success' => 'Wylogowano pomyślnie!',
     'car_created' => 'Samochód został utworzony!',
@@ -165,7 +170,7 @@ return [
     'order_unavailable' => 'Ten samochód jest obecnie niedostępny do wypożyczenia.',
     'order_created' => 'Zamówienie zostało złożone! Wkrótce się z Tobą skontaktujemy.',
 
-    // Strona główna
+    // Homepage
     'welcome' => 'Witamy w RentCar',
     'hero_title' => 'Doświadcz komfortu i wolności na drodze',
     'browse_cars' => 'Przeglądaj nasze samochody',
@@ -181,4 +186,27 @@ return [
     'ready_to_rent' => 'Gotowy wynająć wymarzony samochód?',
     'cta_text' => 'Wybierz z naszej szerokiej oferty pojazdów na Twoją następną przygodę',
     'view_cars' => 'Zobacz dostępne samochody',
+
+    // Verifications
+    'Order Verification' => 'Weryfikacja zamówienia',
+    'Thank you for your order! Please verify your contact information.' => 'Dziękujemy za złożenie zamówienia! Prosimy o weryfikację danych kontaktowych.',
+    'Email Verification' => 'Weryfikacja e-mail',
+    'Pending' => 'Oczekujące',
+    'We sent a verification link to' => 'Wysłaliśmy link weryfikacyjny na adres',
+    'Please check your inbox and click the verification link.' => 'Prosimy sprawdzić skrzynkę odbiorczą i kliknąć w link weryfikacyjny.',
+    'Resend Verification Email' => 'Wyślij ponownie e-mail weryfikacyjny',
+    'Email Verified' => 'E-mail zweryfikowany',
+    'Verified at' => 'Zweryfikowano dnia',
+    'Phone Verification' => 'Weryfikacja telefonu',
+    'Your phone number needs verification.' => 'Twój numer telefonu wymaga weryfikacji.',
+    'Verification Code' => 'Kod weryfikacyjny',
+    'Verify Phone' => 'Zweryfikuj telefon',
+    'Phone Verified' => 'Telefon zweryfikowany',
+    'Verification Complete!' => 'Weryfikacja zakończona!',
+//    # TODO below add text like send pay with link
+    'Your order is now fully verified. We will contact you soon with further details.' => 'Twoje zamówienie jest w pełni zweryfikowane. Skontaktujemy się z Tobą wkrótce z dalszymi szczegółami.',
+    'Back to Home' => 'Wróć do strony głównej',
+    'verification_status' => 'Status weryfikacji',
+    'email_verified' => 'Email zweryfikowany',
+    'sms_verified' => 'SMS zweryfikowany',
 ];

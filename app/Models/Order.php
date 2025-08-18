@@ -48,11 +48,16 @@ class Order extends Model
     public static function statuses(): array
     {
         return [
-            'pending_verification' => 'Oczekiwanie na Weryfikację',
-            'pending' => 'Oczekujące',
-            'confirmed' => 'Potwierdzone',
-            'completed' => 'Zakończone',
-            'cancelled' => 'Anulowane'
+            'pending_verification' => __('messages.status_pending_verification'),
+            'pending' => __('messages.status_pending'),
+            'confirmed' => __('messages.status_confirmed'),
+            'completed' => __('messages.status_completed'),
+            'cancelled' => __('messages.status_cancelled')
         ];
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return self::statuses()[$this->status] ?? $this->status;
     }
 }

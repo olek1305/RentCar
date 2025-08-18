@@ -10,7 +10,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
-class OrderController extends Controller
+class OrderAdminController extends Controller
 {
     /**
      * @return Factory|Application|View
@@ -22,23 +22,28 @@ class OrderController extends Controller
     }
 
     /**
-     * @param Order $order
+     * @param $id
      * @return Factory|Application|View
      */
-    public function show(Order $order): Factory|Application|View
+    public function show($id): Factory|Application|View
     {
-        return view('admin.orders.show', compact('order'));
+        $order = Order::with('car')->findOrFail($id);
+        $statuses = Order::statuses();
+
+        return view('admin.orders.show', compact('order', 'statuses'));
     }
 
     /**
      * @param Request $request
-     * @param Order $order
+     * @param $id
      * @return RedirectResponse
      */
-    public function updateStatus(Request $request, Order $order): RedirectResponse
+    public function updateStatus(Request $request, $id): RedirectResponse
     {
+        $order = Order::findOrFail($id);
+
         $request->validate([
-            'status' => 'required|in:pending,confirmed,completed,cancelled'
+            'status' => 'required|in:pending_verification,pending,confirmed,completed,cancelled'
         ]);
 
         $order->update(['status' => $request->status]);

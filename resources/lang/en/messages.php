@@ -19,6 +19,18 @@ return [
     'confirm_delete_car' => 'Are you sure you want to delete this car? This action cannot be undone.',
     'phone' => 'Phone',
     'disable' => 'Disable',
+    'order' => 'Order',
+    'back' => 'Back',
+    'customer_data' => 'Customer Data',
+    'rental_details' => 'Rental Details',
+    'change_status' => 'Change Status',
+    'current_status' => 'Current Status',
+    'save' => 'Save',
+    'yes' => 'Yes',
+    'no' => 'No',
+    'no_additional_info' => 'No additional information',
+    'additional_info' => 'Additional Information',
+    'hours' => 'Hours',
 
     // Contact
     'contact_description' => 'If you have any questions, feel free to reach out using the details below or send us a message directly.',
@@ -73,11 +85,11 @@ return [
     'airport_delivery_included' => 'Airport Delivery Included',
     'days' => 'Days',
     'book_now' => 'Book Now',
-    'additional_info' => 'Additional Info',
 
     // Customer Form
     'first_name' => 'First name',
     'last_name' => 'Last name',
+    'full_name' => 'Full Name',
     'address' => 'Address',
     'verification_method' => 'Verification Method',
     'verify_via_sms' => 'Verify via SMS',
@@ -113,47 +125,41 @@ return [
     ],
 
     // Statuses
-    'statuses' => [
-        'pending' => 'Pending',
-        'confirmed' => 'Confirmed',
-        'completed' => 'Completed',
-        'cancelled' => 'Cancelled',
-    ],
+    'status_pending_verification' => 'Pending Verification',
+    'status_pending' => 'Pending',
+    'status_confirmed' => 'Confirmed',
+    'status_completed' => 'Completed',
+    'status_cancelled' => 'Cancelled',
 
     // Rental Conditions
     'rental_conditions' => 'Rental Conditions',
     'welcome_text' => 'Welcome to RentCar! Below you will find the terms and conditions for renting our vehicles.',
-
     'requirements_title' => '1. Renter Requirements',
     'requirements_list' => [
         'The renter must be at least 21 years old.',
         'Must have a valid driver\'s license for at least 2 years.',
         'Must present a valid ID document.',
     ],
-
     'payment_title' => '2. Payment Terms',
     'payment_list' => [
         'Payment is required in advance for the entire rental period.',
         'We accept credit card and online bank transfer payments.',
     ],
-
     'return_title' => '3. Vehicle Return',
     'return_list' => [
         'The car must be returned at the agreed time and location.',
         'The vehicle should be returned with a full fuel tank.',
         'Late returns may incur additional charges.',
     ],
-
     'liability_title' => '4. Liability and Insurance',
     'liability_list' => [
         'The renter is responsible for any damage caused by the user.',
         'Vehicles are insured, but an excess may apply.',
     ],
-
     'final_title' => '5. Final Provisions',
     'final_text' => 'In case of rental condition violations, RentCar reserves the right to terminate the contract. Full terms are available on our website or from a representative.',
 
-    // session success and errors
+    // Session success and errors
     'login_success' => 'Logged in successfully!',
     'logout_success' => 'Logged out successfully!',
     'car_created' => 'Car has been created successfully!',
@@ -164,7 +170,7 @@ return [
     'order_unavailable' => 'This car is currently unavailable for rental.',
     'order_created' => 'The order has been placed! We will be in contact shortly.',
 
-    // homepage
+    // Homepage
     'welcome' => 'Welcome to RentCar',
     'hero_title' => 'Experience comfort and freedom on the road',
     'browse_cars' => 'Browse Our Cars',
@@ -181,7 +187,7 @@ return [
     'cta_text' => 'Choose from our wide selection of vehicles for your next adventure',
     'view_cars' => 'View Available Cars',
 
-    // verifications page
+    // Verifications
     'Order Verification' => 'Order Verification',
     'Thank you for your order! Please verify your contact information.' => 'Thank you for your order! Please verify your contact information.',
     'Email Verification' => 'Email Verification',
@@ -199,4 +205,7 @@ return [
     'Verification Complete!' => 'Verification Complete!',
     'Your order is now fully verified. We will contact you soon with further details.' => 'Your order is now fully verified. We will contact you soon with further details.',
     'Back to Home' => 'Back to Home',
+    'verification_status' => 'Verification Status',
+    'email_verified' => 'Email Verified',
+    'sms_verified' => 'SMS Verified',
 ];
