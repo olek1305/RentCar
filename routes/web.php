@@ -8,6 +8,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -39,6 +40,12 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/orders/{order}', [OrderAdminController::class, 'show'])->name('admin.orders.show');
     Route::patch('/orders/{order}/status', [OrderAdminController::class, 'updateStatus'])
         ->name('admin.orders.update-status');
+    Route::post('/orders/{order}/send-payment-link', [OrderAdminController::class, 'sendPaymentLink'])
+        ->name('admin.orders.send-payment-link');
+    Route::patch('/orders/{order}/mark-finished', [OrderAdminController::class, 'markAsFinished'])
+        ->name('admin.orders.mark-finished');
+    Route::patch('/orders/{order}/cancel', [OrderAdminController::class, 'cancelOrder'])
+        ->name('admin.orders.cancel');
     Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
 });
 
@@ -54,3 +61,8 @@ Route::post('/orders/{order}/resend/{type}', [OrderController::class, 'resendVer
     ->middleware('throttle:verification');
 Route::post('/send-verification-code', [OrderController::class, 'sendVerificationCode'])
     ->name('send-verification-code');
+
+Route::get('/payment/success/{order}', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment/cancel/{order}', [PaymentController::class, 'cancel'])->name('payment.cancel');
+Route::post('/orders/{order}/send-final-payment-link', [OrderAdminController::class, 'sendFinalPaymentLink'])
+    ->name('admin.orders.send-final-payment-link');

@@ -2,36 +2,35 @@
 
 namespace App\Services;
 
-use App\Mail\OrderVerificationMail;
+use App\Mail\PaymentConfirmationMail;
 use App\Models\Order;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Str;
 
 class MailService
 {
     /**
+     * Send payment link via email
+     *
      * @param Order $order
-     * @return true
+     * @param string $paymentLink
+     * @return bool
      */
-    public function sendVerificationEmail(Order $order): bool
+    public function sendPaymentLink(Order $order, string $paymentLink): bool
     {
-        $token = Str::random(32);
-        $hashedToken = hash('sha256', $token);
+        Mail::to($order->email)->send(new PaymentConfirmationMail($order, $paymentLink));
+        return true;
+    }
 
-        $order->update([
-            'email_verification_token' => $hashedToken,
-            'email_verification_sent_at' => now(),
-            'email_verified_at' => null
-        ]);
-
-        $verificationUrl = URL::temporarySignedRoute(
-            'orders.verify-email',
-            now()->addHours(24),
-            ['orderId' => $order->id, 'token' => $token]
-        );
-
-        Mail::to($order->email)->send(new OrderVerificationMail($verificationUrl, $order));
+    /**
+     * Send payment confirmation via email
+     *
+     * @param Order $order
+     * @param string $paymentLink
+     * @return bool
+     */
+    public function sendPaymentConfirmation(Order $order, string $paymentLink): bool
+    {
+        Mail::to($order->email)->send(new PaymentConfirmationMail($order, $paymentLink));
         return true;
     }
 }

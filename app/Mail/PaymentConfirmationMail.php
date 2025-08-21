@@ -10,14 +10,14 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OrderVerificationMail extends Mailable
+class PaymentConfirmationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(protected string $verificationUrl, protected Order $order)
+    public function __construct(public Order $order, public string $paymentLink)
     {
         //
     }
@@ -28,7 +28,7 @@ class OrderVerificationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Verify Your Rental Order',
+            subject: __('messages.email_confirm_payment'),
         );
     }
 
@@ -38,11 +38,11 @@ class OrderVerificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.order_verification',
-            text: 'emails.order_verification_text',
+            view: 'emails.payment_confirmation',
+            text: 'emails.payment_confirmation_text',
             with: [
                 'order' => $this->order,
-                'verificationUrl' => $this->verificationUrl,
+                'paymentLink' => $this->paymentLink,
             ]
         );
     }

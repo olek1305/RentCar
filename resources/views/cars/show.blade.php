@@ -121,6 +121,24 @@
             @csrf
             <input type="hidden" name="car_id" value="{{ $car->id }}">
 
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            {{ __('messages.reservation_fee_required') }}
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <p>{{ __('messages.reservation_fee_text', ['amount' => '5 EUR']) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block font-medium text-gray-700">{{ __('messages.first_name') }} <span
@@ -138,18 +156,21 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block font-medium text-gray-700">Email <span
+                    <label class="block font-medium text-gray-700">Email<span
                             class="text-red-500">*</span></label>
                     <input type="email" name="email" required value="{{ old('email') }}"
                            class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
+                    <p class="text-sm text-gray-500 mt-1">{{ __('messages.payment_link_will_be_sent_email') }}</p>
                 </div>
                 <div>
                     <label class="block font-medium text-gray-700">{{ __('messages.phone') }} <span
                             class="text-red-500">*</span></label>
                     <input type="tel" name="phone" required value="{{ old('phone') }}"
                            class="mt-1 block w-full rounded border border-gray-300 px-3 py-2">
+                    <p class="text-sm text-gray-500 mt-1">{{ __('messages.payment_link_will_be_sent_sms') }}</p>
                 </div>
             </div>
+
 
             <label class="block">
                 <span class="font-medium text-gray-700">{{ __('messages.rental_date') }} <span
@@ -290,18 +311,36 @@
                 </div>
             </div>
 
-            <div class="space-y-2">
-                <label class="flex items-center space-x-3">
-                    <input type="checkbox" name="extra_delivery_fee" value="1" class="form-checkbox text-blue-600"
-                        {{ old('extra_delivery_fee') ? 'checked' : '' }}/>
-                    <span class="text-gray-700">{{ __('messages.extra_delivery_fee') }}</span>
-                </label>
+            {{-- Delivery Options --}}
+            <div class="border border-gray-300 rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('messages.delivery_options') }}</h3>
+                <p class="text-sm text-gray-600 mb-4">{{ __('messages.select_delivery_option') }}</p>
 
-                <label class="flex items-center space-x-3">
-                    <input type="checkbox" name="airport_delivery" value="1" class="form-checkbox text-blue-600"
-                        {{ old('airport_delivery') ? 'checked' : '' }}/>
-                    <span class="text-gray-700">{{ __('messages.airport_delivery_included') }}</span>
-                </label>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <input type="radio" id="no_delivery" name="delivery_option" value="none"
+                               class="mr-3" {{ old('delivery_option', 'none') == 'none' ? 'checked' : '' }}>
+                        <label for="no_delivery" class="text-gray-700">
+                            {{ __('messages.no_delivery') }} - {{ __('messages.free') }}
+                        </label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="radio" id="airport_delivery" name="delivery_option" value="airport"
+                               class="mr-3" {{ old('delivery_option') == 'airport' ? 'checked' : '' }}>
+                        <label for="airport_delivery" class="text-gray-700">
+                            {{ __('messages.airport_pickup') }} - <span class="font-semibold">10 EUR</span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="radio" id="delivery_service" name="delivery_option" value="delivery"
+                               class="mr-3" {{ old('delivery_option') == 'delivery' ? 'checked' : '' }}>
+                        <label for="delivery_service" class="text-gray-700">
+                            {{ __('messages.delivery_service') }} - <span class="font-semibold">20 EUR</span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <label class="block">
@@ -343,8 +382,8 @@
             </div>
 
             <button type="submit"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
-                {{ __('messages.book_now') }}
+                    class="w-full bg-[#e3171e] text-white py-3 px-6 rounded hover:bg-red-700 transition duration-200 font-medium">
+                {{ __('messages.submit_reservation') }} - {{ __('messages.reservation_fee_5_eur') }}
             </button>
         </form>
     </section>
@@ -360,7 +399,7 @@
     </div>
 
     <script>
-        // Initialize time inputs with current time
+        // Initialize time inputs with the current time
         document.addEventListener('DOMContentLoaded', function () {
             const now = new Date();
             const hours = now.getHours().toString().padStart(2, '0');

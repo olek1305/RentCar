@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\CurrencySetting;
 use App\Models\Order;
 use App\Models\Car;
 use Carbon\Carbon;
+use Exception;
 
 class OrderService
 {
@@ -12,13 +14,26 @@ class OrderService
      * @param MailService $mailService
      * @param SmsService $smsService
      * @param CacheService $cacheService
+     * @param PaymentService $paymentService
      */
     public function __construct(protected MailService $mailService,
                                 protected SmsService $smsService,
-                                protected CacheService $cacheService
+                                protected CacheService $cacheService,
+                                protected PaymentService $paymentService
     )
     {
         //
+    }
+
+
+    /**
+     * @param Order $order
+     * @return void
+     * @throws Exception
+     */
+    protected function sendReservationPaymentLink(Order $order): void
+    {
+        $this->paymentService->sendReservationPaymentLink($order);
     }
 
     /**
@@ -38,19 +53,21 @@ class OrderService
     }
 
     /**
-     * Create a new order with verification process.
+     * Create a new order.
      *
      * @param array $data
      * @return array
+     * @throws Exception
      */
     public function createOrder(array $data): array
     {
-        $verificationMethod = $data['verification_method'];
-
         // Process order data
         $data['rental_time'] = $data['rental_time_hour'] . ':' . $data['rental_time_minute'];
         $data['return_time'] = $data['return_time_hour'] . ':' . $data['return_time_minute'];
-        unset($data['rental_time_hour'], $data['rental_time_minute'], $data['return_time_hour'], $data['return_time_minute']);
+        $data['airport_delivery'] = $data['delivery_option'] === 'airport';
+        $data['extra_delivery_fee'] = $data['delivery_option'] === 'delivery';
+
+        unset($data['rental_time_hour'], $data['rental_time_minute'], $data['return_time_hour'], $data['return_time_minute'], $data['delivery_option']);
 
         $limitCheck = $this->checkOrderLimits($data);
         if ($limitCheck['limited']) {
@@ -66,35 +83,26 @@ class OrderService
             return ['success' => false, 'message' => __('message.order_unavailable')];
         }
 
+        // Create order directly as pending - no verification needed
         $order = Order::create([
             ...$data,
-            'status' => 'pending_verification',
-            'verification_method' => $verificationMethod,
-            'email_verified_at' => null,
-            'sms_verified_at' => $verificationMethod === 'sms' ? now() : null,
+            'status' => 'pending',
+            'payment_amount' => Order::getStaticReservationFee(), // fee
+            'payment_currency' => CurrencySetting::getDefaultCurrency()->currency_code,
         ]);
+
         $car->update(['hidden' => true]);
         $this->cacheService->clearCarsCache();
 
-        // Handle verification based on method
-        if ($verificationMethod === 'email') {
-            $this->mailService->sendVerificationEmail($order);
-            return [
-                'success' => true,
-                'message' => __('Verification email sent. Please check your inbox.'),
-                'order' => $order,
-                'requires_verification' => true,
-                'verification_method' => 'email'
-            ];
-        } else {
-            return [
-                'success' => true,
-                'message' => __('Order created successfully.'),
-                'order' => $order,
-                'requires_verification' => false,
-                'verification_method' => 'sms'
-            ];
-        }
+        // Automatically send a payment link for the reservation fee
+        $this->sendReservationPaymentLink($order);
+
+        return [
+            'success' => true,
+            'message' => __('messages.order_created_payment_link_sent'),
+            'order' => $order,
+            'requires_verification' => false
+        ];
     }
 
     /**
@@ -128,7 +136,7 @@ class OrderService
     }
 
     /**
-     * Verify an email token and activate the order.
+     * Verify an email token and send payment link
      *
      * @param int|null $orderId
      * @param string $token
@@ -136,13 +144,6 @@ class OrderService
      */
     public function verifyEmailToken(?int $orderId, string $token): array
     {
-        $query = Order::query()
-            ->where('email_verification_token', $token);
-
-        if ($orderId) {
-            $query->where('id', $orderId);
-        }
-
         $hashedToken = hash('sha256', $token);
         $order = Order::where('id', $orderId)
             ->where('email_verification_token', $hashedToken)
@@ -175,48 +176,31 @@ class OrderService
             ];
         }
 
+        // Verification - send a payment link
+        $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
+
+        if (!$paymentLink) {
+            return [
+                'success' => false,
+                'message' => __('Error generating payment link'),
+                'order' => $order
+            ];
+        }
+
         $order->update([
             'email_verified_at' => now(),
             'email_verification_token' => null,
-            'status' => 'pending'
+            'status' => 'awaiting_payment',
+            'payment_link_sent_at' => now(),
         ]);
+
+        // Send an email with a payment link
+        $this->mailService->sendPaymentConfirmation($order, $paymentLink);
 
         return [
             'success' => true,
-            'message' => __('Email verified successfully'),
+            'message' => __('email_confirm_payment'),
             'order' => $order
         ];
-    }
-
-    /**
-     * Verify SMS code and activate the order.
-     *
-     * @param $orderId
-     * @param $code
-     * @return array
-     */
-    public function verifySmsCode($orderId, $code): array
-    {
-        $order = Order::findOrFail($orderId);
-
-        if ($order->sms_verification_code != $code) {
-            return ['success' => false, 'message' => __('Invalid verification code')];
-        }
-
-        if ($order->sms_verification_sent_at && $order->sms_verification_sent_at->addHours(24)->isPast()) {
-            return ['success' => false, 'message' => __('The verification code has expired. Please request a new one.')];
-        }
-
-        if ($order->sms_verified_at) {
-            return ['success' => false, 'message' => __('SMS already verified')];
-        }
-
-        $order->update([
-            'sms_verified_at' => now(),
-            'sms_verification_code' => null,
-            'status' => 'pending'
-        ]);
-
-        return ['success' => true, 'message' => __('SMS verified successfully')];
     }
 }
