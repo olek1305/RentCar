@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Services\CacheService;
 use App\Services\MailService;
 use App\Services\OrderService;
+use App\Services\PaymentService;
 use App\Services\SmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -21,6 +22,7 @@ class EmailServiceTest extends TestCase
     protected MailService $mailService;
     protected SmsService $smsService;
     protected CacheService $cacheService;
+    protected PaymentService $paymentService;
 
     protected function setUp(): void
     {
@@ -29,22 +31,25 @@ class EmailServiceTest extends TestCase
         $this->mailService = new MailService();
         $this->smsService = new SmsService();
         $this->cacheService = new CacheService();
+        $this->paymentService = new PaymentService($this->mailService, $this->smsService);
         $this->orderService = new OrderService(
             $this->mailService,
             $this->smsService,
-            $this->cacheService
+            $this->cacheService,
+            $this->paymentService
         );
     }
 
+
     #[Test]
-    public function it_verifies_email_with_valid_token()
+    public function it_sends_payment_link_immediately_after_order_creation()
     {
         $car = Car::factory()->create(['hidden' => false]);
 
         $orderData = [
             'first_name' => 'John',
             'last_name' => 'Doe',
-            'email' => 'john@example.com',
+            'email' => 'john@gmail.com',
             'phone' => '123456789',
             'car_id' => $car->id,
             'rental_date' => now()->addDay()->format('Y-m-d'),
@@ -52,120 +57,18 @@ class EmailServiceTest extends TestCase
             'rental_time_minute' => '00',
             'return_time_hour' => '12',
             'return_time_minute' => '00',
-            'airport_delivery' => false,
             'additional_info' => 'Test order',
-            'verification_method' => 'email'
+            'delivery_option' => 'pickup',
         ];
 
         $result = $this->orderService->createOrder($orderData);
-        $order = $result['order'];
 
-        $token = Str::random(32);
-        $hashedToken = hash('sha256', $token);
-        $order->update([
-            'email_verification_token' => $hashedToken,
-            'email_verification_sent_at' => now()
-        ]);
+        $this->assertTrue($result['success']);
+        $this->assertEquals('awaiting_payment', $result['order']->status);
+        $this->assertFalse($result['requires_verification']);
 
-        $verificationResult = $this->orderService->verifyEmailToken($order->id, $token);
-
-        $this->assertTrue($verificationResult['success']);
-        $this->assertEquals(__('Email verified successfully'), $verificationResult['message']);
-
-        $updatedOrder = $order->fresh();
-        $this->assertNotNull($updatedOrder->email_verified_at);
-        $this->assertNull($updatedOrder->email_verification_token);
-        $this->assertEquals('pending', $updatedOrder->status);
+        // Car should be hidden after a successful order
+        $this->assertTrue($car->fresh()->hidden);
     }
 
-    #[Test]
-    public function it_fails_to_verify_email_with_invalid_token()
-    {
-        $car = Car::factory()->create();
-        $token = Str::random(32);
-        $hashedToken = hash('sha256', $token);
-
-
-        $order = Order::create([
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'email' => 'john@example.com',
-            'phone' => '123456789',
-            'car_id' => $car->id,
-            'rental_date' => now()->addDay(),
-            'rental_time' => '10:00',
-            'return_time' => '12:00',
-            'status' => 'pending_verification',
-            'verification_method' => 'email',
-            'email_verification_token' => $hashedToken,
-            'email_verified_at' => null
-        ]);
-
-        $verificationResult = $this->orderService->verifyEmailToken($order->id, 'invalid_token');
-
-        $this->assertFalse($verificationResult['success']);
-        $this->assertEquals(__('Invalid verification token'), $verificationResult['message']);
-
-        $updatedOrder = $order->fresh();
-        $this->assertNull($updatedOrder->email_verified_at);
-        $this->assertEquals($hashedToken, $updatedOrder->email_verification_token);
-        $this->assertEquals('pending_verification', $updatedOrder->status);
-    }
-
-    #[Test]
-    public function it_fails_to_verify_expired_token()
-    {
-        $car = Car::factory()->create();
-        $token = Str::random(32);
-        $hashedToken = hash('sha256', $token);
-
-        $order = Order::create([
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'email' => 'john@example.com',
-            'phone' => '123456789',
-            'car_id' => $car->id,
-            'rental_date' => now()->addDay(),
-            'rental_time' => '10:00',
-            'return_time' => '12:00',
-            'status' => 'pending_verification',
-            'verification_method' => 'email',
-            'email_verification_token' => $hashedToken,
-            'email_verification_sent_at' => now()->subHours(25),
-            'email_verified_at' => null
-        ]);
-
-        $response = $this->orderService->verifyEmailToken($order->id, $token);
-
-        $this->assertFalse($response['success']);
-        $this->assertEquals(__('The verification link has expired. Please request a new one.'), $response['message']);
-    }
-
-    #[Test]
-    public function it_fails_to_verify_already_verified_email()
-    {
-        $car = Car::factory()->create();
-        $token = Str::random(32);
-        $hashedToken = hash('sha256', $token);
-
-        $order = Order::create([
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'email' => 'john@example.com',
-            'phone' => '123456789',
-            'car_id' => $car->id,
-            'rental_date' => now()->addDay(),
-            'rental_time' => '10:00',
-            'return_time' => '12:00',
-            'status' => 'pending',
-            'verification_method' => 'email',
-            'email_verification_token' => $hashedToken,
-            'email_verified_at' => now()
-        ]);
-
-        $verificationResult = $this->orderService->verifyEmailToken($order->id, $token);
-
-        $this->assertFalse($verificationResult['success']);
-        $this->assertEquals(__('Email already verified'), $verificationResult['message']);
-    }
 }

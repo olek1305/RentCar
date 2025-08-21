@@ -6,6 +6,7 @@ use App\Models\Car;
 use App\Services\CacheService;
 use App\Services\MailService;
 use App\Services\OrderService;
+use App\Services\PaymentService;
 use App\Services\SmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -19,6 +20,7 @@ class OrderServiceTest extends TestCase
     protected MailService $mailService;
     protected SmsService $smsService;
     protected CacheService $cacheService;
+    protected PaymentService $paymentService;
 
     protected function setUp(): void
     {
@@ -27,10 +29,12 @@ class OrderServiceTest extends TestCase
         $this->mailService = new MailService();
         $this->smsService = new SmsService();
         $this->cacheService = new CacheService();
+        $this->paymentService = new PaymentService($this->mailService, $this->smsService);
         $this->orderService = new OrderService(
             $this->mailService,
             $this->smsService,
-            $this->cacheService
+            $this->cacheService,
+            $this->paymentService
         );
     }
 
@@ -42,7 +46,7 @@ class OrderServiceTest extends TestCase
         $orderData = [
             'first_name' => 'John',
             'last_name' => 'Doe',
-            'email' => 'john@example.com',
+            'email' => 'john@gmail.com',
             'phone' => '123456789',
             'car_id' => $car->id,
             'rental_date' => now()->addDay()->format('Y-m-d'),
@@ -50,15 +54,17 @@ class OrderServiceTest extends TestCase
             'rental_time_minute' => '00',
             'return_time_hour' => '12',
             'return_time_minute' => '00',
-            'airport_delivery' => false,
             'additional_info' => 'Test order',
-            'verification_method' => 'email'
+            'delivery_option' => "pickup",
         ];
 
         $result = $this->orderService->createOrder($orderData);
 
         $this->assertTrue($result['success']);
-        $this->assertDatabaseHas('orders', ['email' => 'john@example.com']);
+        $this->assertDatabaseHas('orders', [
+            'email' => 'john@gmail.com',
+            'status' => 'awaiting_payment'
+        ]);
         $this->assertTrue($car->fresh()->hidden);
     }
 
@@ -70,7 +76,7 @@ class OrderServiceTest extends TestCase
         $orderData = [
             'first_name' => 'John',
             'last_name' => 'Doe',
-            'email' => 'john@example.com',
+            'email' => 'john@gmail.com',
             'phone' => '123456789',
             'car_id' => $hiddenCar->id,
             'rental_date' => now()->format('Y-m-d'),
@@ -78,9 +84,8 @@ class OrderServiceTest extends TestCase
             'rental_time_minute' => '00',
             'return_time_hour' => '12',
             'return_time_minute' => '00',
-            'airport_delivery' => false,
             'additional_info' => 'Test order',
-            'verification_method' => 'email'
+            'delivery_option' => "pickup",
         ];
 
         $result = $this->orderService->createOrder($orderData);
