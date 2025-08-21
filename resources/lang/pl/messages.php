@@ -31,6 +31,7 @@ return [
     'no_additional_info' => 'Brak dodatkowych informacji',
     'additional_info' => 'Dodatkowe informacje',
     'hours' => 'Godziny',
+    'orders' => 'Zamówień',
 
     // Contact
     'contact_description' => 'Masz pytania? Skorzystaj z poniższych danych lub wyślij nam wiadomość za pomocą formularza.',
@@ -53,6 +54,7 @@ return [
     'contact' => 'Kontakt',
 
     // Car Page
+    'car' => 'Samochód',
     'car_index' => 'Lista samochodów',
     'car_create' => 'Dodaj samochód',
     'car_edit' => 'Edytuj samochód',
@@ -103,26 +105,6 @@ return [
     'sms_send_error' => 'Błąd podczas wysyłania kodu weryfikacyjnego',
     'invalid_verification_code' => 'Nieprawidłowy kod weryfikacyjny',
 
-    // Orders
-    'orders' => [
-        'title' => 'Zamówienia',
-        'customer_orders' => 'Zamówienia Klientów',
-        'id' => 'ID',
-        'customer' => 'Klient',
-        'car' => 'Samochód',
-        'date' => 'Data',
-        'time' => 'Czas',
-        'delivery' => 'Dostawa',
-        'status' => 'Status',
-        'actions' => 'Akcje',
-        'details' => 'Szczegóły',
-        'order_details' => 'Szczegóły Zamówienia',
-        'back_to_orders' => 'Powrót do zamówień',
-        'customer_info' => 'Informacje o Kliencie',
-        'car_info' => 'Informacje o Samochodzie',
-        'order_status' => 'Status Zamówienia',
-        'update_status' => 'Aktualizuj Status',
-    ],
 
     // Statuses
     'status_awaiting_payment' => 'Oczekuje na płatność',
@@ -189,8 +171,6 @@ return [
     'cta_text' => 'Wybierz z naszej szerokiej oferty pojazdów na Twoją następną przygodę',
     'view_cars' => 'Zobacz dostępne samochody',
 
-//    'Back to Home' => 'Wróć do strony głównej',
-
     // Payment and Order Actions
     'payment_info' => 'Informacje o Płatności',
     'payment_link_sent' => 'Link do Płatności Wysyłany',
@@ -208,7 +188,7 @@ return [
     'payment_received' => 'Płatność Otrzymana',
     'car_returned' => 'Samochód Zwrócony',
     'yes_with_fee' => 'Tak (z opłatą)',
-    'no_delivery ' => 'Bez dostawy',
+    'pickup_at_office' => 'Odbiór w biurze',
     'delivery' => 'Dostawa',
     'airport_pickup' => 'Odbiór z Lotniska',
     'order_status_updated' => 'Status zamówienia został zaktualizowany.',
@@ -227,6 +207,10 @@ return [
     'custom_message_subject' => 'Aktualizacja dotycząca Twojego zamówienia',
     'payment_link_sms' => 'Proszę opłać swoje zamówienie przez ten link: :link',
     'pay_now' => 'Zapłać teraz',
+    'reservation_fee_sms' => 'Opłata rezerwacyjna :amount EUR dla zamówienia #:orderId. Link do płatności: :link',
+    'reservation_fee_product' => 'Opłata Rezerwacyjna',
+    'final_settlement_product' => 'Rozliczenie Końcowe',
+    'error_generating_payment_link' => 'Błąd podczas generowania linku do płatności',
     'reservation_fee_required' => 'Wymagana opłata rezerwacyjna',
     'reservation_fee_text' => 'Po złożeniu rezerwacji wyślemy Ci link do płatności opłaty rezerwacyjnej w wysokości :amount. Po dokonaniu płatności Twoja rezerwacja zostanie potwierdzona.',
     'payment_link_will_be_sent_email' => 'Na ten e-mail zostanie wysłany link do płatności',

@@ -318,10 +318,10 @@
 
                 <div class="space-y-3">
                     <div class="flex items-center">
-                        <input type="radio" id="no_delivery" name="delivery_option" value="none"
-                               class="mr-3" {{ old('delivery_option', 'none') == 'none' ? 'checked' : '' }}>
-                        <label for="no_delivery" class="text-gray-700">
-                            {{ __('messages.no_delivery') }} - {{ __('messages.free') }}
+                        <input type="radio" id="pickup" name="delivery_option" value="pickup"
+                               class="mr-3" {{ old('delivery_option', 'pickup') == 'pickup' ? 'checked' : '' }}>
+                        <label for="pickup" class="text-gray-700">
+                            {{ __('messages.pickup_at_office') }} - {{ __('messages.free') }}
                         </label>
                     </div>
 

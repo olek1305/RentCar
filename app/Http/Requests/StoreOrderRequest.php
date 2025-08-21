@@ -40,7 +40,7 @@ class StoreOrderRequest extends FormRequest
             'rental_time_minute' => 'required|string|size:2',
             'return_time_hour' => 'required|string|size:2',
             'return_time_minute' => 'required|string|size:2',
-            'delivery_option' => 'required|in:none,airport,delivery',
+            'delivery_option' => 'required|in:pickup,airport,delivery',
             'additional_info' => 'nullable|string',
             'verification_method' => 'required|in:sms,email',
         ];

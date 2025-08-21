@@ -64,10 +64,8 @@ class OrderService
         // Process order data
         $data['rental_time'] = $data['rental_time_hour'] . ':' . $data['rental_time_minute'];
         $data['return_time'] = $data['return_time_hour'] . ':' . $data['return_time_minute'];
-        $data['airport_delivery'] = $data['delivery_option'] === 'airport';
-        $data['extra_delivery_fee'] = $data['delivery_option'] === 'delivery';
 
-        unset($data['rental_time_hour'], $data['rental_time_minute'], $data['return_time_hour'], $data['return_time_minute'], $data['delivery_option']);
+        unset($data['rental_time_hour'], $data['rental_time_minute'], $data['return_time_hour'], $data['return_time_minute']);
 
         $limitCheck = $this->checkOrderLimits($data);
         if ($limitCheck['limited']) {

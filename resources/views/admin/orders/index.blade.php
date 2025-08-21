@@ -1,6 +1,6 @@
 @php use App\Models\Order;use Carbon\Carbon; @endphp
 <x-layout>
-    <x-slot:title>{{ __('messages.orders.title') }} - Admin Panel</x-slot:title>
+    <x-slot:title>{{ __('messages.order.title') }} - Admin Panel</x-slot:title>
 
     <section class="container mx-auto p-6">
         <h1 class="text-2xl font-bold mb-6">Customer Orders</h1>
@@ -45,11 +45,12 @@
                             {{ Carbon::parse($order->return_time)->format('H:i') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($order->extra_delivery_fee)
-                                <span class="text-green-600">✓ Delivery</span><br>
-                            @endif
-                            @if($order->airport_delivery)
+                            @if($order->delivery_option === 'delivery')
+                                <span class="text-green-600">✓ Delivery</span>
+                            @elseif($order->delivery_option === 'airport')
                                 <span class="text-blue-600">✓ Airport</span>
+                            @else
+                                <span class="text-gray-600">✓ Pickup at office</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">

@@ -31,6 +31,7 @@ return [
     'no_additional_info' => 'No additional information',
     'additional_info' => 'Additional Information',
     'hours' => 'Hours',
+    'orders' => 'Orders',
 
     // Contact
     'contact_description' => 'If you have any questions, feel free to reach out using the details below or send us a message directly.',
@@ -53,6 +54,7 @@ return [
     'contact' => 'Contact',
 
     // Car Page
+    'car' => 'Car',
     'car_index' => 'Cars Index',
     'car_create' => 'Add Car',
     'car_edit' => 'Edit Car',
@@ -102,26 +104,6 @@ return [
     'sms_code_sent' => 'Verification code has been sent to your phone',
     'sms_send_error' => 'Error sending verification code',
     'invalid_verification_code' => 'Invalid verification code',
-
-    'orders' => [
-        'title' => 'Orders',
-        'customer_orders' => 'Customer Orders',
-        'id' => 'ID',
-        'customer' => 'Customer',
-        'car' => 'Car',
-        'date' => 'Date',
-        'time' => 'Time',
-        'delivery' => 'Delivery',
-        'status' => 'Status',
-        'actions' => 'Actions',
-        'details' => 'Details',
-        'order_details' => 'Order Details',
-        'back_to_orders' => 'Back to Orders',
-        'customer_info' => 'Customer Information',
-        'car_info' => 'Car Information',
-        'order_status' => 'Order Status',
-        'update_status' => 'Update Status',
-    ],
 
     // Statuses
     'status_awaiting_payment' => 'Awaiting payment',
@@ -205,7 +187,7 @@ return [
     'payment_received' => 'Payment Received',
     'car_returned' => 'Car Returned',
     'yes_with_fee' => 'Yes (with fee)',
-    'no_delivery ' => 'Free',
+    'pickup_at_office' => 'Pickup at office',
     'delivery' => 'Delivery',
     'airport_pickup' => 'Airport Pickup',
     'order_status_updated' => 'Order status has been updated.',

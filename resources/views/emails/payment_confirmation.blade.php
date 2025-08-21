@@ -34,20 +34,24 @@
                         <span class="text-gray-800">#{{ $order->id }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600 font-medium">{{ __('messages.email_car') }}:</span>
+                        <span class="text-gray-600 font-medium">{{ __('messages.car') }}:</span>
                         <span class="text-gray-800">{{ $order->car->model }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600 font-medium">{{ __('messages.email_rental_date') }}:</span>
+                        <span class="text-gray-600 font-medium">{{ __('messages.rental_date') }}:</span>
                         <span class="text-gray-800">{{ $order->rental_date->format('d.m.Y') }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600 font-medium">{{ __('messages.email_pickup_time') }}:</span>
+                        <span class="text-gray-600 font-medium">{{ __('messages.pickup_time') }}:</span>
                         <span class="text-gray-800">{{ $order->rental_time }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600 font-medium">{{ __('messages.email_return_time') }}:</span>
+                        <span class="text-gray-600 font-medium">{{ __('messages.return_time') }}:</span>
                         <span class="text-gray-800">{{ $order->return_time }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium">{{ __('messages.delivery') }}:</span>
+                        <span class="text-gray-800">{{ $order->airport_delivery }}</span>
                     </div>
                     <div class="flex justify-between border-t pt-3 mt-3">
                         <span class="text-gray-600 font-medium">{{ __('messages.email_reservation_amount') }}:</span>
