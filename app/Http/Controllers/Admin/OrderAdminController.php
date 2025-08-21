@@ -93,7 +93,6 @@ class OrderAdminController extends Controller
                 throw new Exception('Invalid currency format: ' . $currency->currency_code);
             }
 
-//            #TODO add payment success and cancel routes
             $session = Session::create([
                 'payment_method_types' => ['card'],
                 'line_items' => [[
@@ -103,7 +102,7 @@ class OrderAdminController extends Controller
                             'name' => 'Rental for ' . $order->car->model,
                             'description' => 'Order #' . $order->id,
                         ],
-                        'unit_amount' => (int)($totalAmount * 100), // zawsze integer
+                        'unit_amount' => (int)($totalAmount * 100),
                     ],
                     'quantity' => 1,
                 ]],
@@ -176,8 +175,9 @@ class OrderAdminController extends Controller
 
     /**
      * Cancel expired orders (orders without payment after 24h)
+     * #TODO add a job to run
      *
-     * @return int Number of cancelled orders
+     * @return int Number of canceled orders
      */
     public function cancelExpiredOrders(): int
     {
@@ -215,55 +215,5 @@ class OrderAdminController extends Controller
         $order->update(['status' => 'cancelled']);
 
         return back()->with('success', __('messages.order_cancelled_successfully'));
-    }
-
-    public function sendFinalPaymentLink($id): RedirectResponse
-    {
-        $order = Order::with('car')->findOrFail($id);
-
-        if ($order->status !== 'finished') {
-            return back()->with('error', __('messages.cannot_send_final_payment_link'));
-        }
-
-        try {
-            // Recalculate if needed, e.g., extra fees
-            $finalAmount = $order->calculateTotalAmount(); // Or add logic for extras
-
-            // Create a Stripe session (similar to before)
-            Stripe::setApiKey(config('services.stripe.secret'));
-            $session = \Stripe\Checkout\Session::create([
-                // ... same as sendPaymentLink, but change name to 'Final Payment for ...'
-                'line_items' => [
-                    [
-                        'price_data' => [
-                            'currency' => strtolower(CurrencySetting::getDefaultCurrency()->currency_code),
-                            'product_data' => ['name' => 'Final Payment for ' . $order->car->model],
-                            'unit_amount' => $finalAmount * 100,
-                        ],
-                        'quantity' => 1,
-                    ]
-                ],
-                'success_url' => route('payment.success', $order->id) . '?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('payment.cancel', $order->id),
-            ]);
-
-            $paymentLink = $session->url;
-
-            // Send it with a custom message
-            $messageText = __('messages.final_payment_message') . ' ' . $paymentLink;
-
-//            #TODO sendCustomMessage?
-            if ($order->email_verified_at) {
-                // Assume MailService can send custom text
-                $this->orderService->getMailService()->sendCustomMessage($order, $messageText);
-            } elseif ($order->sms_verified_at) {
-                $this->orderService->getSmsService()->sendCustomMessage($order, $messageText);
-            }
-
-            return back()->with('success', __('messages.final_payment_link_sent'));
-
-        } catch (\Exception $e) {
-            return back()->with('error', __('messages.error_sending_payment_link'));
-        }
     }
 }
