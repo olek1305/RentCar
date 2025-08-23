@@ -54,10 +54,15 @@ jobs:
           echo "DB_PASSWORD=password" >> .env.testing
           php artisan key:generate --env=testing
 
-      - name: Set directory permissions
+      - name: Set proper directory permissions
         run: |
           mkdir -p storage/framework/{sessions,views,cache}
-          chmod -R 777 storage bootstrap/cache
+          chmod -R 755 storage/
+          chmod -R 755 bootstrap/cache/
+          chmod -R 775 storage/framework/sessions/
+          chmod -R 775 storage/framework/views/
+          chmod -R 775 storage/framework/cache/
+          chmod -R 775 bootstrap/cache/
 
       - name: Verify MySQL privileges
         run: |
@@ -88,6 +93,9 @@ jobs:
 
       - name: Execute tests
         run: vendor/bin/phpunit --coverage-clover clover.xml
+        env:
+          STRIPE_KEY: pk_test_mockKey123
+          STRIPE_SECRET: sk_test_mockSecret123
 
       - name: Upload code coverage
         uses: codecov/codecov-action@v3

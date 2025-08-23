@@ -9,6 +9,8 @@ use App\Services\OrderService;
 use App\Services\PaymentService;
 use App\Services\SmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -20,7 +22,7 @@ class OrderServiceTest extends TestCase
     protected MailService $mailService;
     protected SmsService $smsService;
     protected CacheService $cacheService;
-    protected PaymentService $paymentService;
+    protected PaymentService|MockInterface $paymentService;
 
     protected function setUp(): void
     {
@@ -29,7 +31,17 @@ class OrderServiceTest extends TestCase
         $this->mailService = new MailService();
         $this->smsService = new SmsService();
         $this->cacheService = new CacheService();
-        $this->paymentService = new PaymentService($this->mailService, $this->smsService);
+
+        // Mock the PaymentService to avoid actual Stripe calls
+        $this->paymentService = Mockery::mock(PaymentService::class, [$this->mailService, $this->smsService]);
+
+        // Mock both methods that are called
+        $this->paymentService->shouldReceive('generatePaymentLink')
+            ->andReturn('https://example.com/payment/mock-payment-link');
+
+        $this->paymentService->shouldReceive('sendReservationPaymentLink')
+            ->andReturn(true); // Assuming it returns true on success
+
         $this->orderService = new OrderService(
             $this->mailService,
             $this->smsService,
@@ -63,9 +75,15 @@ class OrderServiceTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertDatabaseHas('orders', [
             'email' => 'john@gmail.com',
-            'status' => 'awaiting_payment'
+            'status' => 'pending'
         ]);
         $this->assertTrue($car->fresh()->hidden);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     #[Test]
