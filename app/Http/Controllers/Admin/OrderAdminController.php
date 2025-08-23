@@ -26,12 +26,48 @@ class OrderAdminController extends Controller
     ) {}
 
     /**
+     * List of orders with filtering by status and searching by email and phone.
+     *
+     * @param Request $request
      * @return Factory|Application|View
      */
-    public function index(): Factory|Application|View
+    public function index(Request $request): Factory|Application|View
     {
-        $orders = Order::with('car')->latest()->paginate(10);
-        return view('admin.orders.index', compact('orders'));
+        $statuses = Order::statuses();
+
+        $request->validate([
+            'status' => 'nullable|in:' . implode(',', array_keys($statuses)),
+            'email'  => 'nullable|string|max:255',
+            'phone'  => 'nullable|string|max:255',
+        ]);
+
+        $query = Order::with('car')->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+
+        if ($request->filled('email')) {
+            $email = $request->string('email');
+            $query->where('email', 'like', '%' . $email . '%');
+        }
+
+        if ($request->filled('phone')) {
+            $phone = $request->string('phone');
+            $query->where('phone', 'like', '%' . $phone . '%');
+        }
+
+        $orders = $query->paginate(10)->appends($request->query());
+
+        return view('admin.orders.index', [
+            'orders'   => $orders,
+            'statuses' => $statuses,
+            'filters'  => [
+                'status' => $request->input('status'),
+                'email'  => $request->input('email'),
+                'phone'  => $request->input('phone')
+            ],
+        ]);
     }
 
     /**

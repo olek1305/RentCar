@@ -12,7 +12,7 @@ use Faker\Factory as Faker;
 
 class CarSeeder extends Seeder
 {
-    private $faker;
+    private \Faker\Generator $faker;
 
     public function __construct()
     {

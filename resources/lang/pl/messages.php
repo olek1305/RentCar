@@ -46,6 +46,10 @@ return [
     'admin_panel' => 'Panel Administracyjny',
     'add_rental_car' => 'Dodaj wypożyczony samochód',
     'order_panel' => 'Panel zamówień',
+    'filter' => 'Filtruj',
+    'clear' => 'Wyczyść',
+    'details' => 'Szczegóły',
+    'all' => 'Wszystkie',
 
     // Navbar
     'home' => 'Główna',

@@ -46,6 +46,10 @@ return [
     'admin_panel' => 'Admin Panel',
     'add_rental_car' => 'Add Rental Car',
     'order_panel' => 'Order Panel',
+    'filter' => 'Filter',
+    'clear' => 'Clear',
+    'details' => 'Details',
+    'all' => 'All',
 
     // Navbar
     'home' => 'Home',
