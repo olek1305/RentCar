@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->string('delivery_option')->default('pickup')->after('return_time');
+        DB::table('orders')->whereNull('return_date')->update([
+            'return_date' => now()->format('Y-m-d')
+        ]);
 
-            $table->dropColumn(['extra_delivery_fee', 'airport_delivery']);
+        Schema::table('orders', function (Blueprint $table) {
+            $table->date('return_date')->nullable(false)->change();
         });
     }
 
@@ -24,10 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->boolean('extra_delivery_fee')->default(false);
-            $table->boolean('airport_delivery')->default(false);
-
-            $table->dropColumn('delivery_option');
+            $table->date('return_date')->nullable()->change();
         });
     }
 };

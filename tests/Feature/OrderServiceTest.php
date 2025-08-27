@@ -62,12 +62,16 @@ class OrderServiceTest extends TestCase
             'phone' => '123456789',
             'car_id' => $car->id,
             'rental_date' => now()->addDay()->format('Y-m-d'),
+            'return_date' => now()->addDays(3)->format('Y-m-d'),
             'rental_time_hour' => '10',
             'rental_time_minute' => '00',
             'return_time_hour' => '12',
             'return_time_minute' => '00',
             'additional_info' => 'Test order',
             'delivery_option' => "pickup",
+            'additional_insurance' => true,
+            'acceptance_terms' => '1',
+            'acceptance_privacy' => '1',
         ];
 
         $result = $this->orderService->createOrder($orderData);
@@ -98,17 +102,117 @@ class OrderServiceTest extends TestCase
             'phone' => '123456789',
             'car_id' => $hiddenCar->id,
             'rental_date' => now()->format('Y-m-d'),
+            'return_date' => now()->addDays(3)->format('Y-m-d'),
             'rental_time_hour' => '10',
             'rental_time_minute' => '00',
             'return_time_hour' => '12',
             'return_time_minute' => '00',
             'additional_info' => 'Test order',
             'delivery_option' => "pickup",
+            'additional_insurance' => false,
+            'acceptance_terms' => '1',
+            'acceptance_privacy' => '1',
         ];
 
         $result = $this->orderService->createOrder($orderData);
 
         $this->assertFalse($result['success']);
         $this->assertEquals(__('message.order_unavailable'), $result['message']);
+    }
+
+    #[Test]
+    public function it_creates_an_order_with_delivery_service_and_address()
+    {
+        $car = Car::factory()->create(['hidden' => false]);
+
+        $orderData = [
+            'first_name' => 'Jane',
+            'last_name' => 'Smith',
+            'email' => 'jane@example.com',
+            'phone' => '987654321',
+            'car_id' => $car->id,
+            'rental_date' => now()->addDay()->format('Y-m-d'),
+            'return_date' => now()->addDays(3)->format('Y-m-d'),
+            'rental_time_hour' => '10',
+            'rental_time_minute' => '00',
+            'return_time_hour' => '12',
+            'return_time_minute' => '00',
+            'additional_info' => 'Delivery order test',
+            'delivery_option' => 'delivery',
+            'delivery_address' => '123 Main Street, City, 12345',
+            'additional_insurance' => true,
+            'acceptance_terms' => '1',
+            'acceptance_privacy' => '1',
+        ];
+
+        $result = $this->orderService->createOrder($orderData);
+
+        $this->assertTrue($result['success']);
+        $this->assertDatabaseHas('orders', [
+            'email' => 'jane@example.com',
+            'status' => 'pending',
+            'delivery_option' => 'delivery',
+            'delivery_address' => '123 Main Street, City, 12345'
+        ]);
+        $this->assertTrue($car->fresh()->hidden);
+    }
+
+    #[Test]
+    public function it_fails_when_delivery_address_is_missing_for_delivery_service()
+    {
+        $car = Car::factory()->create(['hidden' => false]);
+
+        $orderData = [
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => 'john@gmail.com',
+            'phone' => '123456789',
+            'car_id' => $car->id,
+            'rental_date' => now()->addDay()->format('Y-m-d'),
+            'return_date' => now()->addDays(3)->format('Y-m-d'),
+            'rental_time_hour' => '10',
+            'rental_time_minute' => '00',
+            'return_time_hour' => '12',
+            'return_time_minute' => '00',
+            'delivery_option' => 'delivery',
+            'delivery_address' => '', // Empty address
+            'additional_insurance' => true,
+            'acceptance_terms' => '1',
+            'acceptance_privacy' => '1',
+        ];
+
+        $result = $this->orderService->createOrder($orderData);
+
+        $this->assertFalse($result['success']);
+        $this->assertEquals(__('messages.delivery_address_required'), $result['message']);
+    }
+
+    #[Test]
+    public function it_fails_when_terms_are_not_accepted()
+    {
+        $car = Car::factory()->create(['hidden' => false]);
+
+        $orderData = [
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => 'john@gmail.com',
+            'phone' => '123456789',
+            'car_id' => $car->id,
+            'rental_date' => now()->addDay()->format('Y-m-d'),
+            'return_date' => now()->addDays(3)->format('Y-m-d'),
+            'rental_time_hour' => '10',
+            'rental_time_minute' => '00',
+            'return_time_hour' => '12',
+            'return_time_minute' => '00',
+            'delivery_option' => 'pickup',
+            'additional_insurance' => true,
+            'acceptance_terms' => '', // Not accepted
+            'acceptance_privacy' => '1',
+        ];
+
+        $result = $this->orderService->createOrder($orderData);
+
+        $this->assertFalse($result['success']);
+        $this->assertEquals(__('messages.must_accept_terms_and_privacy'), $result['message']);
     }
 }

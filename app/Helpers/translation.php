@@ -7,6 +7,13 @@ use Illuminate\Foundation\Application;
 function trans_currency($key, $price, $replace = [], $locale = null): Application|array|string|Translator|null
 {
     try {
+        // Ensure price is a numeric value
+        if (!is_numeric($price)) {
+            $price = 0;
+        }
+
+        $price = (float) $price;
+
         $currency = app()->bound('currency')
             ? app('currency')
             : CurrencySetting::getDefaultCurrency();
@@ -15,6 +22,7 @@ function trans_currency($key, $price, $replace = [], $locale = null): Applicatio
 
         return __($key, $replace, $locale);
     } catch (\Exception $e) {
+        $price = is_numeric($price) ? (float) $price : 0;
         return __($key, ['price' => number_format($price, 2)]);
     }
 }

@@ -36,13 +36,18 @@ class StoreOrderRequest extends FormRequest
             'phone' => 'required|regex:/^[0-9 ]+$/|min:9',
             'car_id' => 'required|exists:cars,id',
             'rental_date' => 'required|date|after_or_equal:today',
+            'return_date' => 'required|date|after:rental_date',
             'rental_time_hour' => 'required|string|size:2',
             'rental_time_minute' => 'required|string|size:2',
             'return_time_hour' => 'required|string|size:2',
             'return_time_minute' => 'required|string|size:2',
             'delivery_option' => 'required|in:pickup,airport,delivery',
+            'delivery_address' => 'required_if:delivery_option,delivery|nullable|string|max:500',
+            'additional_insurance' => 'sometimes|boolean',
             'additional_info' => 'nullable|string',
             'verification_method' => 'required|in:sms,email',
+            'acceptance_terms' => 'required|accepted',
+            'acceptance_privacy' => 'required|accepted',
         ];
 
         if ($this->input('verification_method') === 'sms') {
@@ -56,7 +61,12 @@ class StoreOrderRequest extends FormRequest
     {
         return [
             'sms_code.required_if' => __('The SMS verification code is required when using SMS verification'),
-            'sms_code.digits' => __('The verification code must be 5 digits')
+            'sms_code.digits' => __('The verification code must be 5 digits'),
+            'delivery_address.required_if' => __('The delivery address is required when selecting delivery service'),
+            'acceptance_terms.required' => __('You must accept the terms of service'),
+            'acceptance_terms.accepted' => __('You must accept the terms of service'),
+            'acceptance_privacy.required' => __('You must accept the privacy policy'),
+            'acceptance_privacy.accepted' => __('You must accept the privacy policy'),
         ];
     }
 
@@ -84,4 +94,16 @@ class StoreOrderRequest extends FormRequest
             $fail('The email domain does not exist.');
         }
     }
+
+    /**
+     * Prepare data for validation
+     */
+    protected function prepareForValidation(): void
+    {
+        // Convert checkbox value to boolean
+        $this->merge([
+            'additional_insurance' => $this->boolean('additional_insurance'),
+        ]);
+    }
+
 }

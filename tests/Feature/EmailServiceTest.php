@@ -63,12 +63,16 @@ class EmailServiceTest extends TestCase
             'phone' => '123456789',
             'car_id' => $car->id,
             'rental_date' => now()->addDay()->format('Y-m-d'),
+            'return_date' => now()->addDays(3)->format('Y-m-d'),
             'rental_time_hour' => '10',
             'rental_time_minute' => '00',
             'return_time_hour' => '12',
             'return_time_minute' => '00',
             'additional_info' => 'Test order',
             'delivery_option' => 'pickup',
+            'additional_insurance' => true,
+            'acceptance_terms' => '1',
+            'acceptance_privacy' => '1',
         ];
 
         $result = $this->orderService->createOrder($orderData);

@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('delivery_option')->default('pickup')->after('return_time');
-
-            $table->dropColumn(['extra_delivery_fee', 'airport_delivery']);
+            $table->boolean('acceptance_terms')->default(false)->after('delivery_address');
+            $table->boolean('acceptance_privacy')->default(false)->after('acceptance_terms');
         });
     }
 
@@ -24,10 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->boolean('extra_delivery_fee')->default(false);
-            $table->boolean('airport_delivery')->default(false);
-
-            $table->dropColumn('delivery_option');
+            $table->dropColumn(['acceptance_terms', 'acceptance_privacy']);
         });
     }
 };

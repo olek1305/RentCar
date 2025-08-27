@@ -33,6 +33,8 @@ class OrderSeeder extends Seeder
                 $rentalTimeHour = rand(8, 16);
                 $returnTimeHour = $rentalTimeHour + rand(1, 8);
 
+                $returnDate = $this->faker->dateTimeBetween($rentalDate, $rentalDate->format('Y-m-d') . ' +7 days');
+
                 $orders[] = [
                     'first_name' => $this->faker->firstName(),
                     'last_name' => $this->faker->lastName(),
@@ -40,11 +42,14 @@ class OrderSeeder extends Seeder
                     'phone' => $this->faker->numerify('#########'),
                     'car_id' => $car->id,
                     'rental_date' => $rentalDate->format('Y-m-d'),
+                    'return_date' => $returnDate->format('Y-m-d'),
                     'rental_time' => sprintf('%02d:%02d', $rentalTimeHour, rand(0, 59)),
                     'return_time' => sprintf('%02d:%02d', $returnTimeHour, rand(0, 59)),
                     'delivery_option' => $this->faker->randomElement($deliveryOptions),
                     'additional_info' => rand(0, 1) ? $this->faker->sentence() : null,
                     'status' => $status,
+                    'acceptance_terms' => true,
+                    'acceptance_privacy' => true,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -58,6 +63,8 @@ class OrderSeeder extends Seeder
             $rentalTimeHour = rand(8, 16);
             $returnTimeHour = $rentalTimeHour + rand(1, 8);
 
+            $returnDate = $this->faker->dateTimeBetween($rentalDate, $rentalDate->format('Y-m-d') . ' +7 days');
+
             $orders[] = [
                 'first_name' => $this->faker->firstName(),
                 'last_name' => $this->faker->lastName(),
@@ -65,11 +72,14 @@ class OrderSeeder extends Seeder
                 'phone' => $this->faker->numerify('###-###-###'),
                 'car_id' => $car->id,
                 'rental_date' => $rentalDate->format('Y-m-d'),
+                'return_date' => $returnDate->format('Y-m-d'),
                 'rental_time' => sprintf('%02d:%02d', $rentalTimeHour, rand(0, 59)),
                 'return_time' => sprintf('%02d:%02d', $returnTimeHour, rand(0, 59)),
                 'delivery_option' => $this->faker->randomElement($deliveryOptions),
                 'additional_info' => rand(0, 1) ? $this->faker->sentence() : null,
                 'status' => $this->faker->randomElement($statuses),
+                'acceptance_terms' => true,
+                'acceptance_privacy' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

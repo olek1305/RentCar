@@ -14,9 +14,13 @@ class Order extends Model
         'phone',
         'car_id',
         'rental_date',
+        'return_date',
         'rental_time',
         'return_time',
         'delivery_option',
+        'delivery_address',
+        'additional_insurance',
+        'additional_insurance_cost',
         'additional_info',
         'status',
         'email_verification_token',
@@ -31,14 +35,20 @@ class Order extends Model
         'paid_at',
         'returned_at',
         'payment_session_id',
+        'acceptance_terms',
+        'acceptance_privacy',
     ];
 
     protected $casts = [
         'rental_date' => 'date',
+        'return_date' => 'date',
         'rental_time' => 'string',
         'return_time' => 'string',
         'returned_at' => 'datetime',
         'delivery_option' => 'string',
+        'delivery_address' => 'string',
+        'additional_insurance' => 'boolean',
+        'additional_insurance_cost' => 'float',
         'additional_info' => 'string',
         'status' => 'string',
         'email_verification_token' => 'string',
@@ -52,6 +62,8 @@ class Order extends Model
         'payment_session_id' => 'string',
         'payment_link_sent_at' => 'datetime',
         'paid_at' => 'datetime',
+        'acceptance_terms' => 'boolean',
+        'acceptance_privacy' => 'boolean',
     ];
 
     public function car(): BelongsTo
@@ -94,6 +106,22 @@ class Order extends Model
     public static function getStaticReservationFee(): float
     {
         return 5.00; // 5 euro reservation fee
+    }
+
+    /**
+     * Get additional insurance cost
+     */
+    public function getAdditionalInsuranceCost(): float
+    {
+        return $this->additional_insurance ? ($this->additional_insurance_cost ?? 15.00) : 0.00;
+    }
+
+    /**
+     * Get static additional insurance cost
+     */
+    public static function getStaticAdditionalInsuranceCost(): float
+    {
+        return 15.00; // 15 euro per day for additional insurance
     }
 
     /**

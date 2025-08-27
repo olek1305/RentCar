@@ -61,6 +61,48 @@ class OrderService
      */
     public function createOrder(array $data): array
     {
+        // Validate hours (6:00-20:00)
+        $rentalHour = (int) $data['rental_time_hour'];
+        $returnHour = (int) $data['return_time_hour'];
+
+        if ($rentalHour < 6 || $rentalHour > 20) {
+            return [
+                'success' => false,
+                'message' => __('messages.rental_time_must_be_between_6_20')
+            ];
+        }
+
+        if ($returnHour < 6 || $returnHour > 20) {
+            return [
+                'success' => false,
+                'message' => __('messages.return_time_must_be_between_6_20')
+            ];
+        }
+
+        // Validate return date is after the rental date
+        if (!isset($data['return_date']) || $data['return_date'] <= $data['rental_date']) {
+            return [
+                'success' => false,
+                'message' => __('messages.return_date_must_be_after_rental_date')
+            ];
+        }
+
+        // Validate terms and privacy acceptance
+        if (empty($data['acceptance_terms']) || empty($data['acceptance_privacy'])) {
+            return [
+                'success' => false,
+                'message' => __('messages.must_accept_terms_and_privacy')
+            ];
+        }
+
+        // Validate delivery address if delivery service is selected
+        if ($data['delivery_option'] === 'delivery' && empty($data['delivery_address'])) {
+            return [
+                'success' => false,
+                'message' => __('messages.delivery_address_required')
+            ];
+        }
+
         // Process order data
         $data['rental_time'] = $data['rental_time_hour'] . ':' . $data['rental_time_minute'];
         $data['return_time'] = $data['return_time_hour'] . ':' . $data['return_time_minute'];
@@ -87,6 +129,7 @@ class OrderService
             'status' => 'pending',
             'payment_amount' => Order::getStaticReservationFee(), // fee
             'payment_currency' => CurrencySetting::getDefaultCurrency()->currency_code,
+            'additional_insurance_cost' => $data['additional_insurance'] ? Order::getStaticAdditionalInsuranceCost() : null,
         ]);
 
         $car->update(['hidden' => true]);
