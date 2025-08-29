@@ -74,6 +74,8 @@ class Order extends Model
     public static function statuses(): array
     {
         return [
+            'pending' => __('messages.status_pending'),
+            'verified' => __('messages.status_verified'),
             'awaiting_payment' => __('messages.status_awaiting_payment'),
             'confirmed' => __('messages.status_confirmed'),
             'paid' => __('messages.status_paid'),
@@ -162,20 +164,5 @@ class Order extends Model
     public function canBeFinished(): bool
     {
         return in_array($this->status, ['paid', 'completed']);
-    }
-
-    /**
-     * Check if a verification period has expired (24h)
-     */
-    public function isVerificationExpired(): bool
-    {
-        if ($this->status !== 'awaiting_payment') {
-            return false;
-        }
-
-        $createdAt = $this->created_at;
-        $expiryTime = $createdAt->addHours(24);
-
-        return now()->isAfter($expiryTime);
     }
 }

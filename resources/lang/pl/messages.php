@@ -32,6 +32,8 @@ return [
     'additional_info' => 'Dodatkowe informacje',
     'hours' => 'Godziny',
     'orders' => 'Zamówień',
+    'invalid_verification_token' => 'Invalid verification token.',
+    'verification_token_expired' => 'The verification token has expired. Please request a new one.',
 
     // Contact
     'contact_description' => 'Masz pytania? Skorzystaj z poniższych danych lub wyślij nam wiadomość za pomocą formularza.',
@@ -153,6 +155,8 @@ return [
     'reservation_model_explanation' => 'Wyjaśnienie modelu rezerwacji',
 
     // Statuses
+    'pending' => 'W trakcie oczekiwania',
+    'verified' => 'Weryfikowany',
     'status_awaiting_payment' => 'Oczekuje na płatność',
     'status_confirmed' => 'Potwierdzone',
     'status_completed' => 'Wynajem aktywny',

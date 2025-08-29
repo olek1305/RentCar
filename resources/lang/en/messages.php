@@ -32,6 +32,8 @@ return [
     'additional_info' => 'Additional Information',
     'hours' => 'Hours',
     'orders' => 'Orders',
+    'invalid_verification_token' => 'Invalid verification token.',
+    'verification_token_expired' => 'The verification token has expired. Please request a new one.',
 
     // Contact
     'contact_description' => 'If you have any questions, feel free to reach out using the details below or send us a message directly.',
@@ -153,10 +155,12 @@ return [
     'reservation_model_explanation' => 'Explanation of the reservation model',
 
     // Statuses
+    'pending' => 'Pending',
+    'verified' => 'Verified',
     'status_awaiting_payment' => 'Awaiting payment',
     'status_confirmed' => 'Confirmed',
     'status_completed' => 'Rental active',
-    'status_paid' => 'paid',
+    'status_paid' => 'Paid',
     'status_returned' => 'Car returned',
     'status_finished' => 'Finished',
     'status_cancelled' => 'Cancelled',

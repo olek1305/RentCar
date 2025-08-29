@@ -49,20 +49,8 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
 });
 
-// verify email/sms
-Route::get('/orders/verify-email/{orderId}/{token}', [OrderController::class, 'verifyEmail'])
-    ->name('orders.verify-email');
-Route::get('/orders/{order}/verification', [OrderController::class, 'verification'])
-    ->name('orders.verification');
-Route::post('/orders/{order}/verify-sms', [OrderController::class, 'verifySms'])
-    ->name('orders.verify-sms');
-Route::post('/orders/{order}/resend/{type}', [OrderController::class, 'resendVerification'])
-    ->name('orders.resend')
-    ->middleware('throttle:verification');
-Route::post('/send-verification-code', [OrderController::class, 'sendVerificationCode'])
-    ->name('send-verification-code');
+Route::get('/orders/{order}/verify-email-payment/{token}', [OrderController::class, 'verifyEmailForPayment'])
+    ->name('orders.verify-email-payment');
 
 Route::get('/payment/success/{order}', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/cancel/{order}', [PaymentController::class, 'cancel'])->name('payment.cancel');
-Route::post('/orders/{order}/send-final-payment-link', [OrderAdminController::class, 'sendFinalPaymentLink'])
-    ->name('admin.orders.send-final-payment-link');

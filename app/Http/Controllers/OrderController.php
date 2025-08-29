@@ -46,4 +46,44 @@ class OrderController extends Controller
             ->with('success', $result['message'])
             ->with('payment_info', __('messages.payment_link_sent'));
     }
+
+    /**
+     * Verify email token and redirect to payment
+     */
+    public function verifyEmailForPayment(Order $order, string $token): RedirectResponse
+    {
+        // Verify token
+        $hashedToken = hash('sha256', $token);
+        if ($order->email_verification_token !== $hashedToken) {
+            return redirect()->route('home')->with('error', __('messages.invalid_verification_token'));
+        }
+
+        // Check if token is expired (24 hours)
+        if ($order->email_verification_sent_at && $order->email_verification_sent_at->addHours(24)->isPast()) {
+            return redirect()->route('home')->with('error', __('messages.verification_token_expired'));
+        }
+
+        // Mark email as verified
+        $order->update([
+            'email_verified_at' => now(),
+            'email_verification_token' => null, // Clear token after verification
+            'status' => 'verified'
+        ]);
+
+        // Hide car after verification
+        $order->car->update(['hidden' => true]);
+        $this->orderService->getCacheService()->clearCarsCache();
+
+        // Generate payment link
+        $paymentLink = $this->orderService->getPaymentService()->generateReservationPaymentLink($order);
+
+        if (!$paymentLink) {
+            return redirect()->route('home')->with('error', __('messages.error_generating_payment_link'));
+        }
+
+        $order->update(['payment_link_sent_at' => now()]);
+
+        // Redirect to Stripe payment
+        return redirect()->away($paymentLink);
+    }
 }

@@ -20,8 +20,7 @@ class MailService
     public function sendPaymentLink(Order $order, string $paymentLink): bool
     {
         try {
-            // Validate input data
-            if (!$order || !$order->email || !filter_var($order->email, FILTER_VALIDATE_EMAIL)) {
+            if (!$order->email || !filter_var($order->email, FILTER_VALIDATE_EMAIL)) {
                 Log::error('Invalid order or email address', ['order_id' => $order->id ?? 'unknown']);
                 return false;
             }
@@ -31,7 +30,6 @@ class MailService
                 return false;
             }
 
-            // Send payment link email
             Mail::to($order->email)->send(new PaymentConfirmationMail($order, $paymentLink));
 
             Log::info('Payment link email sent successfully', [
@@ -62,12 +60,11 @@ class MailService
     {
         try {
             // Validate input data
-            if (!$order || !$order->email || !filter_var($order->email, FILTER_VALIDATE_EMAIL)) {
+            if (!$order->email || !filter_var($order->email, FILTER_VALIDATE_EMAIL)) {
                 Log::error('Invalid order or email address', ['order_id' => $order->id ?? 'unknown']);
                 return false;
             }
 
-            // For payment confirmation, paymentLink might be optional
             // Send payment confirmation email
             Mail::to($order->email)->send(new PaymentConfirmationMail($order, $paymentLink));
 

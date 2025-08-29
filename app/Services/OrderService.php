@@ -25,31 +25,20 @@ class OrderService
         //
     }
 
-
     /**
-     * @param Order $order
-     * @return void
-     * @throws Exception
+     * @return CacheService
      */
-    protected function sendReservationPaymentLink(Order $order): void
+    public function getCacheService(): CacheService
     {
-        $this->paymentService->sendReservationPaymentLink($order);
+        return $this->cacheService;
     }
 
     /**
-     * @return MailService
+     * @return PaymentService
      */
-    public function getMailService(): MailService
+    public function getPaymentService(): PaymentService
     {
-        return $this->mailService;
-    }
-
-    /**
-     * @return SmsService
-     */
-    public function getSmsService(): SmsService
-    {
-        return $this->smsService;
+        return $this->paymentService;
     }
 
     /**
@@ -123,26 +112,76 @@ class OrderService
             return ['success' => false, 'message' => __('message.order_unavailable')];
         }
 
-        // Create order directly as pending - no verification needed
-        $order = Order::create([
+        // Get verification method
+        $verificationMethod = $data['verification_method'] ?? 'email';
+
+        $orderData = [
             ...$data,
             'status' => 'pending',
-            'payment_amount' => Order::getStaticReservationFee(), // fee
+            'payment_amount' => Order::getStaticReservationFee(),
             'payment_currency' => CurrencySetting::getDefaultCurrency()->currency_code,
             'additional_insurance_cost' => $data['additional_insurance'] ? Order::getStaticAdditionalInsuranceCost() : null,
-        ]);
+        ];
 
-        $car->update(['hidden' => true]);
-        $this->cacheService->clearCarsCache();
+        if ($verificationMethod === 'email') {
+            // Generate email verification token
+            $token = bin2hex(random_bytes(32));
+            $hashedToken = hash('sha256', $token);
 
-        // Automatically send a payment link for the reservation fee
-        $this->sendReservationPaymentLink($order);
+            // Create order directly as pending
+            $order = Order::create($orderData);
+            $order->update([
+                'email_verification_token' => $hashedToken,
+                'email_verification_sent_at' => now(),
+            ]);
+
+            // Create verification URL that will redirect to payment
+            $verificationUrl = route('orders.verify-email-payment', [
+                'order' => $order->id,
+                'token' => $token
+            ]);
+
+            // Send the verification URL by email (not the direct Stripe link)
+            $this->mailService->sendPaymentLink($order, $verificationUrl);
+
+            $message = __('messages.order_created_email_verification_sent');
+        } else {
+            // Create order directly as pending
+            $order = Order::create([
+                ...$data,
+                'status' => 'pending',
+                'payment_amount' => Order::getStaticReservationFee(),
+                'payment_currency' => CurrencySetting::getDefaultCurrency()->currency_code,
+                'additional_insurance_cost' => $data['additional_insurance'] ? Order::getStaticAdditionalInsuranceCost() : null,
+            ]);
+
+            $car->update(['hidden' => true]);
+            $this->cacheService->clearCarsCache();
+
+            // Generate payment link and send via SMS
+            $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
+
+            if (!$paymentLink) {
+                $order->delete();
+                return [
+                    'success' => false,
+                    'message' => __('messages.error_generating_payment_link')
+                ];
+            }
+
+            $order->update(['payment_link_sent_at' => now()]);
+
+            // Send payment link via SMS
+            $this->smsService->sendPaymentLink($order->phone, $paymentLink);
+
+            $message = __('messages.order_created_sms_payment_link_sent');
+        }
 
         return [
             'success' => true,
-            'message' => __('messages.order_created_payment_link_sent'),
+            'message' => $message,
             'order' => $order,
-            'requires_verification' => false
+            'verification_method' => $verificationMethod
         ];
     }
 
@@ -173,75 +212,6 @@ class OrderService
             'limited' => false,
             'message' => null,
             'count' => $count
-        ];
-    }
-
-    /**
-     * Verify an email token and send payment link
-     *
-     * @param int|null $orderId
-     * @param string $token
-     * @return array
-     */
-    public function verifyEmailToken(?int $orderId, string $token): array
-    {
-        $hashedToken = hash('sha256', $token);
-        $order = Order::where('id', $orderId)
-            ->where('email_verification_token', $hashedToken)
-            ->first();
-
-        if (!$order) {
-            return [
-                'success' => false,
-                'message' => __('Invalid verification token'),
-                'order' => null
-            ];
-        }
-
-        if ($order->email_verification_sent_at) {
-            $expirationTime = $order->email_verification_sent_at->addHours(24);
-            if (now()->gt($expirationTime)) {
-                return [
-                    'success' => false,
-                    'message' => __('The verification link has expired. Please request a new one.'),
-                    'order' => $order
-                ];
-            }
-        }
-
-        if ($order->email_verified_at) {
-            return [
-                'success' => false,
-                'message' => __('Email already verified'),
-                'order' => $order
-            ];
-        }
-
-        // Verification - send a payment link
-        $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
-
-        if (!$paymentLink) {
-            return [
-                'success' => false,
-                'message' => __('Error generating payment link'),
-                'order' => $order
-            ];
-        }
-
-        $order->update([
-            'email_verified_at' => now(),
-            'email_verification_token' => null,
-            'status' => 'awaiting_payment',
-            'payment_link_sent_at' => now(),
-        ]);
-
-        // Send an email with a payment link
-        $this->mailService->sendPaymentConfirmation($order, $paymentLink);
-
-        return [
-            'success' => true,
-            'message' => __('email_confirm_payment'),
-            'order' => $order
         ];
     }
 }
