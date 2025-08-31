@@ -22,7 +22,7 @@
                     <div class="mt-4">
                         <h3 class="font-semibold">{{ __('messages.verification_status') }}</h3>
                         <p class="text-sm">
-                            <strong>{{ __('messages.email_verified') }}:</strong>
+                            <strong>{{ __('messages.email') }}:</strong>
                             <span class="{{ $order->email_verified_at ? 'text-green-600' : 'text-red-600' }}">
                                 {{ $order->email_verified_at ? __('messages.yes') : __('messages.no') }}
                                 @if($order->email_verified_at)
@@ -31,7 +31,7 @@
                             </span>
                         </p>
                         <p class="text-sm">
-                            <strong>{{ __('messages.sms_verified') }}:</strong>
+                            <strong>{{ __('messages.sms') }}:</strong>
                             <span class="{{ $order->sms_verified_at ? 'text-green-600' : 'text-red-600' }}">
                                 {{ $order->sms_verified_at ? __('messages.yes') : __('messages.no') }}
                                 @if($order->sms_verified_at)
@@ -67,7 +67,8 @@
                 <div>
                     <h2 class="text-xl font-semibold mb-4">{{ __('messages.rental_details') }}</h2>
                     <p><strong>{{ __('messages.car') }}:</strong> {{ $order->car->model }} ({{ $order->car->year }})</p>
-                    <p><strong>{{ __('messages.rental_date') }}:</strong> {{ Carbon::parse($order->rental_date)->format('d.m.Y') }}</p>
+                    <p><strong>{{ __('messages.rental_time') }}:</strong> {{ Carbon::parse($order->rental_date)->format('d.m.Y') }}</p>
+                    <p><strong>{{ __('messages.return_time') }}:</strong> {{ Carbon::parse($order->rental_return)->format('d.m.Y') }}</p>
                     <p><strong>{{ __('messages.hours') }}:</strong>
                         {{ Carbon::parse($order->rental_time)->format('H:i') }} -
                         {{ Carbon::parse($order->return_time)->format('H:i') }}

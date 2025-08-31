@@ -34,6 +34,9 @@ return [
     'orders' => 'Orders',
     'invalid_verification_token' => 'Invalid verification token.',
     'verification_token_expired' => 'The verification token has expired. Please request a new one.',
+    'verification_status' => 'Verification Status',
+    'sms' => 'SMS',
+    'email' => 'Email',
 
     // Contact
     'contact_description' => 'If you have any questions, feel free to reach out using the details below or send us a message directly.',
