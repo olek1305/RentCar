@@ -58,8 +58,8 @@ class OrderController extends Controller
             return redirect()->route('home')->with('error', __('messages.invalid_verification_token'));
         }
 
-        // Check if token is expired (24 hours)
-        if ($order->email_verification_sent_at && $order->email_verification_sent_at->addHours(24)->isPast()) {
+        // Check if the token is expired (8 hours)
+        if ($order->email_verification_sent_at && $order->email_verification_sent_at->addHours(8)->isPast()) {
             return redirect()->route('home')->with('error', __('messages.verification_token_expired'));
         }
 
