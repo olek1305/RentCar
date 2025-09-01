@@ -120,7 +120,7 @@ return [
     'i_accept_terms' => 'I accept the',
     'terms_of_service' => 'terms of service',
     'i_accept_privacy_policy' => 'I accept the',
-    'privacy_policy' => 'privacy policy',
+    'privacy_policy' => 'Privacy policy',
     'rental_time_must_be_between_6_20' => 'Pickup time must be between 6:00 and 20:00',
     'return_time_must_be_between_6_20' => 'Return time must be between 6:00 and 20:00',
     'return_date_must_be_after_rental_date' => 'Return date must be after pickup date',
@@ -285,5 +285,21 @@ return [
     'email_important_info' => 'Important Information',
     'email_link_expiry' => 'The link will be active for 24 hours. After this time, the reservation will expire.',
     'email_contact_us' => 'If you have any questions, please contact us.',
-    'email_rights_reserved' => 'All rights reserved.'
+    'email_rights_reserved' => 'All rights reserved.',
+
+     // RODO/GDPR Cookie Consent
+    'cookies_title' => 'We use cookies',
+    'cookies_description' => 'This website uses cookies and similar technologies to analyze traffic, personalize content and ads. You can manage your preferences below.',
+    'cookies_essential' => 'Essential',
+    'cookies_essential_desc' => 'Essential for the website to function (login, cart, security)',
+    'cookies_analytics' => 'Analytics',
+    'cookies_analytics_desc' => 'Help us understand how you use the website',
+    'cookies_marketing' => 'Marketing',
+    'cookies_marketing_desc' => 'Used to display personalized ads',
+    'accept_all' => 'Accept All',
+    'accept_selected' => 'Accept Selected',
+    'reject_all' => 'Reject All',
+    'cookie_settings' => 'Cookie Settings',
+    'cookie_policy' => 'Cookie Policy',
+    'save_preferences' => 'Save Preferences',
 ];
