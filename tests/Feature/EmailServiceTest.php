@@ -32,11 +32,9 @@ class EmailServiceTest extends TestCase
         $this->smsService = new SmsService();
         $this->cacheService = new CacheService();
 
-        // Mock the PaymentService to avoid actual Stripe calls
         $this->paymentService = Mockery::mock(PaymentService::class, [$this->mailService, $this->smsService]);
 
-        // Mock both methods that are called
-        $this->paymentService->shouldReceive('generatePaymentLink')
+        $this->paymentService->shouldReceive('generateReservationPaymentLink')
             ->andReturn('https://example.com/payment/mock-payment-link');
 
         $this->paymentService->shouldReceive('sendReservationPaymentLink')
@@ -73,13 +71,14 @@ class EmailServiceTest extends TestCase
             'additional_insurance' => true,
             'acceptance_terms' => '1',
             'acceptance_privacy' => '1',
+            'verification_method' => 'sms'
         ];
 
         $result = $this->orderService->createOrder($orderData);
 
         $this->assertTrue($result['success']);
         $this->assertEquals('pending', $result['order']->status);
-        $this->assertFalse($result['requires_verification']);
+        $this->assertEquals('sms', $result['verification_method']);
 
         // Car should be hidden after a successful order
         $this->assertTrue($car->fresh()->hidden);

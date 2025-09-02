@@ -105,7 +105,6 @@ return [
     'verification_method' => 'Verification Method',
     'verify_via_sms' => 'Verify via SMS',
     'verify_via_email' => 'Verify via Email',
-    'sms_verification_code' => 'SMS Verification Code',
     'send_code' => 'Send Code',
     'sms_code_instructions' => 'We will send a verification code to your phone',
     'please_enter_phone' => 'Please enter your phone number first',

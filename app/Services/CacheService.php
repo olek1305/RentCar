@@ -55,30 +55,4 @@ class CacheService
             Cache::put(self::CACHE_KEYS_STORAGE, $keys, self::CACHE_TTL);
         }
     }
-
-    /**
-     * Get cache TTL value
-     *
-     * @return int
-     */
-    public function getCacheTTL(): int
-    {
-        return self::CACHE_TTL;
-    }
-
-    /**
-     * Clear specific page cache
-     *
-     * @param int $page
-     * @param int $perPage
-     * @return void
-     */
-    public function clearPageCache(int $page, int $perPage = 12): void
-    {
-        $adminKey = self::CARS_CACHE_PREFIX . "_admin_page_{$page}_per_{$perPage}";
-        $guestKey = self::CARS_CACHE_PREFIX . "_guest_page_{$page}_per_{$perPage}";
-
-        Cache::forget($adminKey);
-        Cache::forget($guestKey);
-    }
 }

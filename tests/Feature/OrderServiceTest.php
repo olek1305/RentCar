@@ -32,11 +32,9 @@ class OrderServiceTest extends TestCase
         $this->smsService = new SmsService();
         $this->cacheService = new CacheService();
 
-        // Mock the PaymentService to avoid actual Stripe calls
         $this->paymentService = Mockery::mock(PaymentService::class, [$this->mailService, $this->smsService]);
 
-        // Mock both methods that are called
-        $this->paymentService->shouldReceive('generatePaymentLink')
+        $this->paymentService->shouldReceive('generateReservationPaymentLink')
             ->andReturn('https://example.com/payment/mock-payment-link');
 
         $this->paymentService->shouldReceive('sendReservationPaymentLink')
@@ -72,6 +70,7 @@ class OrderServiceTest extends TestCase
             'additional_insurance' => true,
             'acceptance_terms' => '1',
             'acceptance_privacy' => '1',
+            'verification_method' => 'email',
         ];
 
         $result = $this->orderService->createOrder($orderData);
@@ -112,6 +111,7 @@ class OrderServiceTest extends TestCase
             'additional_insurance' => false,
             'acceptance_terms' => '1',
             'acceptance_privacy' => '1',
+            'verification_method' => 'email',
         ];
 
         $result = $this->orderService->createOrder($orderData);
@@ -143,6 +143,7 @@ class OrderServiceTest extends TestCase
             'additional_insurance' => true,
             'acceptance_terms' => '1',
             'acceptance_privacy' => '1',
+            'verification_method' => 'email',
         ];
 
         $result = $this->orderService->createOrder($orderData);
@@ -179,6 +180,7 @@ class OrderServiceTest extends TestCase
             'additional_insurance' => true,
             'acceptance_terms' => '1',
             'acceptance_privacy' => '1',
+            'verification_method' => 'email',
         ];
 
         $result = $this->orderService->createOrder($orderData);
@@ -208,6 +210,7 @@ class OrderServiceTest extends TestCase
             'additional_insurance' => true,
             'acceptance_terms' => '', // Not accepted
             'acceptance_privacy' => '1',
+            'verification_method' => 'email',
         ];
 
         $result = $this->orderService->createOrder($orderData);

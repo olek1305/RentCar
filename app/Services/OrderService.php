@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\Car;
 use App\Models\CurrencySetting;
 use App\Models\Order;
-use App\Models\Car;
 use Carbon\Carbon;
 use Exception;
 
@@ -123,13 +123,18 @@ class OrderService
             'additional_insurance_cost' => $data['additional_insurance'] ? Order::getStaticAdditionalInsuranceCost() : null,
         ];
 
+        // Create order
+        $order = Order::create($orderData);
+
+        // Always hide car after creating order regardless of verification method
+        $car->update(['hidden' => true]);
+        $this->cacheService->clearCarsCache();
+
         if ($verificationMethod === 'email') {
             // Generate email verification token
             $token = bin2hex(random_bytes(32));
             $hashedToken = hash('sha256', $token);
 
-            // Create order directly as pending
-            $order = Order::create($orderData);
             $order->update([
                 'email_verification_token' => $hashedToken,
                 'email_verification_sent_at' => now(),
@@ -146,23 +151,23 @@ class OrderService
 
             $message = __('messages.order_created_email_verification_sent');
         } else {
-            // Create order directly as pending
-            $order = Order::create([
-                ...$data,
-                'status' => 'pending',
-                'payment_amount' => Order::getStaticReservationFee(),
-                'payment_currency' => CurrencySetting::getDefaultCurrency()->currency_code,
-                'additional_insurance_cost' => $data['additional_insurance'] ? Order::getStaticAdditionalInsuranceCost() : null,
-            ]);
+            // Generate SMS verification token
+            $token = bin2hex(random_bytes(32));
+            $hashedToken = hash('sha256', $token);
 
-            $car->update(['hidden' => true]);
-            $this->cacheService->clearCarsCache();
+            $order->update([
+                'sms_verification_token' => $hashedToken,
+                'sms_verification_sent_at' => now(),
+            ]);
 
             // Generate payment link and send via SMS
             $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
 
             if (!$paymentLink) {
                 $order->delete();
+                // Restore car visibility if order creation failed
+                $car->update(['hidden' => false]);
+                $this->cacheService->clearCarsCache();
                 return [
                     'success' => false,
                     'message' => __('messages.error_generating_payment_link')
