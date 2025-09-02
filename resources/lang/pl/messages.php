@@ -32,9 +32,13 @@ return [
     'additional_info' => 'Dodatkowe informacje',
     'hours' => 'Godziny',
     'orders' => 'Zamówień',
-    'invalid_verification_token' => 'Invalid verification token.',
-    'verification_token_expired' => 'The verification token has expired. Please request a new one.',
+    'invalid_verification_token' => 'Nieprawidłowy token weryfikacyjny.',
+    'verification_token_expired' => 'Token weryfikacyjny wygasł. Proszę poprosić o nowy.',
     'verification_status' => 'Status weryfikacji',
+    'sms' => 'SMS',
+    'email' => 'E-mail',
+    'order_created_email_verification_sent' => 'Zamówienie utworzone! Link weryfikacyjny został wysłany na e-mail.',
+    'order_created_sms_payment_link_sent' => 'Zamówienie utworzone! Link do płatności został wysłany SMS-em.',
 
     // Contact
     'contact_description' => 'Masz pytania? Skorzystaj z poniższych danych lub wyślij nam wiadomość za pomocą formularza.',

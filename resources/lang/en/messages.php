@@ -37,6 +37,8 @@ return [
     'verification_status' => 'Verification Status',
     'sms' => 'SMS',
     'email' => 'Email',
+    'order_created_email_verification_sent' => 'Order created! Email verification link has been sent.',
+    'order_created_sms_payment_link_sent' => 'Order created! SMS payment link has been sent.',
 
     // Contact
     'contact_description' => 'If you have any questions, feel free to reach out using the details below or send us a message directly.',

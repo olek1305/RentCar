@@ -60,28 +60,6 @@ class PaymentService
     }
 
     /**
-     * Send payment link via email
-     */
-    public function sendPaymentLinkEmail(Order $order): void
-    {
-        $subject = __('messages.payment_link_subject');
-        $this->mailService->sendPaymentConfirmation($order, $subject);
-    }
-
-    /**
-     * Send payment link via SMS
-     */
-    public function sendPaymentLinkSms(Order $order, string $paymentLink): void
-    {
-        $message = __('messages.payment_link_sms', [
-            'orderId' => $order->id,
-            'link' => $paymentLink,
-        ]);
-
-        $this->smsService->sendCustomMessage($order, $message);
-    }
-
-    /**
      * Generate Stripe payment link for reservation fee
      */
     public function generateReservationPaymentLink(Order $order): ?string
@@ -96,7 +74,7 @@ class PaymentService
                         'currency' => strtolower($order->payment_currency),
                         'product_data' => [
                             'name' => __('messages.reservation_fee_product') . $order->car->model,
-                            'description' => 'Zamówienie #' . $order->id,
+                            'description' => __('messages.order') . ' #' . $order->id
                         ],
                         'unit_amount' => (int)($order->getReservationFee() * 100),
                     ],
@@ -106,9 +84,12 @@ class PaymentService
                 'success_url' => route('payment.success', $order->id) . '?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('payment.cancel', $order->id),
                 'client_reference_id' => 'order_' . $order->id,
+                'customer_email' => $order->email,
                 'metadata' => [
                     'order_id' => $order->id,
                     'customer_email' => $order->email,
+                    'customer_name' => trim($order->first_name . ' ' . $order->last_name),
+                    'customer_phone' => $order->phone,
                     'type' => 'reservation_fee'
                 ],
             ]);
@@ -152,9 +133,12 @@ class PaymentService
                 'success_url' => route('payment.final.success', $order->id) . '?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('payment.final.cancel', $order->id),
                 'client_reference_id' => 'order_final_' . $order->id,
+                'customer_email' => $order->email,
                 'metadata' => [
                     'order_id' => $order->id,
                     'customer_email' => $order->email,
+                    'customer_name' => trim($order->first_name . ' ' . $order->last_name),
+                    'customer_phone' => $order->phone,
                     'type' => 'final_settlement'
                 ],
             ]);
