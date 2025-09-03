@@ -207,7 +207,7 @@
                                 type="text"
                                 name="rental_time_hour"
                                 id="rental_time_hour"
-                                value="{{ old('rental_time_hour') }}"
+                                value="{{ old('rental_time_hour', '09') }}"
                                 readonly
                                 class="w-full h-12 text-center text-xl font-semibold border border-gray-300 rounded-md bg-white cursor-default"
                             />
@@ -236,7 +236,7 @@
                                 type="text"
                                 name="rental_time_minute"
                                 id="rental_time_minute"
-                                value="{{ old('rental_time_minute') }}"
+                                value="{{ old('rental_time_minute', '00') }}"
                                 readonly
                                 class="w-full h-12 text-center text-xl font-semibold border border-gray-300 rounded-md bg-white cursor-default"
                             />
@@ -273,7 +273,7 @@
                                 type="text"
                                 name="return_time_hour"
                                 id="return_time_hour"
-                                value="{{ old('return_time_hour') }}"
+                                value="{{ old('return_time_hour', '10') }}"
                                 required
                                 readonly
                                 class="w-full h-12 text-center text-xl font-semibold border border-gray-300 rounded-md bg-white cursor-default"
@@ -305,7 +305,7 @@
                                 type="text"
                                 name="return_time_minute"
                                 id="return_time_minute"
-                                value="{{ old('return_time_minute') }}"
+                                value="{{ old('return_time_minute', '00') }}"
                                 required
                                 readonly
                                 class="w-full h-12 text-center text-xl font-semibold border border-gray-300 rounded-md bg-white cursor-default"
@@ -526,17 +526,31 @@
         });
 
         function initializeForm() {
-            // Set default times
-            const now = new Date();
-            const hours = Math.max(6, Math.min(20, now.getHours())).toString().padStart(2, '0');
-            const minutes = (Math.round(now.getMinutes() / 5) * 5).toString().padStart(2, '0');
+            // Only set default times if not already set from old() values
+            const rentalHour = document.getElementById('rental_time_hour');
+            const rentalMinute = document.getElementById('rental_time_minute');
+            const returnHour = document.getElementById('return_time_hour');
+            const returnMinute = document.getElementById('return_time_minute');
 
-            document.getElementById('rental_time_hour').value = hours;
-            document.getElementById('rental_time_minute').value = minutes;
+            // If fields are empty or contain placeholder values, set proper defaults
+            if (!rentalHour.value || rentalHour.value === '') {
+                const now = new Date();
+                let defaultRentalHour = now.getHours();
+                if (defaultRentalHour < 6) defaultRentalHour = 6;
+                if (defaultRentalHour > 20) defaultRentalHour = 9; // Default to 9 AM if after hours
 
-            const returnTime = new Date(now.getTime() + 60 * 60 * 1000);
-            document.getElementById('return_time_hour').value = Math.max(6, Math.min(20, returnTime.getHours())).toString().padStart(2, '0');
-            document.getElementById('return_time_minute').value = (Math.floor(returnTime.getMinutes() / 5) * 5).toString().padStart(2, '0');
+                const defaultMinutes = (Math.round(now.getMinutes() / 5) * 5).toString().padStart(2, '0');
+
+                rentalHour.value = defaultRentalHour.toString().padStart(2, '0');
+                rentalMinute.value = defaultMinutes;
+
+                // Set return time (1 hour later, but within valid range)
+                let defaultReturnHour = defaultRentalHour + 1;
+                if (defaultReturnHour > 20) defaultReturnHour = 20;
+
+                returnHour.value = defaultReturnHour.toString().padStart(2, '0');
+                returnMinute.value = defaultMinutes;
+            }
 
             // Set default dates
             document.getElementById('rental_date').value = new Date().toISOString().split('T')[0];
@@ -656,28 +670,67 @@
         // Time adjustment functions
         function adjustTime(type, unit, change) {
             const input = document.querySelector(`input[name="${type}_time_${unit}"]`);
+            const hourInput = document.querySelector(`input[name="${type}_time_hour"]`);
+            const minuteInput = document.querySelector(`input[name="${type}_time_minute"]`);
+
             let value = parseInt(input.value) + change;
+            let currentHour = parseInt(hourInput.value);
 
             if (unit === 'hour') {
-                if (value > 20) value = 6;
-                if (value < 6) value = 20;
-                value = Math.max(6, Math.min(20, value));
+                // Enforce strict 6-20 hour range
+                if (change > 0 && currentHour === 20) {
+                    value = 6;
+                } else if (change < 0 && currentHour === 6) {
+                    value = 20;
+                } else {
+                    value = Math.max(6, Math.min(20, value));
+                }
+
+                // If setting hour to 20, force minutes to 00
+                if (value === 20) {
+                    minuteInput.value = '00';
+                }
             } else { // minute
-                if (value >= 60) {
+                // Check if we're at hour 20 and trying to go above 00 minutes
+                if (currentHour === 20 && value > 0) {
+                    // Wrap to next valid hour (6:00) and set minute to the change value
+                    hourInput.value = '06';
+                    value = Math.min(value, 55);
+                    value = Math.floor(value / 5) * 5;
+                } else if (currentHour === 6 && value < 0) {
+                    // Wrap to previous valid hour (20:00) and set minute to 00
+                    hourInput.value = '20';
                     value = 0;
-                    const hourInput = document.querySelector(`input[name="${type}_time_hour"]`);
-                    let hourValue = parseInt(hourInput.value) + 1;
-                    if (hourValue > 20) hourValue = 6;
+                } else if (value >= 60) {
+                    value = 0;
+                    let hourValue = currentHour + 1;
+                    // Enforce hour limit when incrementing from minutes
+                    if (hourValue > 20) {
+                        hourValue = 6;
+                    }
+                    // If going to hour 20, force minutes to 00
+                    if (hourValue === 20) {
+                        value = 0;
+                    }
                     hourInput.value = hourValue.toString().padStart(2, '0');
-                }
-                if (value < 0) {
+                } else if (value < 0) {
                     value = 55;
-                    const hourInput = document.querySelector(`input[name="${type}_time_hour"]`);
-                    let hourValue = parseInt(hourInput.value) - 1;
-                    if (hourValue < 6) hourValue = 20;
+                    let hourValue = currentHour - 1;
+                    // Enforce hour limit when decrementing from minutes
+                    if (hourValue < 6) {
+                        hourValue = 20;
+                        value = 0; // Force 20:00, not 20:55
+                    }
                     hourInput.value = hourValue.toString().padStart(2, '0');
                 }
+
+                // Round to nearest 5-minute increment
                 value = Math.floor(value / 5) * 5;
+
+                // Final check: if hour is 20, force minutes to 00
+                if (parseInt(hourInput.value) === 20) {
+                    value = 0;
+                }
             }
 
             input.value = value.toString().padStart(2, '0');
@@ -784,7 +837,7 @@
                 e.preventDefault();
                 alert('{{ __('messages.delivery_address_required') }}');
                 deliveryAddress.focus();
-                return;
+
             }
         });
     </script>
