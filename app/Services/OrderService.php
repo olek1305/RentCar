@@ -42,6 +42,15 @@ class OrderService
     }
 
     /**
+     * @return SmsService
+     */
+    public function getSmsService(): SmsService
+    {
+        return $this->smsService;
+    }
+
+
+    /**
      * Create a new order.
      *
      * @param array $data
@@ -126,14 +135,14 @@ class OrderService
         // Create order
         $order = Order::create($orderData);
 
-        // Always hide car after creating order regardless of verification method
+        // Always hide a car after creating order regardless of verification method
         $car->update(['hidden' => true]);
         $this->cacheService->clearCarsCache();
 
+        $token = bin2hex(random_bytes(32));
+        $hashedToken = hash('sha256', $token);
         if ($verificationMethod === 'email') {
             // Generate email verification token
-            $token = bin2hex(random_bytes(32));
-            $hashedToken = hash('sha256', $token);
 
             $order->update([
                 'email_verification_token' => $hashedToken,
@@ -152,15 +161,13 @@ class OrderService
             $message = __('messages.order_created_email_verification_sent');
         } else {
             // Generate SMS verification token
-            $token = bin2hex(random_bytes(32));
-            $hashedToken = hash('sha256', $token);
 
             $order->update([
                 'sms_verification_token' => $hashedToken,
                 'sms_verification_sent_at' => now(),
             ]);
 
-            // Generate payment link and send via SMS
+            // Generate a payment link and send via SMS
             $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
 
             if (!$paymentLink) {

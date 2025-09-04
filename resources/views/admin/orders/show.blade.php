@@ -154,6 +154,30 @@
                         </form>
                     @endif
 
+                    <!-- Renew Email Token -->
+                    @if($order->email_verification_sent_at && $order->email_verification_token && $order->status === 'pending')
+                        <form action="{{ route('admin.orders.renew-email-token', $order->id) }}" method="POST"
+                              class="inline">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 mb-2">
+                                {{ __('messages.renew_email_token') }}
+                            </button>
+                        </form>
+                    @endif
+
+                    <!-- Renew SMS Token -->
+                    @if($order->sms_verification_sent_at && $order->sms_verification_token && $order->status === 'pending')
+                        <form action="{{ route('admin.orders.renew-sms-token', $order->id) }}" method="POST"
+                              class="inline">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 mb-2">
+                                {{ __('messages.renew_sms_token') }}
+                            </button>
+                        </form>
+                    @endif
+
                     <!-- Mark as Finished -->
                     @if($order->canBeFinished())
                         <form action="{{ route('admin.orders.mark-finished', $order->id) }}" method="POST" class="inline">
@@ -180,6 +204,7 @@
                 </div>
             </div>
 
+            {{-- TODO unknown route --}}
             @if($order->status === 'finished' && ($order->email_verified_at || $order->sms_verified_at))
                 <form action="{{ route('admin.orders.send-final-payment-link', $order->id) }}" method="POST" class="inline">
                     @csrf

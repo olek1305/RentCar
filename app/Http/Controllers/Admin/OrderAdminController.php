@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CurrencySetting;
 use App\Models\Order;
+use App\Services\MailService;
 use App\Services\OrderService;
 use App\Services\PaymentService;
 use Exception;
@@ -22,7 +23,8 @@ class OrderAdminController extends Controller
 {
     public function __construct(
         protected OrderService $orderService,
-        protected PaymentService $paymentService
+        protected PaymentService $paymentService,
+        protected MailService    $mailService
     ) {}
 
     /**
@@ -178,7 +180,7 @@ class OrderAdminController extends Controller
                 'error' => $e->getError(),
             ]);
             return back()->with('error', __('messages.stripe_api_error'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error sending payment link: ' . $e->getMessage(), [
                 'order_id' => $id,
                 'trace' => $e->getTraceAsString(),
@@ -210,31 +212,6 @@ class OrderAdminController extends Controller
     }
 
     /**
-     * Cancel expired orders (orders without payment after 24h)
-     * #TODO add a job to run
-     *
-     * @return int Number of canceled orders
-     */
-    public function cancelExpiredOrders(): int
-    {
-        $expiredOrders = Order::where('status', 'awaiting_payment')
-            ->where('payment_link_sent_at', '<', now()->subHours(24))
-            ->get();
-
-        $cancelledCount = 0;
-        foreach ($expiredOrders as $order) {
-            $order->update(['status' => 'cancelled']);
-            // Release the car
-            if ($order->car) {
-                $order->car->update(['hidden' => false]);
-            }
-            $cancelledCount++;
-        }
-
-        return $cancelledCount;
-    }
-
-    /**
      * Force cancel an order (admin action)
      *
      * @param $id
@@ -251,5 +228,118 @@ class OrderAdminController extends Controller
         $order->update(['status' => 'cancelled']);
 
         return back()->with('success', __('messages.order_cancelled_successfully'));
+    }
+
+    /**
+     * Renew email verification token and resend verification email
+     *
+     * @param $id
+     * @return RedirectResponse
+     */
+    public function renewEmailToken($id): RedirectResponse
+    {
+        $order = Order::with('car')->findOrFail($id);
+
+        // Check if order can have token renewed
+        if (in_array($order->status, ['completed', 'finished', 'cancelled', 'paid'])) {
+            return back()->with('error', __('messages.cannot_renew_token_for_this_status'));
+        }
+
+        // Check if the email is already verified
+        if ($order->email_verified_at) {
+            return back()->with('error', __('messages.email_already_verified'));
+        }
+
+        try {
+            // Generate a new verification token
+            $token = bin2hex(random_bytes(32));
+            $hashedToken = hash('sha256', $token);
+
+            $order->update([
+                'email_verification_token' => $hashedToken,
+                'email_verification_sent_at' => now(),
+            ]);
+
+            // Create verification URL that will redirect to payment
+            $verificationUrl = route('orders.verify-email-payment', [
+                'order' => $order->id,
+                'token' => $token
+            ]);
+
+            // Send the verification URL by email
+            $this->mailService->sendPaymentLink($order, $verificationUrl);
+
+            Log::info('Email verification token renewed for order #' . $order->id, [
+                'admin_action' => true,
+                'order_id' => $order->id,
+            ]);
+
+            return back()->with('success', __('messages.email_verification_token_renewed'));
+
+        } catch (Exception $e) {
+            Log::error('Error renewing email verification token: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->with('error', __('messages.error_renewing_email_token') . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Renew SMS verification token and resend SMS with a payment link
+     *
+     * @param $id
+     * @return RedirectResponse
+     */
+    public function renewSmsToken($id): RedirectResponse
+    {
+        $order = Order::with('car')->findOrFail($id);
+
+        // Check if order can have token renewed
+        if (in_array($order->status, ['completed', 'finished', 'cancelled', 'paid'])) {
+            return back()->with('error', __('messages.cannot_renew_token_for_this_status'));
+        }
+
+        // Check if SMS is already verified
+        if ($order->sms_verified_at) {
+            return back()->with('error', __('messages.sms_already_verified'));
+        }
+
+        try {
+            // Generate a new verification token
+            $token = bin2hex(random_bytes(32));
+            $hashedToken = hash('sha256', $token);
+
+            $order->update([
+                'sms_verification_token' => $hashedToken,
+                'sms_verification_sent_at' => now(),
+            ]);
+
+            // Generate a payment link directly for SMS
+            $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
+
+            if (!$paymentLink) {
+                return back()->with('error', __('messages.error_generating_payment_link'));
+            }
+
+            $order->update(['payment_link_sent_at' => now()]);
+
+            // Send payment link via SMS
+            $this->orderService->getSmsService()->sendPaymentLink($order->phone, $paymentLink);
+
+            Log::info('SMS verification token renewed for order #' . $order->id, [
+                'admin_action' => true,
+                'order_id' => $order->id,
+            ]);
+
+            return back()->with('success', __('messages.sms_verification_token_renewed'));
+
+        } catch (Exception $e) {
+            Log::error('Error renewing SMS verification token: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->with('error', __('messages.error_renewing_sms_token') . ': ' . $e->getMessage());
+        }
     }
 }

@@ -7,7 +7,6 @@ use App\Http\Controllers\CarController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
-
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +41,10 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         ->name('admin.orders.update-status');
     Route::post('/orders/{order}/send-payment-link', [OrderAdminController::class, 'sendPaymentLink'])
         ->name('admin.orders.send-payment-link');
+    Route::post('/orders/{order}/renew-email-token', [OrderAdminController::class, 'renewEmailToken'])
+        ->name('admin.orders.renew-email-token');
+    Route::post('/orders/{order}/renew-sms-token', [OrderAdminController::class, 'renewSmsToken'])
+        ->name('admin.orders.renew-sms-token');
     Route::patch('/orders/{order}/mark-finished', [OrderAdminController::class, 'markAsFinished'])
         ->name('admin.orders.mark-finished');
     Route::patch('/orders/{order}/cancel', [OrderAdminController::class, 'cancelOrder'])

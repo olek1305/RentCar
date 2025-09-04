@@ -204,7 +204,7 @@ return [
     'car_updated' => 'Car has been updated successfully!',
     'car_deleted' => 'Car has been deleted successfully.',
     'auth_error' => 'Authentication failed',
-    'order_already' => 'Maksymalnie 3 zamówienia dziennie. Jeśli potrzebujesz więcej niż 3 zamówienia, skontaktuj się z właścicielem.',
+    'order_already' => 'Maximum 3 orders per day. If you need more than 3 orders, please contact the owner.',
     'order_unavailable' => 'This car is currently unavailable for rental.',
     'order_created' => 'The order has been placed! We will be in contact shortly.',
 
@@ -288,7 +288,7 @@ return [
     'email_contact_us' => 'If you have any questions, please contact us.',
     'email_rights_reserved' => 'All rights reserved.',
 
-     // RODO/GDPR Cookie Consent
+    // RODO/GDPR Cookie Consent
     'cookies_title' => 'We use cookies',
     'cookies_description' => 'This website uses cookies and similar technologies to analyze traffic, personalize content and ads. You can manage your preferences below.',
     'cookies_essential' => 'Essential',
@@ -303,4 +303,11 @@ return [
     'cookie_settings' => 'Cookie Settings',
     'cookie_policy' => 'Cookie Policy',
     'save_preferences' => 'Save Preferences',
+
+    // Admin Orders
+    'cannot_renew_token_for_this_status' => 'Cannot renew token for this status',
+    'email_already_verified' => 'Email already verified',
+    'email_verification_token_renewed' => 'Email verification token renewed successfully',
+    'error_renewing_email_token' => 'Error renewing email token',
+    'renew_email_token' => 'Renew Email Token',
 ];

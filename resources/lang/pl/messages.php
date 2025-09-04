@@ -303,4 +303,11 @@ return [
     'cookie_settings' => 'Ustawienia cookie',
     'cookie_policy' => 'Polityka cookie',
     'save_preferences' => 'Zapisz preferencje',
+
+    // Admin Orders
+    'cannot_renew_token_for_this_status' => 'Nie można odnowić tokenu dla tego statusu zamówienia',
+    'email_already_verified' => 'Email został już zweryfikowany',
+    'email_verification_token_renewed' => 'Token weryfikacji email został odnowiony i wysłany',
+    'error_renewing_email_token' => 'Błąd podczas odnawiania tokenu email',
+    'renew_email_token' => 'Odnów token email',
 ];
