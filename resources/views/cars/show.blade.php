@@ -21,6 +21,23 @@
         let isRotating = false;
         let carPrices = {};
 
+        // Initialize car data from PHP
+        @php
+            $prices = is_array($car->rental_prices)
+                ? $car->rental_prices
+                : (json_decode($car->rental_prices, true) ?? ['1-2' => 0, '3-6' => 0, '7+' => 0]);
+
+            $images = $car->images ? $car->images->map(function($image) {
+                return $image->image_path;
+            })->toArray() : [];
+        @endphp
+
+        // Set car data directly in a script
+        window.carData = {
+            prices: @json($prices),
+            images: @json($images)
+        };
+
         // Initialize on a page load
         document.addEventListener('DOMContentLoaded', function () {
             // Get data from a window object
