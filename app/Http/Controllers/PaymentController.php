@@ -12,6 +12,8 @@ use Stripe\StripeClient;
 
 class PaymentController extends Controller
 {
+    const MESSAGES_PAYMENT_CANCELLED = 'messages.payment_cancelled';
+
     /**
      * @param Request $request
      * @param Order $order
@@ -40,6 +42,8 @@ class PaymentController extends Controller
             'status' => 'cancelled'
         ]);
 
-        return redirect('/')->with('error', __('messages.payment_cancelled'));
+        $order->car->update(['hidden' => false]);
+
+        return redirect('/')->with('error', __(self::MESSAGES_PAYMENT_CANCELLED));
     }
 }
