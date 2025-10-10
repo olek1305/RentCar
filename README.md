@@ -1,12 +1,11 @@
 # Laravel RentCar - Docker Production Setup
 This guide covers the complete setup for running Laravel RentCar in production with 
-    Docker, Nginx (HTTP/2), MySQL, Valkey (Redis-compatible), and SSL.
+    Docker, Nginx, MySQL, Valkey (Redis-compatible).
+    Soon add SSL and HTTP/2 support.
 
-### Prerequisites
-- Docker & Docker Compose installed
+## Prerequisites for production
+- Docker
 - Git
-- Node.js & NPM (for building assets)
-- OpenSSL (for generating certificates if not using Let's Encrypt)
 
 ### 1. Clone Repository
 ```bash
@@ -19,92 +18,31 @@ This guide covers the complete setup for running Laravel RentCar in production w
     cp .env.example .env
 ```
 
-# 3. Run Docker
-### First, start the containers temporarily
+### 3. Run Docker Swarm
+- Initialize Docker Swarm
 ```bash
-    docker compose up -d --build
+    docker swarm init
 ```
 
-# 4. Install Dependencies & Build Assets & Key Generate & Public Images
-### Install dependencies
+- Build the Docker image:
 ```bash
-    docker compose exec app composer install --no-dev --optimize-autoloader
-    docker compose exec app npm install
-    docker compose exec app npm run build
-    docker compose exec app php artisan migrate
-    docker compose exec app php artisan key:generate
-    docker compose exec app php artisan storage:link
+    docker build -t laravel-app:8.4 .
 ```
 
-# 4.1 Optional migrate from seeds for development
-### First you need install composer with dev
+- Deploy the stack:
 ```bash
-    docker compose exec app composer install
+    docker stack deploy -c docker-stack.yml laravel-app
 ```
 
-### Migrate
+# 4. (Optional) Create an Admin Account
+- Windows
 ```bash
-    docker compose exec app php artisan migrate --seed
+  docker ps | findstr laravel-app_app
+  docker exec -it <container_id_or_name> php artisan app:create-account
 ```
 
-# 4.2 Optional make an account for admin
+- Linux
 ```bash
-  docker compose exec app php artisan app:create-account
-```
-
-
-
-# 5. SSL & HTTP/2 Verification
-### lace your SSL certificates in ./docker/nginx/ssl/ or generate self-signed certificates:
-```bash
-    mkdir -p docker/nginx/ssl
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout docker/nginx/ssl/key.pem \
-        -out docker/nginx/ssl/cert.pem
-```
-
-# Network Verification
-### Verify HTTP/2 and SSL:
-```bash
-    curl -I https://localhost --http2 --insecure
-    # Should show: HTTP/2 200
-```
-# Maintenance
-### Update Application
-```bash
-    # Pull latest changes
-    git pull origin main
-    
-    # Rebuild if Dockerfile changed
-    docker compose build app
-    
-    # Restart containers
-    docker compose down
-    docker compose up -d
-    
-    # Run any new migrations
-    docker compose exec app php artisan migrate
-```
-
-### Backup Database
-```bash
-    docker compose exec mysql mysqldump -u root -p${DB_PASSWORD} --all-databases > backup.sql
-```
-
-# Troubleshooting
-### Container Logs
-```bash
-    docker compose logs -f nginx  # Nginx logs
-    docker compose logs -f app    # PHP/Laravel logs
-    docker compose logs -f mysql  # MySQL logs
-    docker compose logs -f valkey # Valkey logs
-```
-
-### Database connection issues
-```bash
-    # Check MySQL is running
-    docker compose exec mysql mysql -u ${DB_USERNAME} -p${DB_PASSWORD} -e "SHOW DATABASES;"
-
-    # Test from Laravel
-    docker compose exec app php artisan tinker --execute="DB::connection()->getPdo();"
+  docker ps | grep laravel-app_app
+  docker exec -it <container_id_or_name> php artisan app:create-account
 ```
