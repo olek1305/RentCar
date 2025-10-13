@@ -102,21 +102,22 @@ RUN apt-get install -y \
 # Verify PHP extensions in production
 RUN php -m | grep curl
 
-# Configure PHP-FPM
-RUN mkdir -p /run/php && \
-    sed -i 's/;daemonize = yes/daemonize = no/' /etc/php/8.3/fpm/php-fpm.conf && \
-    sed -i 's/listen = .*/listen = 0.0.0.0:9000/' /etc/php/8.3/fpm/pool.d/www.conf && \
-    sed -i 's/user = www-data/user = laravel/' /etc/php/8.3/fpm/pool.d/www.conf && \
-    sed -i 's/group = www-data/group = laravel/' /etc/php/8.3/fpm/pool.d/www.conf
-
 # Create laravel user
 RUN groupadd --system laravel && useradd --system --gid laravel laravel
 
-# Create log directory and set permissions
-RUN mkdir -p /var/log/php && \
+# Configure PHP-FPM to run as laravel user and fix log permissions
+RUN mkdir -p /run/php /var/log && \
     touch /var/log/php8.3-fpm.log && \
-    chown -R laravel:laravel /var/log/php && \
-    chmod -R 775 /var/log/php
+    chown -R laravel:laravel /run/php /var/log/php8.3-fpm.log && \
+    chmod 666 /var/log/php8.3-fpm.log
+
+# Configure PHP-FPM
+RUN sed -i 's/;daemonize = yes/daemonize = no/' /etc/php/8.3/fpm/php-fpm.conf && \
+    sed -i 's/listen = .*/listen = 0.0.0.0:9000/' /etc/php/8.3/fpm/pool.d/www.conf && \
+    sed -i 's/user = www-data/user = laravel/' /etc/php/8.3/fpm/pool.d/www.conf && \
+    sed -i 's/group = www-data/group = laravel/' /etc/php/8.3/fpm/pool.d/www.conf && \
+    sed -i 's|^;error_log = .*|error_log = /proc/self/fd/2|' /etc/php/8.3/fpm/php-fpm.conf && \
+    sed -i 's|^error_log = .*|error_log = /proc/self/fd/2|' /etc/php/8.3/fpm/php-fpm.conf
 
 COPY docker/php/php.ini /etc/php/8.3/fpm/conf.d/99-custom.ini
 COPY docker/php/php.ini /etc/php/8.3/cli/conf.d/99-custom.ini
