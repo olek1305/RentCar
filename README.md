@@ -1,11 +1,14 @@
 # Laravel RentCar - Docker Production Setup
 This guide covers the complete setup for running Laravel RentCar in production with 
-    Docker, Nginx, MySQL, Valkey (Redis-compatible).
-    Soon add SSL and HTTP/2 support.
+    Docker, Nginx, MySQL, Valkey (Redis-compatible). 
+    Enable HTTPS and SSL.
+
+I tested Cloudfare with SSL (mode: full, TLS 1.2+) + OvhCloud VPS
 
 ## Prerequisites for production
 - Docker
 - Git
+- SSL certificate and domain
 
 ### 1. Clone Repository
 ```bash
@@ -17,8 +20,15 @@ This guide covers the complete setup for running Laravel RentCar in production w
 ```bash
     cp .env.example .env
 ```
+- SSL key.pem and cert.pem put in docker/nginx/ssl
 
-### 3. Run Docker Swarm
+## 3A. For docker compose
+### Run Docker compose
+```bash
+    docker compose up -d
+```
+## 3B. For Swarm
+### Run Docker Swarm
 - Initialize Docker Swarm
 ```bash
     docker swarm init

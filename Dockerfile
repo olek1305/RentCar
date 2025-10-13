@@ -1,38 +1,45 @@
 # Stage 1: Build PHP dependencies
-FROM php:8.4-fpm-alpine AS builder
+FROM ubuntu:24.04 AS builder
 
-# Install build dependencies for PHP extensions
-RUN apk add --no-cache --virtual .build-deps \
+# Install PHP and build dependencies
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:ondrej/php -y \
+    && apt-get update
+
+RUN apt-get install -y \
+    php8.3 \
+    php8.3-fpm \
+    php8.3-redis \
+    php8.3-cli \
+    php8.3-mysql \
+    php8.3-mbstring \
+    php8.3-zip \
+    php8.3-intl \
+    php8.3-bcmath \
+    php8.3-opcache \
+    php8.3-soap \
+    php8.3-curl \
+    php8.3-xml \
+    php8.3-dev \
     curl \
     unzip \
+    git \
     libzip-dev \
-    oniguruma-dev \
+    libonig-dev \
     libxml2-dev \
-    icu-dev \
+    libicu-dev \
     autoconf \
     g++ \
     make \
-    && apk add --no-cache \
-    libzip \
-    oniguruma \
-    icu-libs \
-    libxml2
+    pkg-config \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions required for Laravel
-RUN docker-php-ext-install -j$(nproc) \
-    pdo_mysql \
-    mbstring \
-    zip \
-    intl \
-    bcmath \
-    opcache \
-    soap
-
-# Install Redis extension via PECL
-RUN pecl install redis && docker-php-ext-enable redis
-
-# Clean up build dependencies
-RUN apk del .build-deps
+# Verify PHP extensions are installed
+RUN php -m | grep curl && \
+    php -m | grep mbstring && \
+    php -m | grep zip
 
 WORKDIR /var/www
 
@@ -45,51 +52,84 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
     && COMPOSER_PROCESS_TIMEOUT=1200 composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Stage 2: Build frontend assets
-FROM node:20-alpine AS node-builder
+FROM node:20 AS node-builder
 
 WORKDIR /var/www
 
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
 COPY vite.config.js ./
 COPY resources/ ./resources/
 COPY public/ ./public/
 
-RUN npm run build
+RUN npm run build && npm cache clean --force
 
 # Stage 3: Production runtime
-FROM php:8.4-fpm-alpine
+FROM ubuntu:24.04
 
 WORKDIR /var/www
 
-# Install runtime dependencies
-RUN apk add --no-cache \
-    libzip \
-    oniguruma \
-    icu-libs \
+# Install PHP and runtime dependencies
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:ondrej/php -y \
+    && apt-get update
+
+RUN apt-get install -y \
+    php8.3 \
+    php8.3-fpm \
+    php8.3-redis \
+    php8.3-cli \
+    php8.3-mysql \
+    php8.3-mbstring \
+    php8.3-zip \
+    php8.3-intl \
+    php8.3-bcmath \
+    php8.3-opcache \
+    php8.3-soap \
+    php8.3-curl \
+    php8.3-xml \
+    libzip4 \
+    libonig5 \
+    libicu74 \
     libxml2 \
-    && apk add --no-cache --virtual .build-deps \
-        libzip-dev \
-        oniguruma-dev \
-        icu-dev \
-        libxml2-dev \
-        autoconf \
-        g++ \
-        make \
-        curl \
-        linux-headers \
-    && docker-php-ext-install pdo_mysql mbstring zip intl bcmath opcache soap \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && apk del .build-deps
+    curl \
+    netcat-openbsd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN addgroup -S laravel && adduser -S -G laravel laravel
+# Verify PHP extensions in production
+RUN php -m | grep curl
 
-COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-custom.ini
+# Configure PHP-FPM
+RUN mkdir -p /run/php && \
+    sed -i 's/;daemonize = yes/daemonize = no/' /etc/php/8.3/fpm/php-fpm.conf && \
+    sed -i 's/listen = .*/listen = 0.0.0.0:9000/' /etc/php/8.3/fpm/pool.d/www.conf && \
+    sed -i 's/user = www-data/user = laravel/' /etc/php/8.3/fpm/pool.d/www.conf && \
+    sed -i 's/group = www-data/group = laravel/' /etc/php/8.3/fpm/pool.d/www.conf
 
-RUN mkdir -p /var/www/bootstrap/cache /var/www/storage/framework/views /var/www/storage/framework/sessions /var/www/storage/framework/cache \
-    && chown -R laravel:laravel /var/www/bootstrap/cache /var/www/storage \
+# Create laravel user
+RUN groupadd --system laravel && useradd --system --gid laravel laravel
+
+# Create log directory and set permissions
+RUN mkdir -p /var/log/php && \
+    touch /var/log/php8.3-fpm.log && \
+    chown -R laravel:laravel /var/log/php && \
+    chmod -R 775 /var/log/php
+
+COPY docker/php/php.ini /etc/php/8.3/fpm/conf.d/99-custom.ini
+COPY docker/php/php.ini /etc/php/8.3/cli/conf.d/99-custom.ini
+
+# Create all necessary storage directories with correct permissions
+RUN mkdir -p /var/www/bootstrap/cache \
+    /var/www/storage/framework/views \
+    /var/www/storage/framework/sessions \
+    /var/www/storage/framework/cache \
+    /var/www/storage/logs \
+    /var/www/storage/app/public
+
+RUN chown -R laravel:laravel /var/www/bootstrap/cache /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache /var/www/storage
 
 COPY --from=builder --chown=laravel:laravel /var/www/vendor /var/www/vendor
@@ -106,6 +146,7 @@ USER root
 COPY --chown=laravel:laravel docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# Switch to laravel user for runtime
 USER laravel
 
 EXPOSE 9000

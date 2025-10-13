@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: laravel-app:8.4
+    container_name: laravel-app
     restart: unless-stopped
     volumes:
       - ./.env:/var/www/.env
@@ -68,8 +68,10 @@ services:
       - storage_data:/var/www/storage:ro
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/sites/laravel.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
     networks:
       - laravel-net
     depends_on:
