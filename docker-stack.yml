@@ -2,21 +2,23 @@ version: '3.8'
 
 services:
   app:
-    image: laravel-app:8.4
+    image: laravel-app:latest
     deploy:
-      mode: replicated
       replicas: 2
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
           cpus: '0.5'
           memory: 512M
-      restart_policy:
-        condition: any
+    secrets:
+      - source: app_env
+        target: /var/www/.env
     volumes:
-      - ./.env:/var/www/.env
       - public_data:/var/www/public
       - storage_data:/var/www/storage
       - cache_data:/var/www/bootstrap/cache
@@ -29,25 +31,28 @@ services:
       DB_PASSWORD: password
       REDIS_HOST: valkey
     networks:
-      laravel-net:
-        aliases:
-          - db
-          - valkey
+      - laravel-net
+    healthcheck:
+      test: ["CMD", "php", "artisan", "env"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - db
+      - valkey
 
   db:
     image: mysql:9.4.0
     deploy:
-      mode: replicated
       replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
           cpus: '0.5'
-          memory: 512M
-      restart_policy:
-        condition: any
+          memory: 1G
     environment:
       MYSQL_DATABASE: laravel
       MYSQL_USER: laravel
@@ -56,69 +61,89 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      laravel-net:
-        aliases:
-          - db
+      - laravel-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   valkey:
     image: valkey/valkey:8.1-alpine
     deploy:
-      mode: replicated
       replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
       resources:
         limits:
           cpus: '0.25'
           memory: 256M
-        reservations:
-          cpus: '0.1'
-          memory: 128M
-      restart_policy:
-        condition: any
     volumes:
       - valkey_data:/data
     networks:
-      laravel-net:
-        aliases:
-          - valkey
+      - laravel-net
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   nginx:
     image: nginx:1.29.1-alpine
     deploy:
-      mode: replicated
-      replicas: 1
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
       resources:
         limits:
           cpus: '0.25'
           memory: 256M
-        reservations:
-          cpus: '0.1'
-          memory: 128M
-      restart_policy:
-        condition: any
     volumes:
       - public_data:/var/www/public:ro
       - storage_data:/var/www/storage:ro
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/nginx/sites/laravel.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/sites/laravel.conf:/etc/nginx/conf.d/default.conf:ro
+    secrets:
+      - source: ssl_cert
+        target: /etc/nginx/ssl/cert.pem
+      - source: ssl_key
+        target: /etc/nginx/ssl/key.pem
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
     networks:
-      laravel-net:
-        aliases:
-          - nginx
+      - laravel-net
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   laravel-net:
     driver: overlay
+    attachable: true
 
 volumes:
   storage_data:
-    driver: local
   cache_data:
-    driver: local
   db_data:
-    driver: local
   valkey_data:
-    driver: local
   public_data:
-    driver: local
+
+secrets:
+  app_env:
+    external: true
+  ssl_cert:
+    external: true
+  ssl_key:
+    external: true

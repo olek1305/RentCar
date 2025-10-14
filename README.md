@@ -32,6 +32,9 @@ I tested Cloudfare with SSL (mode: full, TLS 1.2+) + OvhCloud VPS
 - Initialize Docker Swarm
 ```bash
     docker swarm init
+    docker secret create app_env .env
+    docker secret create ssl_key ./docker/nginx/ssl/key.pem
+    docker secret create ssl_cert ./docker/nginx/ssl/cert.pem
 ```
 
 - Build the Docker image:

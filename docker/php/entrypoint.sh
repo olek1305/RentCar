@@ -7,7 +7,15 @@ while ! nc -z db 3306; do
     sleep 3
 done
 
-echo "Database is ready!"
+echo "Fixing permissions..."
+chown -R laravel:laravel /var/www/storage /var/www/bootstrap/cache
+chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+chmod -R 777 /var/www/storage/logs
+
+echo "Ensure log file exists and has proper permissions..."
+touch /var/www/storage/logs/laravel.log
+chown laravel:laravel /var/www/storage/logs/laravel.log
+chmod 666 /var/www/storage/logs/laravel.log
 
 echo "Generate APP_KEY if missing..."
 if ! grep -q '^APP_KEY=base64:' /var/www/.env; then
