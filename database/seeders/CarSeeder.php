@@ -4,11 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\Car;
 use Exception;
+use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Faker\Factory as Faker;
 
 class CarSeeder extends Seeder
 {
@@ -51,12 +51,13 @@ class CarSeeder extends Seeder
     {
         $letters = $this->faker->randomLetter().$this->faker->randomLetter();
         $numbers = $this->faker->numberBetween(1, 9).$this->faker->numberBetween(0, 9);
+
         return strtoupper($letters).' '.$numbers;
     }
 
     private function generateSeats(string $type): int
     {
-        return match($type) {
+        return match ($type) {
             'Sedan', 'Coupe' => 4,
             'Convertible' => 2,
             'SUV', 'Combi' => $this->faker->randomElement([5, 7]),
@@ -66,18 +67,24 @@ class CarSeeder extends Seeder
 
     private function generateEngineCapacity(string $fuelType): int
     {
-        if ($fuelType === 'Electric') return 0;
-        if ($fuelType === 'Hybrid') return $this->faker->numberBetween(1000, 2000);
+        if ($fuelType === 'Electric') {
+            return 0;
+        }
+        if ($fuelType === 'Hybrid') {
+            return $this->faker->numberBetween(1000, 2000);
+        }
+
         return $this->faker->numberBetween(1000, 3500);
     }
 
     private function generateRentalPrices(): array
     {
         $basePrice = $this->faker->numberBetween(40, 100);
+
         return [
             '1-2' => $basePrice,
             '3-6' => $basePrice * 0.9,
-            '7+' => $basePrice * 0.8
+            '7+' => $basePrice * 0.8,
         ];
     }
 
@@ -107,7 +114,7 @@ class CarSeeder extends Seeder
     {
         $response = Http::get($url);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new Exception("Failed to download image from {$url}");
         }
 

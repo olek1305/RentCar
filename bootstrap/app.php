@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Http\Middleware\SetGlobalCurrency;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Middleware\Authenticate;
@@ -29,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             VerifyCsrfToken::class,
             SubstituteBindings::class,
             SetLocale::class,
-            SetGlobalCurrency::class
+            SetGlobalCurrency::class,
         ]);
 
         $middleware->alias([

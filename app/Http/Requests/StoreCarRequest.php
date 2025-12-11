@@ -22,7 +22,7 @@ class StoreCarRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'daily_price' => (float) $this->daily_price
+            'daily_price' => (float) $this->daily_price,
         ]);
     }
 
@@ -34,7 +34,7 @@ class StoreCarRequest extends FormRequest
         return [
             'model' => 'required|string|max:255|unique:cars,model',
             'type' => ['required', 'string', Rule::in(Car::TYPES)],
-            'year' => 'required|integer|min:1880|max:' . date('Y'),
+            'year' => 'required|integer|min:1880|max:'.date('Y'),
             'seats' => 'required|integer|min:1|max:9',
             'fuel_type' => ['required', 'string', Rule::in(Car::fuelTypes)],
             'engine_capacity' => 'required|integer|min:500|max:8000',
@@ -42,7 +42,7 @@ class StoreCarRequest extends FormRequest
             'description' => 'nullable|string',
             'main_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'daily_price' => 'required|numeric|min:1'
+            'daily_price' => 'required|numeric|min:1',
         ];
     }
 
@@ -53,7 +53,7 @@ class StoreCarRequest extends FormRequest
     {
         return [
             'model.unique' => 'This car model already exists',
-            'daily_price.min' => 'Daily price must be at least $1'
+            'daily_price.min' => 'Daily price must be at least $1',
         ];
     }
 }

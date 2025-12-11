@@ -20,7 +20,7 @@ class CarServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->carService = new CarService();
+        $this->carService = new CarService;
     }
 
     #[Test]
@@ -45,7 +45,7 @@ class CarServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_respects_includeHidden_for_admins()
+    public function it_respects_include_hidden_for_admins()
     {
         // Create test cars
         Car::factory()->create(['hidden' => false]);
@@ -102,7 +102,7 @@ class CarServiceTest extends TestCase
         Storage::fake('public');
 
         $car = Car::factory()->create([
-            'main_image' => 'cars/main/old.jpg'
+            'main_image' => 'cars/main/old.jpg',
         ]);
 
         Storage::disk('public')->put('cars/main/old.jpg', 'dummy');
@@ -112,8 +112,7 @@ class CarServiceTest extends TestCase
         $this->carService->updateCar(
             $car,
             [
-                'model' => 'Updated Model'
-                ,'daily_price' => 100
+                'model' => 'Updated Model', 'daily_price' => 100,
             ],
             $newImage,
             null,

@@ -28,7 +28,7 @@ class CarFactory extends Factory
             'main_image' => 'cars/main/'.$this->faker->uuid().'.jpg',
             'gallery_images' => json_encode([
                 'cars/gallery/'.$this->faker->uuid().'.jpg',
-                'cars/gallery/'.$this->faker->uuid().'.jpg'
+                'cars/gallery/'.$this->faker->uuid().'.jpg',
             ]),
             'hidden' => $this->faker->boolean(20), // 20% chance of being hidden
         ];
@@ -36,7 +36,7 @@ class CarFactory extends Factory
 
     private function generateSeats(string $type): int
     {
-        return match($type) {
+        return match ($type) {
             'Sedan', 'Coupe' => 4,
             'Convertible' => 2,
             'SUV', 'Combi' => $this->faker->randomElement([5, 7]),
@@ -47,10 +47,11 @@ class CarFactory extends Factory
     private function generateRentalPrices(): string
     {
         $basePrice = $this->faker->numberBetween(40, 100);
+
         return json_encode([
             '1-2' => $basePrice,
             '3-6' => $basePrice * 0.9,
-            '7+' => $basePrice * 0.8
+            '7+' => $basePrice * 0.8,
         ]);
     }
 }

@@ -8,7 +8,7 @@ function trans_currency($key, $price, $replace = [], $locale = null): Applicatio
 {
     try {
         // Ensure price is a numeric value
-        if (!is_numeric($price)) {
+        if (! is_numeric($price)) {
             $price = 0;
         }
 
@@ -18,11 +18,12 @@ function trans_currency($key, $price, $replace = [], $locale = null): Applicatio
             ? app('currency')
             : CurrencySetting::getDefaultCurrency();
 
-        $replace['price'] = $currency->currency_symbol . number_format($price, 2);
+        $replace['price'] = $currency->currency_symbol.number_format($price, 2);
 
         return __($key, $replace, $locale);
     } catch (\Exception $e) {
         $price = is_numeric($price) ? (float) $price : 0;
+
         return __($key, ['price' => number_format($price, 2)]);
     }
 }

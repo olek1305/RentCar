@@ -24,23 +24,20 @@ class OrderAdminController extends Controller
     public function __construct(
         protected OrderService $orderService,
         protected PaymentService $paymentService,
-        protected MailService    $mailService
+        protected MailService $mailService
     ) {}
 
     /**
      * List of orders with filtering by status and searching by email and phone.
-     *
-     * @param Request $request
-     * @return Factory|Application|View
      */
     public function index(Request $request): Factory|Application|View
     {
         $statuses = Order::statuses();
 
         $request->validate([
-            'status' => 'nullable|in:' . implode(',', array_keys($statuses)),
-            'email'  => 'nullable|string|max:255',
-            'phone'  => 'nullable|string|max:255',
+            'status' => 'nullable|in:'.implode(',', array_keys($statuses)),
+            'email' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:255',
         ]);
 
         $query = Order::with('car')->latest();
@@ -51,51 +48,42 @@ class OrderAdminController extends Controller
 
         if ($request->filled('email')) {
             $email = $request->string('email');
-            $query->where('email', 'like', '%' . $email . '%');
+            $query->where('email', 'like', '%'.$email.'%');
         }
 
         if ($request->filled('phone')) {
             $phone = $request->string('phone');
-            $query->where('phone', 'like', '%' . $phone . '%');
+            $query->where('phone', 'like', '%'.$phone.'%');
         }
 
         $orders = $query->paginate(10)->appends($request->query());
 
         return view('admin.orders.index', [
-            'orders'   => $orders,
+            'orders' => $orders,
             'statuses' => $statuses,
-            'filters'  => [
+            'filters' => [
                 'status' => $request->input('status'),
-                'email'  => $request->input('email'),
-                'phone'  => $request->input('phone')
+                'email' => $request->input('email'),
+                'phone' => $request->input('phone'),
             ],
         ]);
     }
 
-    /**
-     * @param $id
-     * @return Factory|Application|View
-     */
     public function show($id): Factory|Application|View
     {
         $order = Order::with('car')->findOrFail($id);
         $statuses = Order::statuses();
         $currency = CurrencySetting::getDefaultCurrency();
 
-        return view('admin.orders.show', compact('order','currency', 'statuses'));
+        return view('admin.orders.show', compact('order', 'currency', 'statuses'));
     }
 
-    /**
-     * @param Request $request
-     * @param $id
-     * @return RedirectResponse
-     */
     public function updateStatus(Request $request, $id): RedirectResponse
     {
         $order = Order::findOrFail($id);
 
         $request->validate([
-            'status' => 'required|in:pending,confirmed,awaiting_payment,paid,completed,finished,cancelled'
+            'status' => 'required|in:pending,confirmed,awaiting_payment,paid,completed,finished,cancelled',
         ]);
 
         $order->update(['status' => $request->status]);
@@ -105,15 +93,12 @@ class OrderAdminController extends Controller
 
     /**
      * Send a payment link to a customer
-     *
-     * @param $id
-     * @return RedirectResponse
      */
     public function sendPaymentLink($id): RedirectResponse
     {
         $order = Order::with('car')->findOrFail($id);
 
-        if (!$order->canSendPaymentLink()) {
+        if (! $order->canSendPaymentLink()) {
             return back()->with('error', __('messages.cannot_send_payment_link'));
         }
 
@@ -127,8 +112,8 @@ class OrderAdminController extends Controller
             $totalAmount = $order->calculateTotalAmount();
             $currency = CurrencySetting::getDefaultCurrency();
 
-            if (!preg_match('/^[a-z]{3}$/i', $currency->currency_code)) {
-                throw new Exception('Invalid currency format: ' . $currency->currency_code);
+            if (! preg_match('/^[a-z]{3}$/i', $currency->currency_code)) {
+                throw new Exception('Invalid currency format: '.$currency->currency_code);
             }
 
             $session = Session::create([
@@ -137,17 +122,17 @@ class OrderAdminController extends Controller
                     'price_data' => [
                         'currency' => strtolower($currency->currency_code),
                         'product_data' => [
-                            'name' => 'Rental for ' . $order->car->model,
-                            'description' => 'Order #' . $order->id,
+                            'name' => 'Rental for '.$order->car->model,
+                            'description' => 'Order #'.$order->id,
                         ],
-                        'unit_amount' => (int)($totalAmount * 100),
+                        'unit_amount' => (int) ($totalAmount * 100),
                     ],
                     'quantity' => 1,
                 ]],
                 'mode' => 'payment',
-                'success_url' => route('payment.success', $order->id) . '?session_id={CHECKOUT_SESSION_ID}',
+                'success_url' => route('payment.success', $order->id).'?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('payment.cancel', $order->id),
-                'client_reference_id' => 'order_' . $order->id,
+                'client_reference_id' => 'order_'.$order->id,
                 'metadata' => [
                     'order_id' => $order->id,
                     'customer_email' => $order->email,
@@ -155,18 +140,17 @@ class OrderAdminController extends Controller
             ]);
 
             $order->update([
-                'payment_session_id'   => $session->id,
+                'payment_session_id' => $session->id,
                 'payment_link_sent_at' => now(),
-                'payment_amount'       => $totalAmount,
-                'payment_currency'     => $currency->currency_code,
-                'status'               => 'awaiting_payment',
+                'payment_amount' => $totalAmount,
+                'payment_currency' => $currency->currency_code,
+                'status' => 'awaiting_payment',
             ]);
 
             $paymentLink = $session->url;
             $message = __('messages.payment_link_sent');
 
-
-            Log::info('Payment link sent for order #' . $order->id, [
+            Log::info('Payment link sent for order #'.$order->id, [
                 'payment_link' => $paymentLink,
                 'amount' => $totalAmount,
                 'currency' => $currency->currency_code,
@@ -175,37 +159,36 @@ class OrderAdminController extends Controller
             return back()->with('success', $message);
 
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API error sending payment link: ' . $e->getMessage(), [
+            Log::error('Stripe API error sending payment link: '.$e->getMessage(), [
                 'order_id' => $id,
                 'error' => $e->getError(),
             ]);
+
             return back()->with('error', __('messages.stripe_api_error'));
         } catch (Exception $e) {
-            Log::error('Error sending payment link: ' . $e->getMessage(), [
+            Log::error('Error sending payment link: '.$e->getMessage(), [
                 'order_id' => $id,
                 'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', __('messages.error_sending_payment_link') . ': ' . $e->getMessage());
+
+            return back()->with('error', __('messages.error_sending_payment_link').': '.$e->getMessage());
         }
     }
 
     /**
      * Mark order as finished (a car returned)
-     *
-     * @param $id
-     * @return RedirectResponse
      */
     public function markAsFinished($id): RedirectResponse
     {
         $order = Order::findOrFail($id);
 
-        if (!$order->canBeFinished()) {
+        if (! $order->canBeFinished()) {
             return back()->with('error', __('messages.cannot_finish_order'));
         }
 
         $order->update([
             'status' => 'finished',
-            'returned_at' => now()
+            'returned_at' => now(),
         ]);
 
         return back()->with('success', __('messages.order_finished_successfully'));
@@ -213,9 +196,6 @@ class OrderAdminController extends Controller
 
     /**
      * Force cancel an order (admin action)
-     *
-     * @param $id
-     * @return RedirectResponse
      */
     public function cancelOrder($id): RedirectResponse
     {
@@ -232,9 +212,6 @@ class OrderAdminController extends Controller
 
     /**
      * Renew email verification token and resend verification email
-     *
-     * @param $id
-     * @return RedirectResponse
      */
     public function renewEmailToken($id): RedirectResponse
     {
@@ -263,13 +240,13 @@ class OrderAdminController extends Controller
             // Create verification URL that will redirect to payment
             $verificationUrl = route('orders.verify-email-payment', [
                 'order' => $order->id,
-                'token' => $token
+                'token' => $token,
             ]);
 
             // Send the verification URL by email
             $this->mailService->sendPaymentLink($order, $verificationUrl);
 
-            Log::info('Email verification token renewed for order #' . $order->id, [
+            Log::info('Email verification token renewed for order #'.$order->id, [
                 'admin_action' => true,
                 'order_id' => $order->id,
             ]);
@@ -277,19 +254,17 @@ class OrderAdminController extends Controller
             return back()->with('success', __('messages.email_verification_token_renewed'));
 
         } catch (Exception $e) {
-            Log::error('Error renewing email verification token: ' . $e->getMessage(), [
+            Log::error('Error renewing email verification token: '.$e->getMessage(), [
                 'order_id' => $order->id,
                 'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', __('messages.error_renewing_email_token') . ': ' . $e->getMessage());
+
+            return back()->with('error', __('messages.error_renewing_email_token').': '.$e->getMessage());
         }
     }
 
     /**
      * Renew SMS verification token and resend SMS with a payment link
-     *
-     * @param $id
-     * @return RedirectResponse
      */
     public function renewSmsToken($id): RedirectResponse
     {
@@ -318,7 +293,7 @@ class OrderAdminController extends Controller
             // Generate a payment link directly for SMS
             $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
 
-            if (!$paymentLink) {
+            if (! $paymentLink) {
                 return back()->with('error', __('messages.error_generating_payment_link'));
             }
 
@@ -327,7 +302,7 @@ class OrderAdminController extends Controller
             // Send payment link via SMS
             $this->orderService->getSmsService()->sendPaymentLink($order->phone, $paymentLink);
 
-            Log::info('SMS verification token renewed for order #' . $order->id, [
+            Log::info('SMS verification token renewed for order #'.$order->id, [
                 'admin_action' => true,
                 'order_id' => $order->id,
             ]);
@@ -335,11 +310,12 @@ class OrderAdminController extends Controller
             return back()->with('success', __('messages.sms_verification_token_renewed'));
 
         } catch (Exception $e) {
-            Log::error('Error renewing SMS verification token: ' . $e->getMessage(), [
+            Log::error('Error renewing SMS verification token: '.$e->getMessage(), [
                 'order_id' => $order->id,
                 'trace' => $e->getTraceAsString(),
             ]);
-            return back()->with('error', __('messages.error_renewing_sms_token') . ': ' . $e->getMessage());
+
+            return back()->with('error', __('messages.error_renewing_sms_token').': '.$e->getMessage());
         }
     }
 }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         DB::table('orders')->whereNull('return_date')->update([
-            'return_date' => now()->format('Y-m-d')
+            'return_date' => now()->format('Y-m-d'),
         ]);
 
         Schema::table('orders', function (Blueprint $table) {

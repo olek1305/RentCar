@@ -10,51 +10,32 @@ use Exception;
 
 class OrderService
 {
-    /**
-     * @param MailService $mailService
-     * @param SmsService $smsService
-     * @param CacheService $cacheService
-     * @param PaymentService $paymentService
-     */
     public function __construct(protected MailService $mailService,
-                                protected SmsService $smsService,
-                                protected CacheService $cacheService,
-                                protected PaymentService $paymentService
-    )
-    {
+        protected SmsService $smsService,
+        protected CacheService $cacheService,
+        protected PaymentService $paymentService
+    ) {
         //
     }
 
-    /**
-     * @return CacheService
-     */
     public function getCacheService(): CacheService
     {
         return $this->cacheService;
     }
 
-    /**
-     * @return PaymentService
-     */
     public function getPaymentService(): PaymentService
     {
         return $this->paymentService;
     }
 
-    /**
-     * @return SmsService
-     */
     public function getSmsService(): SmsService
     {
         return $this->smsService;
     }
 
-
     /**
      * Create a new order.
      *
-     * @param array $data
-     * @return array
      * @throws Exception
      */
     public function createOrder(array $data): array
@@ -66,22 +47,22 @@ class OrderService
         if ($rentalHour < 6 || $rentalHour > 20) {
             return [
                 'success' => false,
-                'message' => __('messages.rental_time_must_be_between_6_20')
+                'message' => __('messages.rental_time_must_be_between_6_20'),
             ];
         }
 
         if ($returnHour < 6 || $returnHour > 20) {
             return [
                 'success' => false,
-                'message' => __('messages.return_time_must_be_between_6_20')
+                'message' => __('messages.return_time_must_be_between_6_20'),
             ];
         }
 
         // Validate return date is after the rental date
-        if (!isset($data['return_date']) || $data['return_date'] <= $data['rental_date']) {
+        if (! isset($data['return_date']) || $data['return_date'] <= $data['rental_date']) {
             return [
                 'success' => false,
-                'message' => __('messages.return_date_must_be_after_rental_date')
+                'message' => __('messages.return_date_must_be_after_rental_date'),
             ];
         }
 
@@ -89,7 +70,7 @@ class OrderService
         if (empty($data['acceptance_terms']) || empty($data['acceptance_privacy'])) {
             return [
                 'success' => false,
-                'message' => __('messages.must_accept_terms_and_privacy')
+                'message' => __('messages.must_accept_terms_and_privacy'),
             ];
         }
 
@@ -97,13 +78,13 @@ class OrderService
         if ($data['delivery_option'] === 'delivery' && empty($data['delivery_address'])) {
             return [
                 'success' => false,
-                'message' => __('messages.delivery_address_required')
+                'message' => __('messages.delivery_address_required'),
             ];
         }
 
         // Process order data
-        $data['rental_time'] = $data['rental_time_hour'] . ':' . $data['rental_time_minute'];
-        $data['return_time'] = $data['return_time_hour'] . ':' . $data['return_time_minute'];
+        $data['rental_time'] = $data['rental_time_hour'].':'.$data['rental_time_minute'];
+        $data['return_time'] = $data['return_time_hour'].':'.$data['return_time_minute'];
 
         unset($data['rental_time_hour'], $data['rental_time_minute'], $data['return_time_hour'], $data['return_time_minute']);
 
@@ -111,7 +92,7 @@ class OrderService
         if ($limitCheck['limited']) {
             return [
                 'success' => false,
-                'message' => $limitCheck['message']
+                'message' => $limitCheck['message'],
             ];
         }
 
@@ -152,7 +133,7 @@ class OrderService
             // Create verification URL that will redirect to payment
             $verificationUrl = route('orders.verify-email-payment', [
                 'order' => $order->id,
-                'token' => $token
+                'token' => $token,
             ]);
 
             // Send the verification URL by email (not the direct Stripe link)
@@ -170,14 +151,15 @@ class OrderService
             // Generate a payment link and send via SMS
             $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
 
-            if (!$paymentLink) {
+            if (! $paymentLink) {
                 $order->delete();
                 // Restore car visibility if order creation failed
                 $car->update(['hidden' => false]);
                 $this->cacheService->clearCarsCache();
+
                 return [
                     'success' => false,
-                    'message' => __('messages.error_generating_payment_link')
+                    'message' => __('messages.error_generating_payment_link'),
                 ];
             }
 
@@ -193,15 +175,12 @@ class OrderService
             'success' => true,
             'message' => $message,
             'order' => $order,
-            'verification_method' => $verificationMethod
+            'verification_method' => $verificationMethod,
         ];
     }
 
     /**
      * Check order limits for the current day.
-     *
-     * @param array $data
-     * @return array
      */
     protected function checkOrderLimits(array $data): array
     {
@@ -216,14 +195,14 @@ class OrderService
             return [
                 'limited' => true,
                 'message' => __('order_already'),
-                'count' => $count
+                'count' => $count,
             ];
         }
 
         return [
             'limited' => false,
             'message' => null,
-            'count' => $count
+            'count' => $count,
         ];
     }
 }
