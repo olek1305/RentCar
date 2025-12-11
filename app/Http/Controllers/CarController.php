@@ -33,7 +33,6 @@ class CarController extends Controller
      * Display a paginated listing of cars with caching
      * Shows all cars for admin users, only visible cars for guests
      *
-     * @return View|Application|Factory
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -62,7 +61,7 @@ class CarController extends Controller
                 'cars' => $cars,
                 'total' => $total,
                 'per_page' => $perPage,
-                'current_page' => $currentPage
+                'current_page' => $currentPage,
             ];
         });
 
@@ -79,8 +78,7 @@ class CarController extends Controller
         );
 
         // Transform cars for display
-        $cars->getCollection()->transform(fn($car) =>
-        $this->carService->prepareCarForDisplay($car)
+        $cars->getCollection()->transform(fn ($car) => $this->carService->prepareCarForDisplay($car)
         );
 
         return view('cars.index', compact('cars'));
@@ -88,23 +86,18 @@ class CarController extends Controller
 
     /**
      * Show the form for creating a new car
-     *
-     * @return View|Application|Factory
      */
     public function create(): View|Application|Factory
     {
         return view('cars.create', [
             'types' => $this->carService->getCarTypes(),
             'fuelTypes' => $this->carService->getFuelTypes(),
-            'transmissions' => $this->carService->getTransmissions()
+            'transmissions' => $this->carService->getTransmissions(),
         ]);
     }
 
     /**
      * Store a newly created car in the database
-     *
-     * @param StoreCarRequest $request
-     * @return RedirectResponse
      */
     public function store(StoreCarRequest $request): RedirectResponse
     {
@@ -121,10 +114,6 @@ class CarController extends Controller
 
     /**
      * Display the specified car with order information
-     *
-     * @param Car $car
-     * @param Order $order
-     * @return Factory|Application|View
      */
     public function show(Car $car, Order $order): View|Application|Factory
     {
@@ -136,9 +125,6 @@ class CarController extends Controller
 
     /**
      * Show the form for editing the specified car
-     *
-     * @param Car $car
-     * @return View|Application|Factory
      */
     public function edit(Car $car): View|Application|Factory
     {
@@ -148,16 +134,12 @@ class CarController extends Controller
             'car' => $car,
             'types' => $this->carService->getCarTypes(),
             'fuelTypes' => $this->carService->getFuelTypes(),
-            'transmissions' => $this->carService->getTransmissions()
+            'transmissions' => $this->carService->getTransmissions(),
         ]);
     }
 
     /**
      * Update the specified car in the database
-     *
-     * @param UpdateCarRequest $request
-     * @param Car $car
-     * @return RedirectResponse
      */
     public function update(UpdateCarRequest $request, Car $car): RedirectResponse
     {
@@ -177,12 +159,8 @@ class CarController extends Controller
             ->with('success', __('messages.car_updated'));
     }
 
-
     /**
      * Remove the specified car from the database
-     *
-     * @param Car $car
-     * @return RedirectResponse
      */
     public function destroy(Car $car): RedirectResponse
     {
@@ -193,19 +171,17 @@ class CarController extends Controller
             ->with('success', __('messages.car_deleted'));
     }
 
-
     /**
      * Switch hide the car
-     * @param Car $car
-     * @return RedirectResponse
      */
     public function toggleVisibility(Car $car): RedirectResponse
     {
         $this->carService->toggleCarVisibility($car);
         $this->cacheService->clearCarsCache();
+
         return back()->with([
             'success' => 'Car visibility updated',
-            'scroll_position' => request()->header('Referer') . '#car-' . $car->id
+            'scroll_position' => request()->header('Referer').'#car-'.$car->id,
         ]);
     }
 }

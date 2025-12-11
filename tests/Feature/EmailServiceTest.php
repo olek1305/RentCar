@@ -19,18 +19,22 @@ class EmailServiceTest extends TestCase
     use RefreshDatabase;
 
     protected OrderService $orderService;
+
     protected MailService $mailService;
+
     protected SmsService $smsService;
+
     protected CacheService $cacheService;
+
     protected PaymentService|MockInterface $paymentService;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->mailService = new MailService();
-        $this->smsService = new SmsService();
-        $this->cacheService = new CacheService();
+        $this->mailService = new MailService;
+        $this->smsService = new SmsService;
+        $this->cacheService = new CacheService;
 
         $this->paymentService = Mockery::mock(PaymentService::class, [$this->mailService, $this->smsService]);
 
@@ -47,7 +51,6 @@ class EmailServiceTest extends TestCase
             $this->paymentService
         );
     }
-
 
     #[Test]
     public function it_sends_payment_link_immediately_after_order_creation()
@@ -71,7 +74,7 @@ class EmailServiceTest extends TestCase
             'additional_insurance' => true,
             'acceptance_terms' => '1',
             'acceptance_privacy' => '1',
-            'verification_method' => 'sms'
+            'verification_method' => 'sms',
         ];
 
         $result = $this->orderService->createOrder($orderData);

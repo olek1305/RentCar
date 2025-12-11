@@ -9,12 +9,9 @@ use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
-    /**
-     * @param SendContactRequest $request
-     * @return RedirectResponse
-     */
     public function send(SendContactRequest $request): RedirectResponse
     {
+        #TODO what this is file?
         $validated = $request->validated();
 
         Mail::to('contact@carshop.pl')->send(new ContactFormMail($validated));

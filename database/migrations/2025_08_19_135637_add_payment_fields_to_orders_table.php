@@ -33,7 +33,7 @@ return new class extends Migration
                 'payment_amount',
                 'payment_currency',
                 'paid_at',
-                'returned_at'
+                'returned_at',
             ]);
         });
     }

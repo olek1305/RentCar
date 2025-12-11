@@ -31,7 +31,7 @@ class StoreOrderRequest extends FormRequest
                 'max:255',
                 function ($attribute, $value, $fail) {
                     $this->validateEmailDomain($value, $fail);
-                }
+                },
             ],
             'phone' => 'required|regex:/^[0-9 ]+$/|min:9',
             'car_id' => 'required|exists:cars,id',
@@ -76,6 +76,7 @@ class StoreOrderRequest extends FormRequest
 
         if (count($parts) !== 2) {
             $fail('The email format is invalid.');
+
             return;
         }
 
@@ -84,13 +85,14 @@ class StoreOrderRequest extends FormRequest
         // Check for common TLD issues
         if (preg_match('/\.{2,}/', $domain) ||
             preg_match('/^\.|\.$/', $domain) ||
-            !preg_match('/\.[a-z]{2,}$/i', $domain)) {
+            ! preg_match('/\.[a-z]{2,}$/i', $domain)) {
             $fail('The email domain is invalid.');
+
             return;
         }
 
         // Check DNS MX records
-        if (!checkdnsrr($domain, 'MX')) {
+        if (! checkdnsrr($domain, 'MX')) {
             $fail('The email domain does not exist.');
         }
     }
@@ -105,5 +107,4 @@ class StoreOrderRequest extends FormRequest
             'additional_insurance' => $this->boolean('additional_insurance'),
         ]);
     }
-
 }

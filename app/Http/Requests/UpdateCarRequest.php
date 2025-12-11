@@ -22,7 +22,7 @@ class UpdateCarRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'daily_price' => (float) $this->daily_price
+            'daily_price' => (float) $this->daily_price,
         ]);
     }
 
@@ -34,7 +34,7 @@ class UpdateCarRequest extends FormRequest
         return [
             'model' => 'required|string|max:255|unique:cars,model,'.$this->route('car')->id,
             'type' => ['required', 'string', Rule::in(Car::TYPES)],
-            'year' => 'required|integer|min:1880|max:' . date('Y'),
+            'year' => 'required|integer|min:1880|max:'.date('Y'),
             'seats' => 'required|integer|min:1|max:9',
             'fuel_type' => ['required', 'string', Rule::in(Car::fuelTypes)],
             'engine_capacity' => 'required|integer|min:500|max:8000',
@@ -45,7 +45,7 @@ class UpdateCarRequest extends FormRequest
             'daily_price' => 'required|numeric|min:1',
             'delete_gallery_images' => 'nullable|array',
             'delete_gallery_images.*' => 'string',
-            'new_main_image' => 'nullable|string'
+            'new_main_image' => 'nullable|string',
         ];
     }
 
@@ -55,7 +55,7 @@ class UpdateCarRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'daily_price.min' => 'Daily price must be at least $1'
+            'daily_price.min' => 'Daily price must be at least $1',
         ];
     }
 }

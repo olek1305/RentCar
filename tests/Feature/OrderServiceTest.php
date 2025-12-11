@@ -19,18 +19,22 @@ class OrderServiceTest extends TestCase
     use RefreshDatabase;
 
     protected OrderService $orderService;
+
     protected MailService $mailService;
+
     protected SmsService $smsService;
+
     protected CacheService $cacheService;
+
     protected PaymentService|MockInterface $paymentService;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->mailService = new MailService();
-        $this->smsService = new SmsService();
-        $this->cacheService = new CacheService();
+        $this->mailService = new MailService;
+        $this->smsService = new SmsService;
+        $this->cacheService = new CacheService;
 
         $this->paymentService = Mockery::mock(PaymentService::class, [$this->mailService, $this->smsService]);
 
@@ -66,7 +70,7 @@ class OrderServiceTest extends TestCase
             'return_time_hour' => '12',
             'return_time_minute' => '00',
             'additional_info' => 'Test order',
-            'delivery_option' => "pickup",
+            'delivery_option' => 'pickup',
             'additional_insurance' => true,
             'acceptance_terms' => '1',
             'acceptance_privacy' => '1',
@@ -78,7 +82,7 @@ class OrderServiceTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertDatabaseHas('orders', [
             'email' => 'john@gmail.com',
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
         $this->assertTrue($car->fresh()->hidden);
     }
@@ -107,7 +111,7 @@ class OrderServiceTest extends TestCase
             'return_time_hour' => '12',
             'return_time_minute' => '00',
             'additional_info' => 'Test order',
-            'delivery_option' => "pickup",
+            'delivery_option' => 'pickup',
             'additional_insurance' => false,
             'acceptance_terms' => '1',
             'acceptance_privacy' => '1',
@@ -153,7 +157,7 @@ class OrderServiceTest extends TestCase
             'email' => 'jane@example.com',
             'status' => 'pending',
             'delivery_option' => 'delivery',
-            'delivery_address' => '123 Main Street, City, 12345'
+            'delivery_address' => '123 Main Street, City, 12345',
         ]);
         $this->assertTrue($car->fresh()->hidden);
     }

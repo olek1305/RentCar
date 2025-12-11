@@ -13,7 +13,7 @@ class CarService
     {
         $query = Car::query()->orderBy('created_at', 'desc');
 
-        if (!auth()->check() || !$includeHidden) {
+        if (! auth()->check() || ! $includeHidden) {
             $query->where('hidden', false);
         }
 
@@ -61,7 +61,7 @@ class CarService
 
     public function checkCarVisibility(Car $car): void
     {
-        if ($car->hidden && !auth()->check()) {
+        if ($car->hidden && ! auth()->check()) {
             abort(404);
         }
     }
@@ -83,7 +83,7 @@ class CarService
         $data['rental_prices'] = json_encode([
             '1-2' => $data['daily_price'],
             '3-6' => $data['daily_price'] * 0.9,
-            '7+' => $data['daily_price'] * 0.8
+            '7+' => $data['daily_price'] * 0.8,
         ]);
 
         unset($data['daily_price']);
@@ -120,7 +120,7 @@ class CarService
         $data['rental_prices'] = [
             '1-2' => $data['daily_price'],
             '3-6' => $data['daily_price'] * 0.9,
-            '7+' => $data['daily_price'] * 0.8
+            '7+' => $data['daily_price'] * 0.8,
         ];
         unset($data['daily_price']);
 
@@ -217,6 +217,6 @@ class CarService
 
     public function toggleCarVisibility(Car $car): void
     {
-        $car->update(['hidden' => !$car->hidden]);
+        $car->update(['hidden' => ! $car->hidden]);
     }
 }
