@@ -1,0 +1,154 @@
+version: '3.8'
+
+services:
+  app:
+    image: laravel-app:latest
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    secrets:
+      - source: app_env
+        target: /var/www/.env
+    volumes:
+      - public_data:/var/www/public
+      - storage_data:/var/www/storage
+      - cache_data:/var/www/bootstrap/cache
+    environment:
+      APP_ENV: production
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_DATABASE: laravel
+      DB_USERNAME: laravel
+      DB_PASSWORD: password
+      REDIS_HOST: valkey
+    networks:
+      - laravel-net
+    healthcheck:
+      test: ["CMD", "php", "artisan", "env"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - db
+      - valkey
+
+  db:
+    image: mysql:9.4.0
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - laravel-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  valkey:
+    image: valkey/valkey:8.1-alpine
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+    volumes:
+      - valkey_data:/data
+    networks:
+      - laravel-net
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  nginx:
+    image: nginx:1.29.1-alpine
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+    entrypoint: ["/docker-entrypoint.sh"]
+    command: ["nginx", "-g", "daemon off;"]
+    environment:
+      APP_URL: ${APP_URL:-https://localhost}
+    volumes:
+      - public_data:/var/www/public:ro
+      - storage_data:/var/www/storage:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/sites/laravel.prod.conf.template:/etc/nginx/conf.d/default.conf.template:ro
+      - ./docker/nginx/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+    secrets:
+      - source: ssl_cert
+        target: /etc/nginx/ssl/cert.pem
+      - source: ssl_key
+        target: /etc/nginx/ssl/key.pem
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - laravel-net
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  laravel-net:
+    driver: overlay
+    attachable: true
+
+volumes:
+  storage_data:
+  cache_data:
+  db_data:
+  valkey_data:
+  public_data:
+
+secrets:
+  app_env:
+    external: true
+  ssl_cert:
+    external: true
+  ssl_key:
+    external: true
