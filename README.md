@@ -6,6 +6,10 @@ This guide covers the complete setup for running Laravel RentCar with Docker in 
 - [Development Setup (docker-compose.yml)](#development-setup)
 - [Production Setup (docker-stack.yml)](#production-setup)
 
+## Additional Documentation
+- **[SSL Setup with Cloudflare](SSL_SETUP_CLOUDFLARE.md)** - Complete guide for SSL certificates
+- **[Nginx Configuration](NGINX_CONFIG.md)** - How environment variables configure nginx automatically
+
 ---
 
 ## Development Setup
@@ -134,7 +138,7 @@ Edit `.env` for production:
 ```
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://yourdomain.com
+APP_URL=https://yourdomain.com  # Nginx will automatically use this domain
 DB_HOST=db
 DB_DATABASE=laravel
 DB_USERNAME=laravel
@@ -142,8 +146,20 @@ DB_PASSWORD=your_secure_password
 REDIS_HOST=valkey
 ```
 
+**Important:** The `APP_URL` value will be automatically used by nginx as the server name. No need to edit nginx config files!
+
 #### 3. SSL Certificate Setup
-Place your SSL certificate files in:
+
+**Using Cloudflare (Recommended):**
+
+For detailed instructions on setting up SSL with Cloudflare, see **[SSL_SETUP_CLOUDFLARE.md](SSL_SETUP_CLOUDFLARE.md)**
+
+Quick setup:
+1. Generate Cloudflare Origin Certificate (SSL/TLS → Origin Server)
+2. Save certificate and key to `docker/nginx/ssl/`
+3. Use the helper script: `./deploy-ssl.sh`
+
+**Manual setup:**
 ```bash
 mkdir -p docker/nginx/ssl
 # Copy your certificate files:
@@ -159,6 +175,13 @@ docker swarm init
 ```
 
 #### 5. Create Docker Secrets
+
+**Using the helper script (recommended):**
+```bash
+./deploy-ssl.sh
+```
+
+**Manual creation:**
 ```bash
 docker secret create app_env .env
 docker secret create ssl_key ./docker/nginx/ssl/key.pem

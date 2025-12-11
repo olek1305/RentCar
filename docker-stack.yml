@@ -105,11 +105,16 @@ services:
         limits:
           cpus: '0.25'
           memory: 256M
+    entrypoint: ["/docker-entrypoint.sh"]
+    command: ["nginx", "-g", "daemon off;"]
+    environment:
+      APP_URL: ${APP_URL:-https://localhost}
     volumes:
       - public_data:/var/www/public:ro
       - storage_data:/var/www/storage:ro
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/nginx/sites/laravel.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/sites/laravel.prod.conf.template:/etc/nginx/conf.d/default.conf.template:ro
+      - ./docker/nginx/docker-entrypoint.sh:/docker-entrypoint.sh:ro
     secrets:
       - source: ssl_cert
         target: /etc/nginx/ssl/cert.pem

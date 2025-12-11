@@ -26,11 +26,14 @@ services:
       retries: 3
       start_period: 60s
     depends_on:
-      - db
-      - valkey
+      db:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
 
   db:
     image: mysql:9.4.0
+    container_name: mysql-dev
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: laravel
@@ -46,9 +49,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   valkey:
     image: valkey/valkey:8.1-alpine
+    container_name: valkey-dev
     restart: unless-stopped
     volumes:
       - valkey_data:/data
@@ -59,6 +64,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   vite:
     build:

@@ -1,11 +1,29 @@
 #!/bin/sh
 set -e
 
-echo "Waiting for database..."
-while ! nc -z db 3306; do
-    echo "Database not ready yet. Sleeping..."
-    sleep 3
+echo "Waiting for database to be ready..."
+
+# Wait for DNS resolution and database connection
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if nc -z db 3306 2>/dev/null; then
+        echo "Database is ready!"
+        break
+    fi
+
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    echo "Database not ready yet (attempt $RETRY_COUNT/$MAX_RETRIES). Waiting..."
+    sleep 2
 done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "ERROR: Database failed to become ready after $MAX_RETRIES attempts"
+    echo "Please check that the 'db' service is running:"
+    echo "  docker compose ps db"
+    exit 1
+fi
 
 echo "Installing Composer dependencies..."
 if [ ! -d "/var/www/vendor" ] || [ ! -f "/var/www/vendor/autoload.php" ]; then
