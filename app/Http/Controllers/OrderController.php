@@ -4,23 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
-use App\Models\Car;
 use App\Services\OrderService;
 use Exception;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Application;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\URL;
 
 class OrderController extends Controller
 {
-    /**
-     * @param OrderService $orderService
-     */
     public function __construct(protected OrderService $orderService)
     {
         //
@@ -29,8 +18,7 @@ class OrderController extends Controller
     /**
      * Store a newly created order in storage.
      *
-     * @param StoreOrderRequest $request Validated request data
-     * @return RedirectResponse
+     * @param  StoreOrderRequest  $request  Validated request data
      *
      * @throws Exception
      */
@@ -38,7 +26,7 @@ class OrderController extends Controller
     {
         $result = $this->orderService->createOrder($request->validated());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return back()->with('error', $result['message']);
         }
 
@@ -67,7 +55,7 @@ class OrderController extends Controller
         $order->update([
             'email_verified_at' => now(),
             'email_verification_token' => null, // Clear token after verification
-            'status' => 'verified'
+            'status' => 'verified',
         ]);
 
         // Hide car after verification
@@ -77,7 +65,7 @@ class OrderController extends Controller
         // Generate payment link
         $paymentLink = $this->orderService->getPaymentService()->generateReservationPaymentLink($order);
 
-        if (!$paymentLink) {
+        if (! $paymentLink) {
             return redirect()->route('home')->with('error', __('messages.error_generating_payment_link'));
         }
 

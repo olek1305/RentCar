@@ -22,7 +22,7 @@ class Car extends Model
         'image_url',
         'description',
         'rental_prices',
-        'hidden'
+        'hidden',
     ];
 
     protected $casts = [
@@ -47,7 +47,7 @@ class Car extends Model
         'SPORTS CAR',
         'DIESEL',
         'ELECTRIC',
-        'HYBRID'
+        'HYBRID',
     ];
 
     public const fuelTypes = [
@@ -66,6 +66,6 @@ class Car extends Model
     public const transmissions = [
         'AUTOMATIC',
         'MANUAL',
-        'SEMI-AUTOMATIC'
+        'SEMI-AUTOMATIC',
     ];
 }

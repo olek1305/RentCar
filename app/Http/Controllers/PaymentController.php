@@ -15,9 +15,8 @@ class PaymentController extends Controller
     const MESSAGES_PAYMENT_CANCELLED = 'messages.payment_cancelled';
 
     /**
-     * @param Request $request
-     * @param Order $order
      * @return Application|RedirectResponse|Redirector|object
+     *
      * @throws ApiErrorException
      */
     public function success(Request $request, Order $order)
@@ -30,6 +29,7 @@ class PaymentController extends Controller
                 'status' => 'paid',
                 'paid_at' => now(),
             ]);
+
             return redirect('/')->with('success', __('messages.payment_successful'));
         }
 
@@ -39,7 +39,7 @@ class PaymentController extends Controller
     public function cancel(Order $order)
     {
         $order->update([
-            'status' => 'cancelled'
+            'status' => 'cancelled',
         ]);
 
         $order->car->update(['hidden' => false]);

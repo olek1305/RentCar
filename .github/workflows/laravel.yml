@@ -1,17 +1,65 @@
-name: Laravel CI
+name: Laravel CI/CD
 
 on:
   push:
     branches: [ "master", "feature" ]
   pull_request:
     branches: [ "master", "feature" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  laravel-tests:
+  code-quality:
+    name: Code Quality Checks
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, mysql, curl, xml, zip, intl, bcmath, soap, redis, gd
+          tools: composer:v2
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Security audit
+        run: composer audit
+
+  tests:
+    name: Tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3']
+
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:9.1
         env:
           MYSQL_ROOT_PASSWORD: rootpassword
           MYSQL_DATABASE: testing
@@ -21,11 +69,21 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -uroot -prootpassword"
+          --health-cmd="mysqladmin ping -h localhost -uroot -prootpassword"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
           --health-start-period=30s
+
+      redis:
+        image: valkey/valkey:8.1-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="valkey-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout code
@@ -34,73 +92,205 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          extensions: mbstring, dom, fileinfo, mysql, curl, xml
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, dom, fileinfo, mysql, curl, xml, zip, intl, bcmath, soap, redis, gd
           coverage: pcov
           tools: composer:v2
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-      - name: Prepare environment
-        run: |
-          cp .env.example .env.testing
-          echo "APP_ENV=testing" >> .env.testing
-          echo "DB_CONNECTION=mysql" >> .env.testing
-          echo "DB_HOST=127.0.0.1" >> .env.testing
-          echo "DB_PORT=3306" >> .env.testing
-          echo "DB_DATABASE=testing" >> .env.testing  # Changed to match service
-          echo "DB_USERNAME=tester" >> .env.testing
-          echo "DB_PASSWORD=password" >> .env.testing
-          php artisan key:generate --env=testing
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-php${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Set proper directory permissions
         run: |
           mkdir -p storage/framework/{sessions,views,cache}
-          chmod -R 755 storage/
-          chmod -R 755 bootstrap/cache/
-          chmod -R 775 storage/framework/sessions/
-          chmod -R 775 storage/framework/views/
-          chmod -R 775 storage/framework/cache/
-          chmod -R 775 bootstrap/cache/
+          mkdir -p storage/logs
+          chmod -R 775 storage bootstrap/cache
 
-      - name: Verify MySQL privileges
+      - name: Install database clients
         run: |
-          mysql -h 127.0.0.1 -uroot -prootpassword -e "
-            CREATE USER IF NOT EXISTS 'tester'@'%' IDENTIFIED BY 'password';
-            CREATE DATABASE IF NOT EXISTS testing;
-            GRANT ALL PRIVILEGES ON testing.* TO 'tester'@'%';
-            FLUSH PRIVILEGES;
-          "
+          sudo apt-get update
+          sudo apt-get install -y mysql-client redis-tools
 
-      - name: Wait for MySQL to be ready
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=testing/' .env
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=tester/' .env
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=password/' .env
+          sed -i 's/^REDIS_HOST=.*/REDIS_HOST=127.0.0.1/' .env
+          sed -i 's/^APP_ENV=.*/APP_ENV=testing/' .env
+          rm -f bootstrap/cache/config.php bootstrap/cache/*.php
+          rm -f .env.cache
+          php artisan key:generate --force
+          echo "✓ Environment configured"
+
+      - name: Verify MySQL connection
         run: |
           for i in {1..30}; do
             if mysqladmin ping -h127.0.0.1 -utester -ppassword --silent; then
-              echo "MySQL is ready!"
+              echo "✓ MySQL is ready"
               break
             fi
-            echo "Waiting for MySQL... Attempt $i/30"
+            echo "Waiting for MySQL... ($i/30)"
             sleep 2
           done
 
-      - name: Verify database access
+      - name: Verify Redis connection
         run: |
-          mysql -h 127.0.0.1 -utester -ppassword testing -e "SHOW TABLES;"
+          if redis-cli -h 127.0.0.1 ping | grep -q PONG; then
+            echo "✓ Redis is ready"
+          else
+            echo "✗ Redis connection failed"
+            exit 1
+          fi
 
-      - name: Run database migrations and seed
-        run: php artisan migrate:fresh --seed --env=testing
-
-      - name: Execute tests
-        run: vendor/bin/phpunit --coverage-clover clover.xml
+      - name: Run database migrations
+        run: php artisan migrate:fresh --seed --force
         env:
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: testing
+          DB_USERNAME: tester
+          DB_PASSWORD: password
+          REDIS_HOST: 127.0.0.1
+
+      - name: Execute tests with coverage
+        run: php artisan test --coverage --min=15
+        env:
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: testing
+          DB_USERNAME: tester
+          DB_PASSWORD: password
+          REDIS_HOST: 127.0.0.1
           STRIPE_KEY: pk_test_mockKey123
           STRIPE_SECRET: sk_test_mockSecret123
 
-      - name: Upload code coverage
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          file: clover.xml
-          flags: unittests
-          name: codecov-umbrella
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+
+  frontend:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          if [ ! -d "public/build" ]; then
+            echo "✗ Build directory not found"
+            exit 1
+          fi
+          echo "✓ Build artifacts created successfully"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: frontend-build
+          path: public/build
+          retention-days: 1
+
+  docker-build:
+    name: Docker Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build production image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.prod
+          push: false
+          tags: laravel-app:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify production image
+        run: |
+          echo "✓ Production Docker image built successfully"
+
+  production-readiness:
+    name: Production Readiness Check
+    runs-on: ubuntu-latest
+    needs: [code-quality, tests, frontend, docker-build]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, mysql, curl, xml, zip, intl, bcmath, soap, redis, gd
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
+
+      - name: Check optimized autoloader
+        run: |
+          if [ -f "vendor/composer/autoload_classmap.php" ]; then
+            echo "✓ Optimized autoloader generated"
+          else
+            echo "✗ Optimized autoloader not found"
+            exit 1
+          fi
+
+      - name: Verify production config
+        run: |
+          cp .env.example .env
+          echo "APP_ENV=production" >> .env
+          echo "APP_DEBUG=false" >> .env
+          php artisan key:generate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          echo "✓ Production optimizations completed"
+
+      - name: Summary
+        run: |
+          echo "### Production Readiness Report ✓" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Code quality checks passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ All tests passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Frontend build successful" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Docker production image builds" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Production optimizations work" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**The application is ready for production deployment!**" >> $GITHUB_STEP_SUMMARY

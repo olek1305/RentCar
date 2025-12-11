@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Car;
 use App\Models\Order;
-use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class OrderSeeder extends Seeder
@@ -33,7 +33,7 @@ class OrderSeeder extends Seeder
                 $rentalTimeHour = rand(8, 16);
                 $returnTimeHour = $rentalTimeHour + rand(1, 8);
 
-                $returnDate = $this->faker->dateTimeBetween($rentalDate, $rentalDate->format('Y-m-d') . ' +7 days');
+                $returnDate = $this->faker->dateTimeBetween($rentalDate, $rentalDate->format('Y-m-d').' +7 days');
 
                 $orders[] = [
                     'first_name' => $this->faker->firstName(),
@@ -63,7 +63,7 @@ class OrderSeeder extends Seeder
             $rentalTimeHour = rand(8, 16);
             $returnTimeHour = $rentalTimeHour + rand(1, 8);
 
-            $returnDate = $this->faker->dateTimeBetween($rentalDate, $rentalDate->format('Y-m-d') . ' +7 days');
+            $returnDate = $this->faker->dateTimeBetween($rentalDate, $rentalDate->format('Y-m-d').' +7 days');
 
             $orders[] = [
                 'first_name' => $this->faker->firstName(),

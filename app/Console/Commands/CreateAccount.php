@@ -33,6 +33,7 @@ class CreateAccount extends Command
 
         if (User::where('email', $email)->exists()) {
             $this->error('Email already exists');
+
             return;
         }
 
@@ -42,6 +43,6 @@ class CreateAccount extends Command
             'password' => Hash::make($password),
         ]);
 
-        $this->info('User created successfully, name: ' . $user->name . ' email: ' . $user->email);
+        $this->info('User created successfully, name: '.$user->name.' email: '.$user->email);
     }
 }

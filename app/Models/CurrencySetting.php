@@ -13,7 +13,7 @@ class CurrencySetting extends Model
         return self::where('is_default', true)->first() ?? new self([
             'currency_code' => 'USD',
             'currency_symbol' => '$',
-            'currency_name' => 'US Dollar'
+            'currency_name' => 'US Dollar',
         ]);
     }
 

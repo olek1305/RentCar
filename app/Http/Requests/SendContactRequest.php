@@ -29,7 +29,7 @@ class SendContactRequest extends FormRequest
                 'max:255',
                 function ($attribute, $value, $fail) {
                     $this->validateEmailDomain($value, $fail);
-                }
+                },
             ],
             'message' => 'required|string|max:2000',
         ];
@@ -41,6 +41,7 @@ class SendContactRequest extends FormRequest
 
         if (count($parts) !== 2) {
             $fail('The email format is invalid.');
+
             return;
         }
 
@@ -49,13 +50,14 @@ class SendContactRequest extends FormRequest
         // Check for common TLD issues
         if (preg_match('/\.{2,}/', $domain) ||
             preg_match('/^\.|\.$/', $domain) ||
-            !preg_match('/\.[a-z]{2,}$/i', $domain)) {
+            ! preg_match('/\.[a-z]{2,}$/i', $domain)) {
             $fail('The email domain is invalid.');
+
             return;
         }
 
         // Check DNS MX records
-        if (!checkdnsrr($domain, 'MX')) {
+        if (! checkdnsrr($domain, 'MX')) {
             $fail('The email domain does not exist.');
         }
     }
