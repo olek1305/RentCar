@@ -16,6 +16,7 @@ class CurrencyController extends Controller
         $currencies = CurrencySetting::all();
         $defaultCurrency = CurrencySetting::getDefaultCurrency();
 
+        #TODO unknown view
         return view('admin.currencies.index', compact('currencies', 'defaultCurrency'));
     }
 
