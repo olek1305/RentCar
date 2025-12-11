@@ -21,6 +21,7 @@ RUN apt-get install -y \
     php8.3-soap \
     php8.3-curl \
     php8.3-xml \
+    php8.3-gd \
     php8.3-dev \
     curl \
     unzip \
@@ -90,6 +91,7 @@ RUN apt-get install -y \
     php8.3-soap \
     php8.3-curl \
     php8.3-xml \
+    php8.3-gd \
     libzip4 \
     libonig5 \
     libicu74 \
