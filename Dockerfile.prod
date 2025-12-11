@@ -1,0 +1,153 @@
+# Production Dockerfile (multi-stage build)
+# Stage 1: Build PHP dependencies
+FROM ubuntu:24.04 AS builder
+
+# Install PHP and build dependencies
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:ondrej/php -y \
+    && apt-get update
+
+RUN apt-get install -y \
+    php8.3 \
+    php8.3-fpm \
+    php8.3-redis \
+    php8.3-cli \
+    php8.3-mysql \
+    php8.3-mbstring \
+    php8.3-zip \
+    php8.3-intl \
+    php8.3-bcmath \
+    php8.3-opcache \
+    php8.3-soap \
+    php8.3-curl \
+    php8.3-xml \
+    php8.3-dev \
+    curl \
+    unzip \
+    git \
+    libzip-dev \
+    libonig-dev \
+    libxml2-dev \
+    libicu-dev \
+    autoconf \
+    g++ \
+    make \
+    pkg-config \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify PHP extensions are installed
+RUN php -m | grep curl && \
+    php -m | grep mbstring && \
+    php -m | grep zip
+
+WORKDIR /var/www
+
+COPY . /var/www
+
+RUN mkdir -p /var/www/bootstrap/cache /var/www/storage/framework/views \
+    && chmod -R 775 /var/www/bootstrap/cache /var/www/storage
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && COMPOSER_PROCESS_TIMEOUT=1200 composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+# Stage 2: Build frontend assets
+FROM node:20 AS node-builder
+
+WORKDIR /var/www
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY vite.config.js ./
+COPY resources/ ./resources/
+COPY public/ ./public/
+
+RUN npm run build && npm cache clean --force
+
+# Stage 3: Production runtime
+FROM ubuntu:24.04
+
+WORKDIR /var/www
+
+# Install PHP and runtime dependencies
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:ondrej/php -y \
+    && apt-get update
+
+RUN apt-get install -y \
+    php8.3 \
+    php8.3-fpm \
+    php8.3-redis \
+    php8.3-cli \
+    php8.3-mysql \
+    php8.3-mbstring \
+    php8.3-zip \
+    php8.3-intl \
+    php8.3-bcmath \
+    php8.3-opcache \
+    php8.3-soap \
+    php8.3-curl \
+    php8.3-xml \
+    libzip4 \
+    libonig5 \
+    libicu74 \
+    libxml2 \
+    curl \
+    netcat-openbsd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify PHP extensions in production
+RUN php -m | grep curl
+
+# Create laravel user
+RUN groupadd --system laravel && useradd --system --gid laravel laravel
+
+# Configure PHP-FPM to run as laravel user and fix log permissions
+RUN mkdir -p /run/php /var/log && \
+    touch /var/log/php8.3-fpm.log && \
+    chown -R laravel:laravel /run/php /var/log/php8.3-fpm.log && \
+    chmod 666 /var/log/php8.3-fpm.log
+
+# Configure PHP-FPM
+RUN sed -i 's/;daemonize = yes/daemonize = no/' /etc/php/8.3/fpm/php-fpm.conf && \
+    sed -i 's/listen = .*/listen = 0.0.0.0:9000/' /etc/php/8.3/fpm/pool.d/www.conf && \
+    sed -i 's/user = www-data/user = laravel/' /etc/php/8.3/fpm/pool.d/www.conf && \
+    sed -i 's/group = www-data/group = laravel/' /etc/php/8.3/fpm/pool.d/www.conf && \
+    sed -i 's|^;error_log = .*|error_log = /proc/self/fd/2|' /etc/php/8.3/fpm/php-fpm.conf && \
+    sed -i 's|^error_log = .*|error_log = /proc/self/fd/2|' /etc/php/8.3/fpm/php-fpm.conf
+
+COPY docker/php/php.ini /etc/php/8.3/fpm/conf.d/99-custom.ini
+COPY docker/php/php.ini /etc/php/8.3/cli/conf.d/99-custom.ini
+
+# Create all necessary storage directories with correct permissions
+RUN mkdir -p /var/www/bootstrap/cache \
+    /var/www/storage/framework/views \
+    /var/www/storage/framework/sessions \
+    /var/www/storage/framework/cache \
+    /var/www/storage/logs \
+    /var/www/storage/app/public
+
+RUN chown -R laravel:laravel /var/www/bootstrap/cache /var/www/storage \
+    && chmod -R 775 /var/www/bootstrap/cache /var/www/storage
+
+COPY --from=builder --chown=laravel:laravel /var/www/vendor /var/www/vendor
+
+COPY --from=node-builder --chown=laravel:laravel /var/www/public/build /var/www/public/build
+
+COPY --chown=laravel:laravel . .
+
+# Fix storage link (as laravel user)
+USER laravel
+RUN php artisan storage:link
+USER root
+
+COPY --chown=laravel:laravel docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 9000
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
