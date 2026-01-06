@@ -304,6 +304,10 @@ return [
     'cookie_policy' => 'Cookie Policy',
     'save_preferences' => 'Save Preferences',
 
+    // Footer
+    'manage_cookies' => 'Manage Cookies',
+    'all_rights_reserved' => 'All rights reserved',
+
     // Admin Orders
     'cannot_renew_token_for_this_status' => 'Cannot renew token for this status',
     'email_already_verified' => 'Email already verified',

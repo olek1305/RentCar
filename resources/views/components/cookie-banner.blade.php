@@ -114,6 +114,11 @@
                 this.showSettings();
             });
 
+            // Footer manage cookies button
+            document.getElementById('manage-cookies-btn')?.addEventListener('click', () => {
+                this.showSettings();
+            });
+
             // Modal buttons
             document.getElementById('close-modal-btn')?.addEventListener('click', () => {
                 this.hideSettings();

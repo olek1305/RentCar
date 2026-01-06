@@ -109,6 +109,23 @@
     {{-- Page Content --}}
     {{ $slot }}
 </main>
+<footer class="bg-gray-900 text-white py-8 mt-auto">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-gray-400 text-sm">
+                © {{ date('Y') }} RentCar. {{ __('messages.all_rights_reserved') }}
+            </div>
+            <div class="flex items-center gap-6 text-sm">
+                <a href="/privacy-policy" class="text-gray-400 hover:text-white transition">
+                    {{ __('messages.privacy_policy') }}
+                </a>
+                <button id="manage-cookies-btn" class="text-gray-400 hover:text-white transition">
+                    {{ __('messages.manage_cookies') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</footer>
 <x-cookie-banner />
 </body>
 </html>

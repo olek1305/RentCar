@@ -304,6 +304,10 @@ return [
     'cookie_policy' => 'Polityka cookie',
     'save_preferences' => 'Zapisz preferencje',
 
+    // Footer
+    'manage_cookies' => 'Zarządzaj cookies',
+    'all_rights_reserved' => 'Wszelkie prawa zastrzeżone',
+
     // Admin Orders
     'cannot_renew_token_for_this_status' => 'Nie można odnowić tokenu dla tego statusu zamówienia',
     'email_already_verified' => 'Email został już zweryfikowany',
