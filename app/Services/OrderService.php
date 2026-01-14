@@ -99,7 +99,21 @@ class OrderService
         $car = Car::findOrFail($data['car_id']);
 
         if ($car->hidden) {
-            return ['success' => false, 'message' => __('message.order_unavailable')];
+            return ['success' => false, 'message' => __('messages.order_unavailable')];
+        }
+
+        // Check if car is available for the selected dates
+        $availabilityCheck = $this->checkCarAvailability(
+            $data['car_id'],
+            $data['rental_date'],
+            $data['return_date']
+        );
+
+        if (! $availabilityCheck['available']) {
+            return [
+                'success' => false,
+                'message' => $availabilityCheck['message'],
+            ];
         }
 
         // Get verification method
@@ -204,5 +218,78 @@ class OrderService
             'message' => null,
             'count' => $count,
         ];
+    }
+
+    /**
+     * Check if a car is available for the given dates.
+     *
+     * @param  int  $carId  The car ID to check
+     * @param  string  $rentalDate  The rental start date
+     * @param  string  $returnDate  The rental end date
+     * @param  int|null  $excludeOrderId  Optional order ID to exclude (for updates)
+     */
+    public function checkCarAvailability(int $carId, string $rentalDate, string $returnDate, ?int $excludeOrderId = null): array
+    {
+        $rentalStart = Carbon::parse($rentalDate)->startOfDay();
+        $returnEnd = Carbon::parse($returnDate)->endOfDay();
+
+        // Find overlapping orders for this car
+        // An order overlaps if: (existing_rental_date <= new_return_date) AND (existing_return_date >= new_rental_date)
+        $query = Order::where('car_id', $carId)
+            ->whereNotIn('status', ['cancelled', 'finished'])
+            ->where(function ($q) use ($rentalStart, $returnEnd) {
+                $q->where(function ($inner) use ($rentalStart, $returnEnd) {
+                    $inner->where('rental_date', '<=', $returnEnd)
+                        ->where('return_date', '>=', $rentalStart);
+                });
+            });
+
+        if ($excludeOrderId) {
+            $query->where('id', '!=', $excludeOrderId);
+        }
+
+        $conflictingOrder = $query->first();
+
+        if ($conflictingOrder) {
+            return [
+                'available' => false,
+                'message' => __('messages.car_not_available_for_dates', [
+                    'from' => $conflictingOrder->rental_date->format('d.m.Y'),
+                    'to' => $conflictingOrder->return_date->format('d.m.Y'),
+                ]),
+                'conflicting_order' => $conflictingOrder,
+            ];
+        }
+
+        return [
+            'available' => true,
+            'message' => null,
+        ];
+    }
+
+    /**
+     * Get unavailable dates for a car.
+     *
+     * @param  int  $carId  The car ID
+     * @return array Array of date ranges that are unavailable
+     */
+    public function getUnavailableDates(int $carId): array
+    {
+        $orders = Order::where('car_id', $carId)
+            ->whereNotIn('status', ['cancelled', 'finished'])
+            ->where('return_date', '>=', Carbon::today())
+            ->select('rental_date', 'return_date')
+            ->get();
+
+        $unavailableDates = [];
+
+        foreach ($orders as $order) {
+            $unavailableDates[] = [
+                'from' => $order->rental_date->format('Y-m-d'),
+                'to' => $order->return_date->format('Y-m-d'),
+            ];
+        }
+
+        return $unavailableDates;
     }
 }

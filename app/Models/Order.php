@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Order extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'first_name',
         'last_name',
@@ -37,6 +39,10 @@ class Order extends Model
         'payment_session_id',
         'acceptance_terms',
         'acceptance_privacy',
+        'final_payment_session_id',
+        'final_payment_link_sent_at',
+        'final_payment_amount',
+        'final_paid_at',
     ];
 
     protected $casts = [
@@ -64,6 +70,10 @@ class Order extends Model
         'paid_at' => 'datetime',
         'acceptance_terms' => 'boolean',
         'acceptance_privacy' => 'boolean',
+        'final_payment_session_id' => 'string',
+        'final_payment_link_sent_at' => 'datetime',
+        'final_payment_amount' => 'float',
+        'final_paid_at' => 'datetime',
     ];
 
     public function car(): BelongsTo
@@ -82,6 +92,7 @@ class Order extends Model
             'completed' => __('messages.status_completed'),
             'returned' => __('messages.status_returned'),
             'finished' => __('messages.status_finished'),
+            'awaiting_final_payment' => __('messages.status_awaiting_final_payment'),
             'cancelled' => __('messages.status_cancelled'),
         ];
     }
@@ -149,9 +160,9 @@ class Order extends Model
         }
 
         $extraFee = 0;
-        if ($this->airport_delivery) {
+        if ($this->delivery_option === 'airport') {
             $extraFee = 10; // Airport pickup fee
-        } elseif ($this->extra_delivery_fee) {
+        } elseif ($this->delivery_option === 'delivery') {
             $extraFee = 20; // Delivery service fee
         }
 
@@ -164,5 +175,58 @@ class Order extends Model
     public function canBeFinished(): bool
     {
         return in_array($this->status, ['paid', 'completed']);
+    }
+
+    /**
+     * Calculate the final payment amount (full rental cost minus reservation fee)
+     */
+    public function calculateFinalPaymentAmount(): float
+    {
+        $rentalDays = $this->rental_date->diffInDays($this->return_date);
+        $rentalDays = max(1, $rentalDays);
+
+        $dailyRate = 0;
+
+        if ($this->car && $this->car->rental_prices) {
+            $prices = is_array($this->car->rental_prices)
+                ? $this->car->rental_prices
+                : json_decode($this->car->rental_prices, true);
+
+            if ($rentalDays <= 2) {
+                $dailyRate = $prices['1-2'] ?? 0;
+            } elseif ($rentalDays <= 6) {
+                $dailyRate = $prices['3-6'] ?? $prices['1-2'] ?? 0;
+            } else {
+                $dailyRate = $prices['7+'] ?? $prices['3-6'] ?? $prices['1-2'] ?? 0;
+            }
+        }
+
+        $baseAmount = $dailyRate * $rentalDays;
+
+        // Add delivery fee
+        $deliveryFee = 0;
+        if ($this->delivery_option === 'airport') {
+            $deliveryFee = 10;
+        } elseif ($this->delivery_option === 'delivery') {
+            $deliveryFee = 20;
+        }
+
+        // Add insurance cost
+        $insuranceCost = $this->getAdditionalInsuranceCost() * $rentalDays;
+
+        $totalAmount = $baseAmount + $deliveryFee + $insuranceCost;
+
+        // Subtract already paid reservation fee
+        $reservationFee = $this->payment_amount ?? $this->getReservationFee();
+
+        return max(0, $totalAmount - $reservationFee);
+    }
+
+    /**
+     * Get the number of rental days
+     */
+    public function getRentalDays(): int
+    {
+        return max(1, $this->rental_date->diffInDays($this->return_date));
     }
 }

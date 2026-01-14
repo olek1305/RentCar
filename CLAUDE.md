@@ -1,3 +1,22 @@
+=== docker rules ===
+
+## Docker Environment
+
+This application runs in Docker. Always use docker exec for artisan commands:
+
+```bash
+docker exec laravel-app-dev php artisan <command>
+docker exec laravel-app-dev vendor/bin/pint --dirty
+docker exec laravel-app-dev php artisan test
+```
+
+Examples:
+- `docker exec laravel-app-dev php artisan migrate`
+- `docker exec laravel-app-dev php artisan make:migration <name>`
+- `docker exec laravel-app-dev php artisan test --filter=<testName>`
+
+Note: Do not use `-it` flags when running from Claude Code (non-interactive terminal).
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

@@ -2,11 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CurrencySetting extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['currency_code', 'currency_symbol', 'currency_name', 'is_default'];
+
+    protected function casts(): array
+    {
+        return [
+            'is_default' => 'boolean',
+        ];
+    }
 
     public static function getDefaultCurrency()
     {

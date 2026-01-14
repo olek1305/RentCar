@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\CarAdminController;
+use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\OrderAdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarController;
@@ -17,7 +19,7 @@ Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
 Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/admin/login', [AuthController::class, 'login']);
+Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 Route::middleware('auth')->group(function () {
     Route::get('/cars/create', [CarController::class, 'create'])->name('cars.create');
@@ -35,6 +37,17 @@ Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
 
 Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.index');
+
+    // Car management
+    Route::get('/cars', [CarAdminController::class, 'index'])->name('admin.cars.index');
+
+    // Currency management
+    Route::get('/currencies', [CurrencyController::class, 'index'])->name('admin.currencies.index');
+    Route::post('/currencies', [CurrencyController::class, 'store'])->name('admin.currencies.store');
+    Route::put('/currencies/{currency}', [CurrencyController::class, 'update'])->name('admin.currencies.update');
+    Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy'])->name('admin.currencies.destroy');
+    Route::patch('/currencies/{currency}/set-default', [CurrencyController::class, 'setDefault'])->name('admin.currencies.set-default');
+
     Route::get('/orders', [OrderAdminController::class, 'index'])->name('admin.orders.index');
     Route::get('/orders/{order}', [OrderAdminController::class, 'show'])->name('admin.orders.show');
     Route::patch('/orders/{order}/status', [OrderAdminController::class, 'updateStatus'])
@@ -49,6 +62,10 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         ->name('admin.orders.mark-finished');
     Route::patch('/orders/{order}/cancel', [OrderAdminController::class, 'cancelOrder'])
         ->name('admin.orders.cancel');
+    Route::post('/orders/{order}/send-final-payment-link', [OrderAdminController::class, 'sendFinalPaymentLink'])
+        ->name('admin.orders.send-final-payment-link');
+    Route::post('/orders/{order}/resend-confirmation-email', [OrderAdminController::class, 'resendConfirmationEmail'])
+        ->name('admin.orders.resend-confirmation-email');
     Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
 });
 

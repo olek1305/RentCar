@@ -83,7 +83,7 @@ class OrderAdminController extends Controller
         $order = Order::findOrFail($id);
 
         $request->validate([
-            'status' => 'required|in:pending,confirmed,awaiting_payment,paid,completed,finished,cancelled',
+            'status' => 'required|in:pending,verified,confirmed,awaiting_payment,paid,completed,returned,finished,awaiting_final_payment,cancelled',
         ]);
 
         $order->update(['status' => $request->status]);
@@ -316,6 +316,167 @@ class OrderAdminController extends Controller
             ]);
 
             return back()->with('error', __('messages.error_renewing_sms_token').': '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Send final payment link for remaining rental cost after car return
+     */
+    public function sendFinalPaymentLink($id): RedirectResponse
+    {
+        $order = Order::with('car')->findOrFail($id);
+
+        if ($order->status !== 'finished') {
+            return back()->with('error', __('messages.order_must_be_finished'));
+        }
+
+        if (! $order->email_verified_at && ! $order->sms_verified_at) {
+            return back()->with('error', __('messages.customer_not_verified'));
+        }
+
+        try {
+            if (empty(config('services.stripe.secret'))) {
+                throw new Exception('Stripe secret key is not configured');
+            }
+
+            Stripe::setApiKey(config('services.stripe.secret'));
+
+            $currency = CurrencySetting::getDefaultCurrency();
+            $finalAmount = $order->calculateFinalPaymentAmount();
+
+            if ($finalAmount <= 0) {
+                return back()->with('error', __('messages.no_remaining_amount'));
+            }
+
+            if (! preg_match('/^[a-z]{3}$/i', $currency->currency_code)) {
+                throw new Exception('Invalid currency format: '.$currency->currency_code);
+            }
+
+            $session = Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => strtolower($currency->currency_code),
+                        'product_data' => [
+                            'name' => __('messages.final_payment_for').' '.$order->car->model,
+                            'description' => __('messages.order').' #'.$order->id.' - '.__('messages.remaining_balance'),
+                        ],
+                        'unit_amount' => (int) ($finalAmount * 100),
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => route('payment.success', $order->id).'?session_id={CHECKOUT_SESSION_ID}&type=final',
+                'cancel_url' => route('payment.cancel', $order->id),
+                'client_reference_id' => 'order_final_'.$order->id,
+                'metadata' => [
+                    'order_id' => $order->id,
+                    'customer_email' => $order->email,
+                    'payment_type' => 'final',
+                ],
+            ]);
+
+            $order->update([
+                'final_payment_session_id' => $session->id,
+                'final_payment_link_sent_at' => now(),
+                'final_payment_amount' => $finalAmount,
+                'status' => 'awaiting_final_payment',
+            ]);
+
+            $paymentLink = $session->url;
+
+            // Send via email if verified
+            if ($order->email_verified_at) {
+                $this->mailService->sendFinalPaymentLink($order, $paymentLink);
+            }
+
+            Log::info('Final payment link sent for order #'.$order->id, [
+                'payment_link' => $paymentLink,
+                'amount' => $finalAmount,
+                'currency' => $currency->currency_code,
+            ]);
+
+            return back()->with('success', __('messages.final_payment_link_sent'));
+
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe API error sending final payment link: '.$e->getMessage(), [
+                'order_id' => $id,
+                'error' => $e->getError(),
+            ]);
+
+            return back()->with('error', __('messages.stripe_api_error'));
+        } catch (Exception $e) {
+            Log::error('Error sending final payment link: '.$e->getMessage(), [
+                'order_id' => $id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', __('messages.error_sending_final_payment_link').': '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Resend confirmation email based on order status
+     */
+    public function resendConfirmationEmail($id): RedirectResponse
+    {
+        $order = Order::with('car')->findOrFail($id);
+
+        try {
+            $emailSent = false;
+
+            // Determine which email to send based on order status
+            if ($order->status === 'paid' && $order->paid_at) {
+                // Resend reservation payment confirmation
+                $emailSent = $this->mailService->sendPaymentSuccess($order, 'reservation');
+                $successMessage = __('messages.reservation_confirmation_resent');
+            } elseif ($order->status === 'completed' && $order->final_paid_at) {
+                // Resend final payment confirmation
+                $emailSent = $this->mailService->sendPaymentSuccess($order, 'final');
+                $successMessage = __('messages.final_confirmation_resent');
+            } elseif (in_array($order->status, ['awaiting_payment', 'verified']) && $order->email_verified_at) {
+                // Resend payment link
+                $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
+                if ($paymentLink) {
+                    $emailSent = $this->mailService->sendPaymentLink($order, $paymentLink);
+                    $order->update(['payment_link_sent_at' => now()]);
+                    $successMessage = __('messages.payment_link_resent');
+                }
+            } elseif ($order->status === 'awaiting_final_payment' && $order->final_payment_session_id) {
+                // Retrieve Stripe session to get the actual payment URL
+                Stripe::setApiKey(config('services.stripe.secret'));
+                $session = Session::retrieve($order->final_payment_session_id);
+
+                if ($session && $session->url && $session->status === 'open') {
+                    $emailSent = $this->mailService->sendFinalPaymentLink($order, $session->url);
+                    $order->update(['final_payment_link_sent_at' => now()]);
+                    $successMessage = __('messages.final_payment_link_resent');
+                } else {
+                    return back()->with('error', __('messages.payment_session_expired'));
+                }
+            } else {
+                return back()->with('error', __('messages.no_email_to_resend'));
+            }
+
+
+            if ($emailSent) {
+                Log::info('Confirmation email resent for order #'.$order->id, [
+                    'status' => $order->status,
+                    'admin_action' => true,
+                ]);
+
+                return back()->with('success', $successMessage ?? __('messages.email_resent_successfully'));
+            }
+
+            return back()->with('error', __('messages.failed_to_resend_email'));
+
+        } catch (Exception $e) {
+            Log::error('Error resending confirmation email: '.$e->getMessage(), [
+                'order_id' => $order->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', __('messages.error_resending_email').': '.$e->getMessage());
         }
     }
 }

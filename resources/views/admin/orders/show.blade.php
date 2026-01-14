@@ -68,16 +68,19 @@
                     <h2 class="text-xl font-semibold mb-4">{{ __('messages.rental_details') }}</h2>
                     <p><strong>{{ __('messages.car') }}:</strong> {{ $order->car->model }} ({{ $order->car->year }})</p>
                     <p><strong>{{ __('messages.rental_time') }}:</strong> {{ Carbon::parse($order->rental_date)->format('d.m.Y') }}</p>
-                    <p><strong>{{ __('messages.return_time') }}:</strong> {{ Carbon::parse($order->rental_return)->format('d.m.Y') }}</p>
+                    <p><strong>{{ __('messages.return_date') }}:</strong> {{ Carbon::parse($order->return_date)->format('d.m.Y') }}</p>
                     <p><strong>{{ __('messages.hours') }}:</strong>
                         {{ Carbon::parse($order->rental_time)->format('H:i') }} -
                         {{ Carbon::parse($order->return_time)->format('H:i') }}
                     </p>
                     <p><strong>{{ __('messages.delivery') }}:</strong>
-                        {{ $order->extra_delivery_fee ? __('messages.yes_with_fee') : __('messages.no') }}
-                    </p>
-                    <p><strong>{{ __('messages.airport_pickup') }}:</strong>
-                        {{ $order->airport_delivery ? __('messages.yes') : __('messages.no') }}
+                        @if($order->delivery_option === 'delivery')
+                            {{ __('messages.yes_with_fee') }}
+                        @elseif($order->delivery_option === 'airport')
+                            {{ __('messages.airport_pickup') }}
+                        @else
+                            {{ __('messages.pickup_at_office') }}
+                        @endif
                     </p>
                     <p><strong>{{ __('messages.current_status') }}:</strong>
                         <span class="px-2 py-1 rounded text-sm
@@ -204,14 +207,44 @@
                 </div>
             </div>
 
-            {{-- TODO unknown route --}}
             @if($order->status === 'finished' && ($order->email_verified_at || $order->sms_verified_at))
-                <form action="{{ route('admin.orders.send-final-payment-link', $order->id) }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 mb-2">
-                        {{ __('messages.send_final_payment_link') }}
-                    </button>
-                </form>
+                <div class="bg-white shadow rounded-lg overflow-hidden p-6">
+                    <h2 class="text-xl font-semibold mb-4">{{ __('messages.final_payment') }}</h2>
+                    <p class="text-sm text-gray-600 mb-4">
+                        {{ __('messages.remaining_amount') }}:
+                        <span class="font-bold text-green-600">{{ $currency->currency_symbol }}{{ number_format($order->calculateFinalPaymentAmount(), 2) }}</span>
+                    </p>
+                    <form action="{{ route('admin.orders.send-final-payment-link', $order->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                            {{ __('messages.send_final_payment_link') }}
+                        </button>
+                    </form>
+                </div>
+            @endif
+
+            <!-- Resend Email Section -->
+            @if(in_array($order->status, ['paid', 'completed', 'awaiting_payment', 'verified', 'awaiting_final_payment']))
+                <div class="bg-white shadow rounded-lg overflow-hidden p-6">
+                    <h2 class="text-xl font-semibold mb-4">{{ __('messages.resend_email') }}</h2>
+                    <p class="text-sm text-gray-600 mb-4">
+                        @if($order->status === 'paid')
+                            {{ __('messages.resend_reservation_confirmation_info') }}
+                        @elseif($order->status === 'completed')
+                            {{ __('messages.resend_final_confirmation_info') }}
+                        @elseif(in_array($order->status, ['awaiting_payment', 'verified']))
+                            {{ __('messages.resend_payment_link_info') }}
+                        @elseif($order->status === 'awaiting_final_payment')
+                            {{ __('messages.resend_final_payment_link_info') }}
+                        @endif
+                    </p>
+                    <form action="{{ route('admin.orders.resend-confirmation-email', $order->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+                            {{ __('messages.resend_email') }}
+                        </button>
+                    </form>
+                </div>
             @endif
         </div>
 
@@ -221,7 +254,7 @@
             <div class="space-y-2">
                 <div class="flex items-center space-x-2">
                     <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span class="text-sm">{{ __('messages.order_created') }}: {{ $order->created_at->format('d.m.Y H:i') }}</span>
+                    <span class="text-sm">{{ __('messages.timeline_order_created') }}: {{ $order->created_at->format('d.m.Y H:i') }}</span>
                 </div>
 
                 @if($order->email_verified_at)

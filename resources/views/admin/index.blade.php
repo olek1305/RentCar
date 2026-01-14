@@ -68,7 +68,7 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             <!-- Orders Panel -->
             <a href="{{ route('admin.orders.index') }}" class="group">
                 <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-all h-full flex items-center">
@@ -79,7 +79,22 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">{{ __('messages.order_panel') }}</h2>
-                        <p class="text-gray-500">Manage all customer orders</p>
+                        <p class="text-gray-500">Manage orders</p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Manage Cars -->
+            <a href="{{ route('admin.cars.index') }}" class="group">
+                <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-all h-full flex items-center">
+                    <div class="p-3 rounded-md bg-purple-100 text-purple-600 mr-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" stroke="currentColor">
+                            <path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">{{ __('messages.manage_cars') }}</h2>
+                        <p class="text-gray-500">Manage fleet</p>
                     </div>
                 </div>
             </a>
@@ -94,22 +109,22 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-semibold text-gray-800 group-hover:text-green-600 transition-colors">{{ __('messages.add_rental_car') }}</h2>
-                        <p class="text-gray-500">Add new car to rental fleet</p>
+                        <p class="text-gray-500">Add new car</p>
                     </div>
                 </div>
             </a>
 
-            <!-- View All Cars -->
-            <a href="{{ route('cars.index') }}" class="group">
+            <!-- Currencies -->
+            <a href="{{ route('admin.currencies.index') }}" class="group">
                 <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-all h-full flex items-center">
-                    <div class="p-3 rounded-md bg-purple-100 text-purple-600 mr-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                    <div class="p-3 rounded-md bg-yellow-100 text-yellow-600 mr-4 group-hover:bg-yellow-600 group-hover:text-white transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" stroke="currentColor">
-                            <path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            <path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-xl font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">{{ __('messages.cars_rent') }}</h2>
-                        <p class="text-gray-500">View and manage all cars</p>
+                        <h2 class="text-xl font-semibold text-gray-800 group-hover:text-yellow-600 transition-colors">{{ __('messages.currencies') }}</h2>
+                        <p class="text-gray-500">Manage currencies</p>
                     </div>
                 </div>
             </a>
