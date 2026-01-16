@@ -13,7 +13,7 @@ class StoreCarRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Changed from false to allow access
+        return $this->user()?->isAdmin() ?? false;
     }
 
     /**

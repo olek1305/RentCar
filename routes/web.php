@@ -21,21 +21,21 @@ Route::post('/contact', [ContactController::class, 'send'])->name('contact.send'
 Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/cars/create', [CarController::class, 'create'])->name('cars.create');
     Route::get('/car/edit/{car}', [CarController::class, 'edit'])->name('cars.edit');
     Route::post('/cars', [CarController::class, 'store'])->name('cars.store');
     Route::put('/cars/{car}', [CarController::class, 'update'])->name('cars.update');
     Route::delete('/cars/{car}', [CarController::class, 'destroy'])->name('cars.destroy');
     Route::patch('/cars/{car}/toggle-visibility', [CarController::class, 'toggleVisibility'])
-        ->middleware('auth')->name('cars.toggle-visibility');
+        ->name('cars.toggle-visibility');
 });
 
 Route::get('/cars/{car}', [CarController::class, 'show'])->name('cars.show');
 
-Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:10,1')->name('orders.store');
 
-Route::prefix('admin')->middleware('auth')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.index');
 
     // Car management

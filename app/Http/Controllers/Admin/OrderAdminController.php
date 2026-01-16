@@ -151,7 +151,6 @@ class OrderAdminController extends Controller
             $message = __('messages.payment_link_sent');
 
             Log::info('Payment link sent for order #'.$order->id, [
-                'payment_link' => $paymentLink,
                 'amount' => $totalAmount,
                 'currency' => $currency->currency_code,
             ]);
@@ -391,7 +390,6 @@ class OrderAdminController extends Controller
             }
 
             Log::info('Final payment link sent for order #'.$order->id, [
-                'payment_link' => $paymentLink,
                 'amount' => $finalAmount,
                 'currency' => $currency->currency_code,
             ]);

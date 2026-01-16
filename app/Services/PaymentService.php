@@ -46,7 +46,6 @@ class PaymentService
             $this->mailService->sendPaymentLink($order, $paymentLink);
 
             Log::info('Reservation payment link sent for order #'.$order->id, [
-                'payment_link' => $paymentLink,
                 'amount' => $order->getReservationFee(),
             ]);
 

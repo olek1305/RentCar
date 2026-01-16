@@ -13,7 +13,7 @@ class UpdateCarRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Authorization check
+        return $this->user()?->isAdmin() ?? false;
     }
 
     /**

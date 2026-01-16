@@ -18,7 +18,7 @@ class CurrencyControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->admin = User::factory()->create();
+        $this->admin = User::factory()->admin()->create();
     }
 
     #[Test]

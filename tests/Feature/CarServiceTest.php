@@ -52,7 +52,7 @@ class CarServiceTest extends TestCase
         Car::factory()->create(['hidden' => true]);
 
         // Authenticate admin
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->admin()->create());
 
         // Case 1: Don't include hidden
         $visibleOnly = $this->carService->getVisibleCars()->get();

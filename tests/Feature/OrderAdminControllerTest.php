@@ -19,7 +19,7 @@ class OrderAdminControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->admin = User::factory()->create();
+        $this->admin = User::factory()->admin()->create();
 
         // Create default currency for tests
         CurrencySetting::factory()->eur()->default()->create();
@@ -44,6 +44,17 @@ class OrderAdminControllerTest extends TestCase
         $response = $this->get(route('admin.orders.index'));
 
         $response->assertRedirect(route('login'));
+    }
+
+    #[Test]
+    public function it_denies_non_admin_user_access_to_orders_index()
+    {
+        $regularUser = User::factory()->create(['is_admin' => false]);
+
+        $response = $this->actingAs($regularUser)
+            ->get(route('admin.orders.index'));
+
+        $response->assertStatus(403);
     }
 
     #[Test]
