@@ -29,10 +29,10 @@ class PaymentService
                 throw new Exception(__('messages.error_generating_payment_link'));
             }
 
-            $order->update([
-                'payment_link_sent_at' => now(),
-                'status' => 'awaiting_payment',
-            ]);
+            // Update guarded fields directly
+            $order->payment_link_sent_at = now();
+            $order->status = 'awaiting_payment';
+            $order->save();
 
             // Send SMS
             $message = __('messages.reservation_fee_sms', [
@@ -92,9 +92,9 @@ class PaymentService
                 ],
             ]);
 
-            $order->update([
-                'payment_session_id' => $session->id,
-            ]);
+            // Update guarded field directly
+            $order->payment_session_id = $session->id;
+            $order->save();
 
             return $session->url;
 

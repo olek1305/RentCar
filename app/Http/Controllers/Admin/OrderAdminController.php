@@ -86,7 +86,9 @@ class OrderAdminController extends Controller
             'status' => 'required|in:pending,verified,confirmed,awaiting_payment,paid,completed,returned,finished,awaiting_final_payment,cancelled',
         ]);
 
-        $order->update(['status' => $request->status]);
+        // Update guarded field directly
+        $order->status = $request->status;
+        $order->save();
 
         return back()->with('success', __('messages.order_status_updated'));
     }
@@ -138,14 +140,13 @@ class OrderAdminController extends Controller
                     'customer_email' => $order->email,
                 ],
             ]);
-
-            $order->update([
-                'payment_session_id' => $session->id,
-                'payment_link_sent_at' => now(),
-                'payment_amount' => $totalAmount,
-                'payment_currency' => $currency->currency_code,
-                'status' => 'awaiting_payment',
-            ]);
+            
+            $order->payment_session_id = $session->id;
+            $order->payment_link_sent_at = now();
+            $order->payment_amount = $totalAmount;
+            $order->payment_currency = $currency->currency_code;
+            $order->status = 'awaiting_payment';
+            $order->save();
 
             $paymentLink = $session->url;
             $message = __('messages.payment_link_sent');
@@ -185,10 +186,10 @@ class OrderAdminController extends Controller
             return back()->with('error', __('messages.cannot_finish_order'));
         }
 
-        $order->update([
-            'status' => 'finished',
-            'returned_at' => now(),
-        ]);
+        // Update guarded fields directly
+        $order->status = 'finished';
+        $order->returned_at = now();
+        $order->save();
 
         return back()->with('success', __('messages.order_finished_successfully'));
     }
@@ -204,7 +205,9 @@ class OrderAdminController extends Controller
             return back()->with('error', __('messages.cannot_cancel_completed_order'));
         }
 
-        $order->update(['status' => 'cancelled']);
+        // Update guarded field directly
+        $order->status = 'cancelled';
+        $order->save();
 
         return back()->with('success', __('messages.order_cancelled_successfully'));
     }
@@ -231,10 +234,10 @@ class OrderAdminController extends Controller
             $token = bin2hex(random_bytes(32));
             $hashedToken = hash('sha256', $token);
 
-            $order->update([
-                'email_verification_token' => $hashedToken,
-                'email_verification_sent_at' => now(),
-            ]);
+            // Update guarded fields directly
+            $order->email_verification_token = $hashedToken;
+            $order->email_verification_sent_at = now();
+            $order->save();
 
             // Create verification URL that will redirect to payment
             $verificationUrl = route('orders.verify-email-payment', [
@@ -284,10 +287,10 @@ class OrderAdminController extends Controller
             $token = bin2hex(random_bytes(32));
             $hashedToken = hash('sha256', $token);
 
-            $order->update([
-                'sms_verification_token' => $hashedToken,
-                'sms_verification_sent_at' => now(),
-            ]);
+            // Update guarded fields directly
+            $order->sms_verification_token = $hashedToken;
+            $order->sms_verification_sent_at = now();
+            $order->save();
 
             // Generate a payment link directly for SMS
             $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
@@ -296,7 +299,8 @@ class OrderAdminController extends Controller
                 return back()->with('error', __('messages.error_generating_payment_link'));
             }
 
-            $order->update(['payment_link_sent_at' => now()]);
+            $order->payment_link_sent_at = now();
+            $order->save();
 
             // Send payment link via SMS
             $this->orderService->getSmsService()->sendPaymentLink($order->phone, $paymentLink);
@@ -375,12 +379,12 @@ class OrderAdminController extends Controller
                 ],
             ]);
 
-            $order->update([
-                'final_payment_session_id' => $session->id,
-                'final_payment_link_sent_at' => now(),
-                'final_payment_amount' => $finalAmount,
-                'status' => 'awaiting_final_payment',
-            ]);
+            // Update guarded fields directly
+            $order->final_payment_session_id = $session->id;
+            $order->final_payment_link_sent_at = now();
+            $order->final_payment_amount = $finalAmount;
+            $order->status = 'awaiting_final_payment';
+            $order->save();
 
             $paymentLink = $session->url;
 
@@ -437,7 +441,8 @@ class OrderAdminController extends Controller
                 $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
                 if ($paymentLink) {
                     $emailSent = $this->mailService->sendPaymentLink($order, $paymentLink);
-                    $order->update(['payment_link_sent_at' => now()]);
+                    $order->payment_link_sent_at = now();
+                    $order->save();
                     $successMessage = __('messages.payment_link_resent');
                 }
             } elseif ($order->status === 'awaiting_final_payment' && $order->final_payment_session_id) {
@@ -447,7 +452,8 @@ class OrderAdminController extends Controller
 
                 if ($session && $session->url && $session->status === 'open') {
                     $emailSent = $this->mailService->sendFinalPaymentLink($order, $session->url);
-                    $order->update(['final_payment_link_sent_at' => now()]);
+                    $order->final_payment_link_sent_at = now();
+                    $order->save();
                     $successMessage = __('messages.final_payment_link_resent');
                 } else {
                     return back()->with('error', __('messages.payment_session_expired'));

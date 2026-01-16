@@ -119,16 +119,15 @@ class OrderService
         // Get verification method
         $verificationMethod = $data['verification_method'] ?? 'email';
 
-        $orderData = [
-            ...$data,
-            'status' => 'pending',
-            'payment_amount' => Order::getStaticReservationFee(),
-            'payment_currency' => CurrencySetting::getDefaultCurrency()->currency_code,
-            'additional_insurance_cost' => $data['additional_insurance'] ? Order::getStaticAdditionalInsuranceCost() : null,
-        ];
+        // Create order with user-provided data only (fillable fields)
+        $order = Order::create($data);
 
-        // Create order
-        $order = Order::create($orderData);
+        // Set system-managed fields directly (guarded fields)
+        $order->status = 'pending';
+        $order->payment_amount = Order::getStaticReservationFee();
+        $order->payment_currency = CurrencySetting::getDefaultCurrency()->currency_code;
+        $order->additional_insurance_cost = $data['additional_insurance'] ? Order::getStaticAdditionalInsuranceCost() : null;
+        $order->save();
 
         // Always hide a car after creating order regardless of verification method
         $car->update(['hidden' => true]);
@@ -138,11 +137,9 @@ class OrderService
         $hashedToken = hash('sha256', $token);
         if ($verificationMethod === 'email') {
             // Generate email verification token
-
-            $order->update([
-                'email_verification_token' => $hashedToken,
-                'email_verification_sent_at' => now(),
-            ]);
+            $order->email_verification_token = $hashedToken;
+            $order->email_verification_sent_at = now();
+            $order->save();
 
             // Create verification URL that will redirect to payment
             $verificationUrl = route('orders.verify-email-payment', [
@@ -156,11 +153,9 @@ class OrderService
             $message = __('messages.order_created_email_verification_sent');
         } else {
             // Generate SMS verification token
-
-            $order->update([
-                'sms_verification_token' => $hashedToken,
-                'sms_verification_sent_at' => now(),
-            ]);
+            $order->sms_verification_token = $hashedToken;
+            $order->sms_verification_sent_at = now();
+            $order->save();
 
             // Generate a payment link and send via SMS
             $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
@@ -177,7 +172,8 @@ class OrderService
                 ];
             }
 
-            $order->update(['payment_link_sent_at' => now()]);
+            $order->payment_link_sent_at = now();
+            $order->save();
 
             // Send payment link via SMS
             $this->smsService->sendPaymentLink($order->phone, $paymentLink);

@@ -51,12 +51,11 @@ class OrderController extends Controller
             return redirect()->route('home')->with('error', __('messages.verification_token_expired'));
         }
 
-        // Mark email as verified
-        $order->update([
-            'email_verified_at' => now(),
-            'email_verification_token' => null, // Clear token after verification
-            'status' => 'verified',
-        ]);
+        // Mark email as verified (guarded fields - assign directly)
+        $order->email_verified_at = now();
+        $order->email_verification_token = null;
+        $order->status = 'verified';
+        $order->save();
 
         // Hide car after verification
         $order->car->update(['hidden' => true]);
@@ -69,7 +68,8 @@ class OrderController extends Controller
             return redirect()->route('home')->with('error', __('messages.error_generating_payment_link'));
         }
 
-        $order->update(['payment_link_sent_at' => now()]);
+        $order->payment_link_sent_at = now();
+        $order->save();
 
         // Redirect to Stripe payment
         return redirect()->away($paymentLink);

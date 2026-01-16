@@ -54,10 +54,10 @@ class PaymentController extends Controller
             }
 
             if ($isFinalPayment) {
-                $order->update([
-                    'status' => 'completed',
-                    'final_paid_at' => now(),
-                ]);
+                // Update guarded fields directly
+                $order->status = 'completed';
+                $order->final_paid_at = now();
+                $order->save();
 
                 // Send final payment success email
                 $this->mailService->sendPaymentSuccess($order, 'final');
@@ -70,10 +70,10 @@ class PaymentController extends Controller
 
                 return redirect('/')->with('success', __('messages.final_payment_successful'));
             } else {
-                $order->update([
-                    'status' => 'paid',
-                    'paid_at' => now(),
-                ]);
+                // Update guarded fields directly
+                $order->status = 'paid';
+                $order->paid_at = now();
+                $order->save();
 
                 // Send reservation payment success email
                 $this->mailService->sendPaymentSuccess($order, 'reservation');
@@ -102,9 +102,9 @@ class PaymentController extends Controller
             return redirect('/')->with('error', __('messages.order_cannot_be_cancelled'));
         }
 
-        $order->update([
-            'status' => 'cancelled',
-        ]);
+        // Update guarded field directly
+        $order->status = 'cancelled';
+        $order->save();
 
         // Make car available again
         $order->car?->update(['hidden' => false]);

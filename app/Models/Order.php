@@ -9,21 +9,43 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Order extends Model
 {
     use HasFactory;
+    /**
+     * User-provided fields only - safe for mass assignment from forms.
+     * System fields (status, payments, tokens) are managed internally via direct assignment.
+     */
     protected $fillable = [
+        // Contact information
         'first_name',
         'last_name',
         'email',
         'phone',
+
+        // Rental details
         'car_id',
         'rental_date',
         'return_date',
         'rental_time',
         'return_time',
+
+        // Delivery options
         'delivery_option',
         'delivery_address',
+
+        // Additional options
         'additional_insurance',
-        'additional_insurance_cost',
         'additional_info',
+
+        // User consent
+        'acceptance_terms',
+        'acceptance_privacy',
+    ];
+
+    /**
+     * System-managed fields - protected from mass assignment.
+     * These fields should only be modified by application logic, not user input.
+     */
+    protected $guarded = [
+        'id',
         'status',
         'email_verification_token',
         'email_verification_sent_at',
@@ -37,8 +59,7 @@ class Order extends Model
         'paid_at',
         'returned_at',
         'payment_session_id',
-        'acceptance_terms',
-        'acceptance_privacy',
+        'additional_insurance_cost',
         'final_payment_session_id',
         'final_payment_link_sent_at',
         'final_payment_amount',
