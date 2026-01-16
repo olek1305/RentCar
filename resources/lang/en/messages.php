@@ -278,7 +278,7 @@ return [
     'email_confirm_payment' => 'Reservation Confirmation - Reservation Payment Link',
     'email_greeting' => 'Hello :name,',
     'email_thanks_verification' => 'Thank you for successful verification. Your order has been confirmed.',
-    'email_reservation_fee_info' => 'Below you will find the link for the reservation fee of <strong>:amount</strong>:',
+    'email_reservation_fee_info' => 'Below you will find the link for the reservation fee of :amount:',
     'email_pay_reservation_fee' => 'Pay Reservation Fee',
     'email_order_details' => 'Order Details:',
     'email_order_number' => 'Order Number',
@@ -395,7 +395,7 @@ return [
     // Payment Success Emails
     'email_final_payment' => 'Final Payment Link',
     'email_thanks_return' => 'Thank you for returning the vehicle. Please complete the final payment.',
-    'email_final_payment_info' => 'Below is the link to pay the remaining amount of <strong>:amount</strong>:',
+    'email_final_payment_info' => 'Below is the link to pay the remaining amount of :amount:',
     'email_pay_final_amount' => 'Pay Final Amount',
     'rental_days' => 'Rental Days',
     'reservation_paid' => 'Reservation Paid',

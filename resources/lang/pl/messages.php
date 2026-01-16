@@ -278,7 +278,7 @@ return [
     'email_confirm_payment' => 'Potwierdzenie rezerwacji - Link do płatności rezerwacyjnej',
     'email_greeting' => 'Witaj :name,',
     'email_thanks_verification' => 'Dziękujemy za pomyślną weryfikację. Twoje zamówienie zostało potwierdzone.',
-    'email_reservation_fee_info' => 'Poniżej znajdziesz link do opłaty rezerwacyjnej w wysokości <strong>:amount</strong>:',
+    'email_reservation_fee_info' => 'Poniżej znajdziesz link do opłaty rezerwacyjnej w wysokości :amount:',
     'email_pay_reservation_fee' => 'Zapłać opłatę rezerwacyjną',
     'email_order_details' => 'Szczegóły zamówienia:',
     'email_order_number' => 'Numer zamówienia',
@@ -395,7 +395,7 @@ return [
     // Payment Success Emails
     'email_final_payment' => 'Link do płatności końcowej',
     'email_thanks_return' => 'Dziękujemy za zwrot pojazdu. Proszę dokończyć płatność końcową.',
-    'email_final_payment_info' => 'Poniżej znajduje się link do zapłaty pozostałej kwoty <strong>:amount</strong>:',
+    'email_final_payment_info' => 'Poniżej znajduje się link do zapłaty pozostałej kwoty :amount:',
     'email_pay_final_amount' => 'Zapłać pozostałą kwotę',
     'rental_days' => 'Dni wynajmu',
     'reservation_paid' => 'Opłata rezerwacyjna zapłacona',

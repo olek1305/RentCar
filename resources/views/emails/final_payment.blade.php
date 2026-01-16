@@ -14,7 +14,7 @@
                     {{ __('messages.email_greeting', ['name' => $order->first_name . ' ' . $order->last_name]) }}
                 </h2>
                 <p class="text-gray-600 mt-2">{{ __('messages.email_thanks_return') }}</p>
-                <p class="text-gray-600 mt-2">{!! __('messages.email_final_payment_info', ['amount' => number_format($order->calculateFinalPaymentAmount(), 2) . ' ' . ($order->payment_currency ?? 'EUR')]) !!}</p>
+                <p class="text-gray-600 mt-2">{{ __('messages.email_final_payment_info', ['amount' => number_format($order->calculateFinalPaymentAmount(), 2) . ' ' . ($order->payment_currency ?? 'EUR')]) }}</p>
             </div>
 
             <!-- Payment Button -->

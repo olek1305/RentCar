@@ -14,7 +14,7 @@
                     {{ __('messages.email_greeting', ['name' => $order->first_name . ' ' . $order->last_name]) }}
                 </h2>
                 <p class="text-gray-600 mt-2">{{ __('messages.email_thanks_verification') }}</p>
-                <p class="text-gray-600 mt-2">{!! __('messages.email_reservation_fee_info', ['amount' => '5 EUR']) !!}</p>
+                <p class="text-gray-600 mt-2">{{ __('messages.email_reservation_fee_info', ['amount' => '5 EUR']) }}</p>
             </div>
 
             <!-- Payment Button -->
