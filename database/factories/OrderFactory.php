@@ -11,6 +11,7 @@ class OrderFactory extends Factory
     {
         $rentalDate = $this->faker->dateTimeBetween('+1 day', '+30 days');
         $returnDate = (clone $rentalDate)->modify('+'.rand(1, 7).' days');
+        $hasInsurance = $this->faker->boolean(30);
 
         return [
             'first_name' => $this->faker->firstName(),
@@ -24,8 +25,8 @@ class OrderFactory extends Factory
             'return_time' => $this->faker->randomElement(['08:00', '10:00', '12:00', '14:00', '16:00']),
             'delivery_option' => $this->faker->randomElement(['pickup', 'delivery', 'airport']),
             'delivery_address' => $this->faker->optional()->address(),
-            'additional_insurance' => $this->faker->boolean(30),
-            'additional_insurance_cost' => 15.00,
+            'additional_insurance' => $hasInsurance,
+            'additional_insurance_cost' => $hasInsurance ? 15.00 : null,
             'additional_info' => $this->faker->optional()->sentence(),
             'status' => 'pending',
             'payment_amount' => 5.00,

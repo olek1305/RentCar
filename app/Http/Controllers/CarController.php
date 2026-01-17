@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCarRequest;
 use App\Http\Requests\UpdateCarRequest;
 use App\Models\Car;
+use App\Models\CurrencySetting;
 use App\Models\Order;
 use App\Services\CacheService;
 use App\Services\CarService;
@@ -119,8 +120,9 @@ class CarController extends Controller
     {
         $this->carService->checkCarVisibility($car);
         $car = $this->carService->prepareCarForDisplay($car);
+        $currency = CurrencySetting::getDefaultCurrency();
 
-        return view('cars.show', compact('car', 'order'));
+        return view('cars.show', compact('car', 'order', 'currency'));
     }
 
     /**
@@ -180,7 +182,7 @@ class CarController extends Controller
         $this->cacheService->clearCarsCache();
 
         return back()->with([
-            'success' => 'Car visibility updated',
+            'success' => __('messages.car_visibility_updated'),
             'scroll_position' => request()->header('Referer').'#car-'.$car->id,
         ]);
     }

@@ -65,12 +65,12 @@
                     @if($paymentType === 'final')
                         <div class="flex justify-between border-t pt-3 mt-3">
                             <span class="text-gray-600 font-medium">{{ __('messages.amount_paid') }}:</span>
-                            <span class="text-green-600 font-bold">{{ $order->payment_currency }} {{ number_format($order->final_payment_amount, 2) }}</span>
+                            <span class="text-green-600 font-bold">{{ $currency->currency_symbol }}{{ number_format($order->final_payment_amount, 2) }}</span>
                         </div>
                     @else
                         <div class="flex justify-between border-t pt-3 mt-3">
                             <span class="text-gray-600 font-medium">{{ __('messages.reservation_fee_paid') }}:</span>
-                            <span class="text-green-600 font-bold">{{ $order->payment_currency }} {{ number_format($order->payment_amount, 2) }}</span>
+                            <span class="text-green-600 font-bold">{{ $currency->currency_symbol }}{{ number_format($order->payment_amount, 2) }}</span>
                         </div>
                     @endif
                 </div>

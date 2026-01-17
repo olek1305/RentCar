@@ -19,9 +19,9 @@
 - {{ __('messages.return_date') }}: {{ $order->return_date->format('d.m.Y') }}
 - {{ __('messages.pickup_time') }}: {{ $order->rental_time }}
 @if($paymentType === 'final')
-- {{ __('messages.amount_paid') }}: {{ $order->payment_currency }} {{ number_format($order->final_payment_amount, 2) }}
+- {{ __('messages.amount_paid') }}: {{ $currency->currency_symbol }}{{ number_format($order->final_payment_amount, 2) }}
 @else
-- {{ __('messages.reservation_fee_paid') }}: {{ $order->payment_currency }} {{ number_format($order->payment_amount, 2) }}
+- {{ __('messages.reservation_fee_paid') }}: {{ $currency->currency_symbol }}{{ number_format($order->payment_amount, 2) }}
 @endif
 
 {{ __('messages.email_next_steps') }}:

@@ -25,11 +25,9 @@ class PaymentController extends Controller
     /**
      * Handle successful payment callback from Stripe
      *
-     * @return Application|RedirectResponse|Redirector|object
-     *
      * @throws ApiErrorException
      */
-    public function success(Request $request, Order $order)
+    public function success(Request $request, Order $order): Application|RedirectResponse|Redirector
     {
         $stripe = new StripeClient(config('services.stripe.secret'));
         $session = $stripe->checkout->sessions->retrieve($request->session_id);

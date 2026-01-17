@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\CurrencySetting;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -14,6 +15,8 @@ class PaymentSuccessMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public CurrencySetting $currency;
+
     /**
      * Create a new message instance.
      */
@@ -21,7 +24,7 @@ class PaymentSuccessMail extends Mailable
         public Order $order,
         public string $paymentType = 'reservation'
     ) {
-        //
+        $this->currency = CurrencySetting::getDefaultCurrency();
     }
 
     /**
@@ -47,6 +50,7 @@ class PaymentSuccessMail extends Mailable
             with: [
                 'order' => $this->order,
                 'paymentType' => $this->paymentType,
+                'currency' => $this->currency,
             ]
         );
     }

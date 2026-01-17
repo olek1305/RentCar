@@ -227,7 +227,7 @@
                    onchange="calculateCosts()">
             <label for="additional_insurance" class="ml-2 text-sm font-medium text-gray-900">
                 {{ __('messages.add_additional_insurance') }}
-                <span class="text-blue-600">(+15 €/{{ __('messages.day') }})</span>
+                <span class="text-blue-600">(+{{ $currency->currency_symbol }}15/{{ __('messages.day') }})</span>
             </label>
         </div>
     </div>
@@ -252,7 +252,7 @@
                        class="mr-3" {{ old('delivery_option') == 'airport' ? 'checked' : '' }}
                        onchange="toggleDeliveryAddress(); calculateCosts();">
                 <label for="airport_delivery" class="text-gray-700">
-                    {{ __('messages.airport_pickup') }} - <span class="font-semibold">50 €</span>
+                    {{ __('messages.airport_pickup') }} - <span class="font-semibold">{{ $currency->currency_symbol }}50</span>
                 </label>
             </div>
 
@@ -261,7 +261,7 @@
                        class="mr-3" {{ old('delivery_option') == 'delivery' ? 'checked' : '' }}
                        onchange="toggleDeliveryAddress(); calculateCosts();">
                 <label for="delivery_service" class="text-gray-700">
-                    {{ __('messages.delivery_service') }} - <span class="font-semibold">75 €</span>
+                    {{ __('messages.delivery_service') }} - <span class="font-semibold">{{ $currency->currency_symbol }}75</span>
                 </label>
             </div>
         </div>
@@ -290,22 +290,22 @@
             <div class="flex justify-between text-gray-600">
                 <span>{{ __('messages.rental_cost') }} (<span
                         id="rental-days">1</span> {{ __('messages.days') }}):</span>
-                <span id="rental-cost">0 €</span>
+                <span id="rental-cost">{{ $currency->currency_symbol }}0.00</span>
             </div>
 
             <div class="flex justify-between text-gray-600" id="insurance-cost-row" style="display: none;">
                 <span>{{ __('messages.additional_insurance') }}:</span>
-                <span id="insurance-cost">0 €</span>
+                <span id="insurance-cost">{{ $currency->currency_symbol }}0.00</span>
             </div>
 
             <div class="flex justify-between text-gray-600" id="delivery-cost-row" style="display: none;">
                 <span>{{ __('messages.delivery_cost') }}:</span>
-                <span id="delivery-cost">0 €</span>
+                <span id="delivery-cost">{{ $currency->currency_symbol }}0.00</span>
             </div>
 
             <div class="flex justify-between font-medium text-gray-700">
                 <span>{{ __('messages.total_rental_amount') }}:</span>
-                <span id="total-rental-amount">0 €</span>
+                <span id="total-rental-amount">{{ $currency->currency_symbol }}0.00</span>
             </div>
 
             <hr class="my-3">
@@ -316,18 +316,18 @@
 
             <div class="flex justify-between">
                 <span>{{ __('messages.reservation_fee') }}:</span>
-                <span class="text-red-600 font-medium">5 €</span>
+                <span class="text-red-600 font-medium">{{ $currency->currency_symbol }}5.00</span>
             </div>
 
             <div class="flex justify-between font-bold text-lg border-t pt-2">
                 <span>{{ __('messages.total_to_pay_now') }}:</span>
-                <span class="text-green-600" id="total-amount">5 €</span>
+                <span class="text-green-600" id="total-amount">{{ $currency->currency_symbol }}5.00</span>
             </div>
         </div>
 
         <div class="mt-3 p-2 bg-yellow-100 rounded text-xs text-yellow-800">
             <strong>{{ __('messages.deposit_note') }}:</strong>
-            1000-3000 € {{ __('messages.deposit_card_block_info') }}
+            {{ $currency->currency_symbol }}1000-3000 {{ __('messages.deposit_card_block_info') }}
         </div>
     </div>
 
@@ -382,6 +382,6 @@
 
     <button type="submit"
             class="w-full bg-[#e3171e] text-white py-3 px-6 rounded hover:bg-red-700 transition duration-200 font-medium">
-        {{ __('messages.submit_reservation') }} - <span id="reservation-button-text">5 €</span>
+        {{ __('messages.submit_reservation') }} - <span id="reservation-button-text">{{ $currency->currency_symbol }}5.00</span>
     </button>
 </form>

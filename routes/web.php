@@ -73,4 +73,4 @@ Route::get('/orders/{order}/verify-email-payment/{token}', [OrderController::cla
     ->name('orders.verify-email-payment');
 
 Route::get('/payment/success/{order}', [PaymentController::class, 'success'])->name('payment.success');
-Route::get('/payment/cancel/{order}', [PaymentController::class, 'cancel'])->name('payment.cancel');
+Route::get('/payment/cancel/{order}', [PaymentController::class, 'cancel'])->name('payment.cancel')->middleware('signed');

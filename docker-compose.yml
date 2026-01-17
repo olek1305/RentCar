@@ -84,6 +84,16 @@ services:
     environment:
       - NODE_ENV=development
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit-dev
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - laravel-net
+
   nginx:
     image: nginx:1.29.1-alpine
     container_name: nginx-dev

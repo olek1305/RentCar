@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
+use App\Http\Requests\FilterOrdersRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Stripe\Checkout\Session;
@@ -30,15 +31,9 @@ class OrderAdminController extends Controller
     /**
      * List of orders with filtering by status and searching by email and phone.
      */
-    public function index(Request $request): Factory|Application|View
+    public function index(FilterOrdersRequest $request): Factory|Application|View
     {
         $statuses = Order::statuses();
-
-        $request->validate([
-            'status' => 'nullable|in:'.implode(',', array_keys($statuses)),
-            'email' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:255',
-        ]);
 
         $query = Order::with('car')->latest();
 
@@ -80,7 +75,7 @@ class OrderAdminController extends Controller
 
     public function updateStatus(Request $request, $id): RedirectResponse
     {
-        $order = Order::findOrFail($id);
+        $order = Order::with('car')->findOrFail($id);
 
         $request->validate([
             'status' => 'required|in:pending,verified,confirmed,awaiting_payment,paid,completed,returned,finished,awaiting_final_payment,cancelled',
@@ -180,7 +175,7 @@ class OrderAdminController extends Controller
      */
     public function markAsFinished($id): RedirectResponse
     {
-        $order = Order::findOrFail($id);
+        $order = Order::with('car')->findOrFail($id);
 
         if (! $order->canBeFinished()) {
             return back()->with('error', __('messages.cannot_finish_order'));
@@ -199,7 +194,7 @@ class OrderAdminController extends Controller
      */
     public function cancelOrder($id): RedirectResponse
     {
-        $order = Order::findOrFail($id);
+        $order = Order::with('car')->findOrFail($id);
 
         if (in_array($order->status, ['completed', 'finished'])) {
             return back()->with('error', __('messages.cannot_cancel_completed_order'));
@@ -230,22 +225,17 @@ class OrderAdminController extends Controller
         }
 
         try {
-            // Generate a new verification token
-            $token = bin2hex(random_bytes(32));
-            $hashedToken = hash('sha256', $token);
+            $tokens = $this->orderService->generateVerificationToken();
 
-            // Update guarded fields directly
-            $order->email_verification_token = $hashedToken;
+            $order->email_verification_token = $tokens['hashedToken'];
             $order->email_verification_sent_at = now();
             $order->save();
 
-            // Create verification URL that will redirect to payment
             $verificationUrl = route('orders.verify-email-payment', [
                 'order' => $order->id,
-                'token' => $token,
+                'token' => $tokens['token'],
             ]);
 
-            // Send the verification URL by email
             $this->mailService->sendPaymentLink($order, $verificationUrl);
 
             Log::info('Email verification token renewed for order #'.$order->id, [
@@ -283,12 +273,9 @@ class OrderAdminController extends Controller
         }
 
         try {
-            // Generate a new verification token
-            $token = bin2hex(random_bytes(32));
-            $hashedToken = hash('sha256', $token);
+            $tokens = $this->orderService->generateVerificationToken();
 
-            // Update guarded fields directly
-            $order->sms_verification_token = $hashedToken;
+            $order->sms_verification_token = $tokens['hashedToken'];
             $order->sms_verification_sent_at = now();
             $order->save();
 

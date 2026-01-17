@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Stripe\Checkout\Session;
 use Stripe\Stripe;
 
@@ -80,7 +81,7 @@ class PaymentService
                 ]],
                 'mode' => 'payment',
                 'success_url' => route('payment.success', $order->id).'?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('payment.cancel', $order->id),
+                'cancel_url' => URL::signedRoute('payment.cancel', ['order' => $order->id]),
                 'client_reference_id' => 'order_'.$order->id,
                 'customer_email' => $order->email,
                 'metadata' => [
@@ -130,7 +131,7 @@ class PaymentService
                 ]],
                 'mode' => 'payment',
                 'success_url' => route('payment.final.success', $order->id).'?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('payment.final.cancel', $order->id),
+                'cancel_url' => URL::signedRoute('payment.cancel', ['order' => $order->id]),
                 'client_reference_id' => 'order_final_'.$order->id,
                 'customer_email' => $order->email,
                 'metadata' => [

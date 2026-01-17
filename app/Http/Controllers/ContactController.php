@@ -11,11 +11,10 @@ class ContactController extends Controller
 {
     public function send(SendContactRequest $request): RedirectResponse
     {
-        #TODO what this is file?
         $validated = $request->validated();
 
         Mail::to('contact@carshop.pl')->send(new ContactFormMail($validated));
 
-        return back()->with('success', 'Your message has been sent!');
+        return back()->with('success', __('messages.contact_message_sent'));
     }
 }

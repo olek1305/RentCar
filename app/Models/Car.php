@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Car extends Model
 {
@@ -50,7 +51,7 @@ class Car extends Model
         'HYBRID',
     ];
 
-    public const fuelTypes = [
+    public const FUEL_TYPES = [
         'GASOLINE',
         'DIESEL',
         'ELECTRIC',
@@ -63,9 +64,14 @@ class Car extends Model
         'METHANOL',
     ];
 
-    public const transmissions = [
+    public const TRANSMISSIONS = [
         'AUTOMATIC',
         'MANUAL',
         'SEMI-AUTOMATIC',
     ];
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 }

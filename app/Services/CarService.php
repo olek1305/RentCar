@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Car;
+use App\Models\Order;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -27,12 +28,12 @@ class CarService
 
     public function getFuelTypes(): array
     {
-        return Car::fuelTypes;
+        return Car::FUEL_TYPES;
     }
 
     public function getTransmissions(): array
     {
-        return Car::transmissions;
+        return Car::TRANSMISSIONS;
     }
 
     public function prepareCarForDisplay(Car $car): Car
@@ -217,6 +218,14 @@ class CarService
 
     public function toggleCarVisibility(Car $car): void
     {
-        $car->update(['hidden' => ! $car->hidden]);
+        $wasHidden = $car->hidden;
+        $car->hidden = ! $car->hidden;
+        $car->save();
+
+        if ($wasHidden && ! $car->hidden) {
+            Order::where('car_id', $car->id)
+                ->whereIn('status', ['pending', 'verified', 'awaiting_payment'])
+                ->update(['status' => 'cancelled']);
+        }
     }
 }

@@ -46,6 +46,9 @@ return [
     'name' => 'Your Name',
     'message' => 'Message',
     'send' => 'Send Message',
+    'contact_message_sent' => 'Your message has been sent successfully!',
+    'contact_form_subject' => 'New Contact Form Message',
+    'sender_info' => 'Sender Information',
 
     // Admin Page
     'login' => 'Login',
@@ -440,4 +443,9 @@ return [
 
     // Car availability
     'car_not_available_for_dates' => 'This car is not available. Already booked from :from to :to.',
+
+    // Missing translations
+    'create' => 'Create',
+    'admin_orders' => 'Admin Orders',
+    'renew_sms_token' => 'Renew SMS Token',
 ];

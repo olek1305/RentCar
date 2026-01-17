@@ -35,7 +35,8 @@
         // Set car data directly in a script
         window.carData = {
             prices: @json($prices),
-            images: @json($images)
+            images: @json($images),
+            currencySymbol: @json($currency->currency_symbol)
         };
 
         // Initialize on a page load
@@ -183,17 +184,18 @@
         }
 
         function updateCostDisplay(days, rental, insurance, delivery) {
+            const cs = window.carData?.currencySymbol || '$';
             document.getElementById('rental-days').textContent = days;
-            document.getElementById('rental-cost').textContent = rental.toFixed(2) + ' €';
-            document.getElementById('insurance-cost').textContent = insurance.toFixed(2) + ' €';
-            document.getElementById('delivery-cost').textContent = delivery.toFixed(2) + ' €';
+            document.getElementById('rental-cost').textContent = cs + rental.toFixed(2);
+            document.getElementById('insurance-cost').textContent = cs + insurance.toFixed(2);
+            document.getElementById('delivery-cost').textContent = cs + delivery.toFixed(2);
 
             const totalRentalAmount = rental + insurance + delivery;
-            document.getElementById('total-rental-amount').textContent = totalRentalAmount.toFixed(2) + ' €';
+            document.getElementById('total-rental-amount').textContent = cs + totalRentalAmount.toFixed(2);
 
             const reservationFee = 5;
-            document.getElementById('total-amount').textContent = reservationFee.toFixed(2) + ' €';
-            document.getElementById('reservation-button-text').textContent = reservationFee.toFixed(2) + ' €';
+            document.getElementById('total-amount').textContent = cs + reservationFee.toFixed(2);
+            document.getElementById('reservation-button-text').textContent = cs + reservationFee.toFixed(2);
 
             document.getElementById('insurance-cost-row').style.display = insurance > 0 ? 'flex' : 'none';
             document.getElementById('delivery-cost-row').style.display = delivery > 0 ? 'flex' : 'none';

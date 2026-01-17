@@ -13,14 +13,26 @@ use Illuminate\Support\Facades\Mail;
 class MailService
 {
     /**
+     * Validate order has a valid email address.
+     */
+    private function isValidOrderEmail(Order $order): bool
+    {
+        if (! $order->email || ! filter_var($order->email, FILTER_VALIDATE_EMAIL)) {
+            Log::error('Invalid order or email address', ['order_id' => $order->id ?? 'unknown']);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Send payment link via email
      */
     public function sendPaymentLink(Order $order, string $paymentLink): bool
     {
         try {
-            if (! $order->email || ! filter_var($order->email, FILTER_VALIDATE_EMAIL)) {
-                Log::error('Invalid order or email address', ['order_id' => $order->id ?? 'unknown']);
-
+            if (! $this->isValidOrderEmail($order)) {
                 return false;
             }
 
@@ -56,14 +68,10 @@ class MailService
     public function sendPaymentConfirmation(Order $order, string $paymentLink): bool
     {
         try {
-            // Validate input data
-            if (! $order->email || ! filter_var($order->email, FILTER_VALIDATE_EMAIL)) {
-                Log::error('Invalid order or email address', ['order_id' => $order->id ?? 'unknown']);
-
+            if (! $this->isValidOrderEmail($order)) {
                 return false;
             }
 
-            // Send payment confirmation email
             Mail::to($order->email)->send(new PaymentConfirmationMail($order, $paymentLink));
 
             Log::info('Payment confirmation email sent successfully', [
@@ -90,9 +98,7 @@ class MailService
     public function sendFinalPaymentLink(Order $order, string $paymentLink): bool
     {
         try {
-            if (! $order->email || ! filter_var($order->email, FILTER_VALIDATE_EMAIL)) {
-                Log::error('Invalid order or email address', ['order_id' => $order->id ?? 'unknown']);
-
+            if (! $this->isValidOrderEmail($order)) {
                 return false;
             }
 
@@ -128,9 +134,7 @@ class MailService
     public function sendPaymentSuccess(Order $order, string $paymentType = 'reservation'): bool
     {
         try {
-            if (! $order->email || ! filter_var($order->email, FILTER_VALIDATE_EMAIL)) {
-                Log::error('Invalid order or email address', ['order_id' => $order->id ?? 'unknown']);
-
+            if (! $this->isValidOrderEmail($order)) {
                 return false;
             }
 

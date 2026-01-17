@@ -46,6 +46,9 @@ return [
     'name' => 'Twoje imię',
     'message' => 'Wiadomość',
     'send' => 'Wyślij wiadomość',
+    'contact_message_sent' => 'Twoja wiadomość została wysłana!',
+    'contact_form_subject' => 'Nowa wiadomość z formularza kontaktowego',
+    'sender_info' => 'Dane nadawcy',
 
     // Admin Page
     'login' => 'Zaloguj',
@@ -440,4 +443,9 @@ return [
 
     // Car availability
     'car_not_available_for_dates' => 'Ten samochód nie jest dostępny. Już zarezerwowany od :from do :to.',
+
+    // Missing translations
+    'create' => 'Utwórz',
+    'admin_orders' => 'Zamówienia administracyjne',
+    'renew_sms_token' => 'Odnów token SMS',
 ];

@@ -7,16 +7,16 @@ use App\Models\CurrencySetting;
 use App\Models\Order;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    public function __construct(protected MailService $mailService,
+    public function __construct(
+        protected MailService $mailService,
         protected SmsService $smsService,
         protected CacheService $cacheService,
         protected PaymentService $paymentService
-    ) {
-        //
-    }
+    ) {}
 
     public function getCacheService(): CacheService
     {
@@ -40,153 +40,193 @@ class OrderService
      */
     public function createOrder(array $data): array
     {
-        // Validate hours (6:00-20:00)
+        $validationResult = $this->validateOrderData($data);
+        if ($validationResult !== null) {
+            return $validationResult;
+        }
+
+        $data = $this->processOrderTimes($data);
+
+        $limitCheck = $this->checkOrderLimits($data);
+        if ($limitCheck['limited']) {
+            return ['success' => false, 'message' => $limitCheck['message']];
+        }
+
+        return DB::transaction(function () use ($data) {
+            $car = Car::lockForUpdate()->findOrFail($data['car_id']);
+
+            if ($car->hidden) {
+                return ['success' => false, 'message' => __('messages.order_unavailable')];
+            }
+
+            $availabilityCheck = $this->checkCarAvailability($data['car_id'], $data['rental_date'], $data['return_date']);
+            if (! $availabilityCheck['available']) {
+                return ['success' => false, 'message' => $availabilityCheck['message']];
+            }
+
+            $order = $this->createOrderRecord($data);
+            $this->hideCarAndClearCache($car);
+
+            $verificationMethod = $data['verification_method'] ?? 'email';
+
+            return $verificationMethod === 'email'
+                ? $this->sendEmailVerification($order, $car)
+                : $this->sendSmsVerification($order, $car);
+        });
+    }
+
+    /**
+     * Validate order data before processing.
+     *
+     * @return array|null Returns error array or null if valid
+     */
+    protected function validateOrderData(array $data): ?array
+    {
         $rentalHour = (int) $data['rental_time_hour'];
         $returnHour = (int) $data['return_time_hour'];
 
         if ($rentalHour < 6 || $rentalHour > 20) {
-            return [
-                'success' => false,
-                'message' => __('messages.rental_time_must_be_between_6_20'),
-            ];
+            return ['success' => false, 'message' => __('messages.rental_time_must_be_between_6_20')];
         }
 
         if ($returnHour < 6 || $returnHour > 20) {
-            return [
-                'success' => false,
-                'message' => __('messages.return_time_must_be_between_6_20'),
-            ];
+            return ['success' => false, 'message' => __('messages.return_time_must_be_between_6_20')];
         }
 
-        // Validate return date is after the rental date
         if (! isset($data['return_date']) || $data['return_date'] <= $data['rental_date']) {
-            return [
-                'success' => false,
-                'message' => __('messages.return_date_must_be_after_rental_date'),
-            ];
+            return ['success' => false, 'message' => __('messages.return_date_must_be_after_rental_date')];
         }
 
-        // Validate terms and privacy acceptance
         if (empty($data['acceptance_terms']) || empty($data['acceptance_privacy'])) {
-            return [
-                'success' => false,
-                'message' => __('messages.must_accept_terms_and_privacy'),
-            ];
+            return ['success' => false, 'message' => __('messages.must_accept_terms_and_privacy')];
         }
 
-        // Validate delivery address if delivery service is selected
         if ($data['delivery_option'] === 'delivery' && empty($data['delivery_address'])) {
-            return [
-                'success' => false,
-                'message' => __('messages.delivery_address_required'),
-            ];
+            return ['success' => false, 'message' => __('messages.delivery_address_required')];
         }
 
-        // Process order data
+        return null;
+    }
+
+    /**
+     * Process order time fields.
+     */
+    protected function processOrderTimes(array $data): array
+    {
         $data['rental_time'] = $data['rental_time_hour'].':'.$data['rental_time_minute'];
         $data['return_time'] = $data['return_time_hour'].':'.$data['return_time_minute'];
 
         unset($data['rental_time_hour'], $data['rental_time_minute'], $data['return_time_hour'], $data['return_time_minute']);
 
-        $limitCheck = $this->checkOrderLimits($data);
-        if ($limitCheck['limited']) {
-            return [
-                'success' => false,
-                'message' => $limitCheck['message'],
-            ];
-        }
+        return $data;
+    }
 
-        $car = Car::findOrFail($data['car_id']);
-
-        if ($car->hidden) {
-            return ['success' => false, 'message' => __('messages.order_unavailable')];
-        }
-
-        // Check if car is available for the selected dates
-        $availabilityCheck = $this->checkCarAvailability(
-            $data['car_id'],
-            $data['rental_date'],
-            $data['return_date']
-        );
-
-        if (! $availabilityCheck['available']) {
-            return [
-                'success' => false,
-                'message' => $availabilityCheck['message'],
-            ];
-        }
-
-        // Get verification method
-        $verificationMethod = $data['verification_method'] ?? 'email';
-
-        // Create order with user-provided data only (fillable fields)
+    /**
+     * Create order record with system-managed fields.
+     */
+    protected function createOrderRecord(array $data): Order
+    {
         $order = Order::create($data);
 
-        // Set system-managed fields directly (guarded fields)
         $order->status = 'pending';
         $order->payment_amount = Order::getStaticReservationFee();
         $order->payment_currency = CurrencySetting::getDefaultCurrency()->currency_code;
         $order->additional_insurance_cost = $data['additional_insurance'] ? Order::getStaticAdditionalInsuranceCost() : null;
         $order->save();
 
-        // Always hide a car after creating order regardless of verification method
+        return $order;
+    }
+
+    /**
+     * Hide car and clear cache.
+     */
+    protected function hideCarAndClearCache(Car $car): void
+    {
         $car->update(['hidden' => true]);
         $this->cacheService->clearCarsCache();
+    }
 
+    /**
+     * Generate verification token pair.
+     *
+     * @return array{token: string, hashedToken: string}
+     */
+    public function generateVerificationToken(): array
+    {
         $token = bin2hex(random_bytes(32));
-        $hashedToken = hash('sha256', $token);
-        if ($verificationMethod === 'email') {
-            // Generate email verification token
-            $order->email_verification_token = $hashedToken;
-            $order->email_verification_sent_at = now();
-            $order->save();
 
-            // Create verification URL that will redirect to payment
-            $verificationUrl = route('orders.verify-email-payment', [
-                'order' => $order->id,
-                'token' => $token,
-            ]);
+        return [
+            'token' => $token,
+            'hashedToken' => hash('sha256', $token),
+        ];
+    }
 
-            // Send the verification URL by email (not the direct Stripe link)
-            $this->mailService->sendPaymentLink($order, $verificationUrl);
+    /**
+     * Send email verification for order.
+     */
+    protected function sendEmailVerification(Order $order, Car $car): array
+    {
+        $tokens = $this->generateVerificationToken();
 
-            $message = __('messages.order_created_email_verification_sent');
-        } else {
-            // Generate SMS verification token
-            $order->sms_verification_token = $hashedToken;
-            $order->sms_verification_sent_at = now();
-            $order->save();
+        $order->email_verification_token = $tokens['hashedToken'];
+        $order->email_verification_sent_at = now();
+        $order->save();
 
-            // Generate a payment link and send via SMS
-            $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
+        $verificationUrl = route('orders.verify-email-payment', [
+            'order' => $order->id,
+            'token' => $tokens['token'],
+        ]);
 
-            if (! $paymentLink) {
-                $order->delete();
-                // Restore car visibility if order creation failed
-                $car->update(['hidden' => false]);
-                $this->cacheService->clearCarsCache();
-
-                return [
-                    'success' => false,
-                    'message' => __('messages.error_generating_payment_link'),
-                ];
-            }
-
-            $order->payment_link_sent_at = now();
-            $order->save();
-
-            // Send payment link via SMS
-            $this->smsService->sendPaymentLink($order->phone, $paymentLink);
-
-            $message = __('messages.order_created_sms_payment_link_sent');
-        }
+        $this->mailService->sendPaymentLink($order, $verificationUrl);
 
         return [
             'success' => true,
-            'message' => $message,
+            'message' => __('messages.order_created_email_verification_sent'),
             'order' => $order,
-            'verification_method' => $verificationMethod,
+            'verification_method' => 'email',
         ];
+    }
+
+    /**
+     * Send SMS verification for order.
+     */
+    protected function sendSmsVerification(Order $order, Car $car): array
+    {
+        $tokens = $this->generateVerificationToken();
+
+        $order->sms_verification_token = $tokens['hashedToken'];
+        $order->sms_verification_sent_at = now();
+        $order->save();
+
+        $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
+
+        if (! $paymentLink) {
+            $this->rollbackOrderCreation($order, $car);
+
+            return ['success' => false, 'message' => __('messages.error_generating_payment_link')];
+        }
+
+        $order->payment_link_sent_at = now();
+        $order->save();
+
+        $this->smsService->sendPaymentLink($order->phone, $paymentLink);
+
+        return [
+            'success' => true,
+            'message' => __('messages.order_created_sms_payment_link_sent'),
+            'order' => $order,
+            'verification_method' => 'sms',
+        ];
+    }
+
+    /**
+     * Rollback order creation on failure.
+     */
+    protected function rollbackOrderCreation(Order $order, Car $car): void
+    {
+        $order->delete();
+        $car->update(['hidden' => false]);
+        $this->cacheService->clearCarsCache();
     }
 
     /**
