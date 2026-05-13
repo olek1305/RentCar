@@ -12,6 +12,7 @@
 /.phpunit.cache
 /.vscode
 /.zed
+/.claude
 /auth.json
 /html
 /node_modules
