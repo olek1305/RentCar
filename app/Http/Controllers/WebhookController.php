@@ -7,6 +7,7 @@ use App\Services\MailService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
@@ -98,11 +99,16 @@ class WebhookController extends Controller
             return;
         }
 
-        $order->status = 'paid';
-        $order->paid_at = now();
-        $order->save();
+        DB::transaction(function () use ($order) {
+            $order->status = 'paid';
+            $order->paid_at = now();
+            $order->save();
 
-        $order->car?->update(['hidden' => true]);
+            if ($order->car) {
+                $order->car->hidden = true;
+                $order->car->save();
+            }
+        });
 
         $this->mailService->sendPaymentSuccess($order, 'reservation');
 
@@ -117,11 +123,16 @@ class WebhookController extends Controller
             return;
         }
 
-        $order->status = 'completed';
-        $order->final_paid_at = now();
-        $order->save();
+        DB::transaction(function () use ($order) {
+            $order->status = 'completed';
+            $order->final_paid_at = now();
+            $order->save();
 
-        $order->car?->update(['hidden' => false]);
+            if ($order->car) {
+                $order->car->hidden = false;
+                $order->car->save();
+            }
+        });
 
         $this->mailService->sendPaymentSuccess($order, 'final');
 

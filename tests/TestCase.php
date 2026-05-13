@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,5 +13,6 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         Storage::fake('public');
         $this->withoutVite();
+        $this->withoutMiddleware(ValidateCsrfToken::class);
     }
 }

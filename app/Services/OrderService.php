@@ -127,7 +127,8 @@ class OrderService
      */
     protected function hideCarAndClearCache(Car $car): void
     {
-        $car->update(['hidden' => true]);
+        $car->hidden = true;
+        $car->save();
         $this->cacheService->clearCarsCache();
     }
 
@@ -210,7 +211,8 @@ class OrderService
     protected function rollbackOrderCreation(Order $order, Car $car): void
     {
         $order->delete();
-        $car->update(['hidden' => false]);
+        $car->hidden = false;
+        $car->save();
         $this->cacheService->clearCarsCache();
     }
 

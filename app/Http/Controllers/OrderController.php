@@ -55,7 +55,8 @@ class OrderController extends Controller
         $order->status = 'verified';
         $order->save();
 
-        $order->car->update(['hidden' => true]);
+        $order->car->hidden = true;
+        $order->car->save();
         $this->cacheService->clearCarsCache();
 
         $paymentLink = $this->paymentService->generateReservationPaymentLink($order);

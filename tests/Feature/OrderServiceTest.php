@@ -10,6 +10,7 @@ use App\Services\OrderService;
 use App\Services\PaymentService;
 use App\Services\SmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
@@ -21,34 +22,24 @@ class OrderServiceTest extends TestCase
 
     protected OrderService $orderService;
 
-    protected MailService $mailService;
-
-    protected SmsService $smsService;
-
-    protected CacheService $cacheService;
-
     protected PaymentService|MockInterface $paymentService;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->mailService = new MailService;
-        $this->smsService = new SmsService;
-        $this->cacheService = new CacheService;
+        Mail::fake();
 
-        $this->paymentService = Mockery::mock(PaymentService::class, [$this->mailService, $this->smsService]);
-
+        $this->paymentService = Mockery::mock(PaymentService::class);
         $this->paymentService->shouldReceive('generateReservationPaymentLink')
-            ->andReturn('https://example.com/payment/mock-payment-link');
-
+            ->andReturn('https://checkout.stripe.com/mock-session');
         $this->paymentService->shouldReceive('sendReservationPaymentLink')
-            ->andReturn(true); // Assuming it returns true on success
+            ->andReturnNull();
 
         $this->orderService = new OrderService(
-            $this->mailService,
-            $this->smsService,
-            $this->cacheService,
+            app(MailService::class),
+            app(SmsService::class),
+            app(CacheService::class),
             $this->paymentService
         );
     }

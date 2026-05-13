@@ -192,4 +192,206 @@ class CarControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Existing Model');
     }
+
+    protected function getValidCarData(): array
+    {
+        return [
+            'model' => 'New Test Car',
+            'type' => 'SEDAN',
+            'seats' => 5,
+            'fuel_type' => 'GASOLINE',
+            'engine_capacity' => 2000,
+            'year' => 2024,
+            'transmission' => 'AUTOMATIC',
+            'description' => 'Test car description',
+            'daily_price' => 100,
+            'main_image' => \Illuminate\Http\UploadedFile::fake()->image('car.jpg', 400, 300),
+        ];
+    }
+
+    #[Test]
+    public function admin_can_store_new_car(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->post(route('cars.store'), $this->getValidCarData());
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('cars', [
+            'model' => 'New Test Car',
+            'type' => 'SEDAN',
+            'year' => 2024,
+        ]);
+    }
+
+    #[Test]
+    public function guest_cannot_store_car(): void
+    {
+        $response = $this->post(route('cars.store'), $this->getValidCarData());
+
+        $response->assertRedirect(route('login'));
+
+        $this->assertDatabaseMissing('cars', ['model' => 'New Test Car']);
+    }
+
+    #[Test]
+    public function admin_can_update_car(): void
+    {
+        $car = Car::factory()->create([
+            'model' => 'Old Model',
+            'type' => 'SEDAN',
+        ]);
+
+        $updateData = $this->getValidCarData();
+        $updateData['model'] = 'Updated Model';
+        $updateData['type'] = 'SUV';
+        $updateData['seats'] = 7;
+        unset($updateData['main_image']);
+
+        $response = $this->actingAs($this->admin)
+            ->put(route('cars.update', $car), $updateData);
+
+        $response->assertRedirect(route('cars.show', $car));
+
+        $car->refresh();
+        $this->assertEquals('Updated Model', $car->model);
+        $this->assertEquals('SUV', $car->type);
+    }
+
+    #[Test]
+    public function guest_cannot_update_car(): void
+    {
+        $car = Car::factory()->create(['model' => 'Original Model']);
+
+        $response = $this->put(route('cars.update', $car), $this->getValidCarData());
+
+        $response->assertRedirect(route('login'));
+
+        $car->refresh();
+        $this->assertEquals('Original Model', $car->model);
+    }
+
+    #[Test]
+    public function admin_can_delete_car(): void
+    {
+        $car = Car::factory()->create();
+        $carId = $car->id;
+
+        $response = $this->actingAs($this->admin)
+            ->delete(route('cars.destroy', $car));
+
+        $response->assertRedirect(route('cars.index'));
+
+        $this->assertDatabaseMissing('cars', ['id' => $carId]);
+    }
+
+    #[Test]
+    public function guest_cannot_delete_car(): void
+    {
+        $car = Car::factory()->create();
+
+        $response = $this->delete(route('cars.destroy', $car));
+
+        $response->assertRedirect(route('login'));
+
+        $this->assertDatabaseHas('cars', ['id' => $car->id]);
+    }
+
+    #[Test]
+    public function admin_can_toggle_car_visibility(): void
+    {
+        $car = Car::factory()->create(['hidden' => false]);
+
+        $response = $this->actingAs($this->admin)
+            ->patch(route('cars.toggle-visibility', $car));
+
+        $response->assertRedirect();
+
+        $car->refresh();
+        $this->assertTrue($car->hidden);
+
+        $this->actingAs($this->admin)
+            ->patch(route('cars.toggle-visibility', $car));
+
+        $car->refresh();
+        $this->assertFalse($car->hidden);
+    }
+
+    #[Test]
+    public function guest_cannot_toggle_car_visibility(): void
+    {
+        $car = Car::factory()->create(['hidden' => false]);
+
+        $response = $this->patch(route('cars.toggle-visibility', $car));
+
+        $response->assertRedirect(route('login'));
+
+        $car->refresh();
+        $this->assertFalse($car->hidden);
+    }
+
+    #[Test]
+    public function store_car_fails_with_missing_required_fields(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->from(route('cars.create'))
+            ->post(route('cars.store'), []);
+
+        $response->assertRedirect(route('cars.create'));
+        $response->assertSessionHasErrors([
+            'model',
+            'type',
+            'seats',
+            'fuel_type',
+            'year',
+            'transmission',
+        ]);
+    }
+
+    #[Test]
+    public function store_car_fails_with_invalid_type(): void
+    {
+        $data = $this->getValidCarData();
+        $data['type'] = 'InvalidType';
+
+        $response = $this->actingAs($this->admin)
+            ->from(route('cars.create'))
+            ->post(route('cars.store'), $data);
+
+        $response->assertRedirect(route('cars.create'));
+        $response->assertSessionHasErrors(['type']);
+    }
+
+    #[Test]
+    public function store_car_fails_with_invalid_year(): void
+    {
+        $data = $this->getValidCarData();
+        $data['year'] = 1800;
+
+        $response = $this->actingAs($this->admin)
+            ->from(route('cars.create'))
+            ->post(route('cars.store'), $data);
+
+        $response->assertRedirect(route('cars.create'));
+        $response->assertSessionHasErrors(['year']);
+    }
+
+    #[Test]
+    public function non_admin_user_cannot_access_car_crud(): void
+    {
+        $user = User::factory()->create(['is_admin' => false]);
+        $car = Car::factory()->create();
+
+        $this->actingAs($user)->get(route('cars.create'))->assertStatus(403);
+        $this->actingAs($user)->get(route('cars.edit', $car))->assertStatus(403);
+        $this->actingAs($user)
+            ->post(route('cars.store'), $this->getValidCarData())
+            ->assertStatus(403);
+        $this->actingAs($user)
+            ->put(route('cars.update', $car), $this->getValidCarData())
+            ->assertStatus(403);
+        $this->actingAs($user)
+            ->delete(route('cars.destroy', $car))
+            ->assertStatus(403);
+    }
 }
