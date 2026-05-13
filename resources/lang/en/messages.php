@@ -18,6 +18,7 @@ return [
     'image_will_be_main' => 'This image will be set as the main image when you save changes.',
     'confirm_delete_car' => 'Are you sure you want to delete this car? This action cannot be undone.',
     'phone' => 'Phone',
+    'language' => 'Language',
     'disable' => 'Disable',
     'order' => 'Order',
     'back' => 'Back',

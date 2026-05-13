@@ -22,8 +22,8 @@
                     $images = array_filter($images);
                 @endphp
 
-                <div class="relative border rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col text-center group car-item
-                    @if($car->hidden && auth()->check()) bg-[repeating-linear-gradient(45deg,_#e5e7eb_0px,_#e5e7eb_10px,_#d1d5db_10px,_#d1d5db_20px)] opacity-75 border-dashed border-gray-400 @endif"
+                <div class="relative border rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col text-center group car-item bg-white dark:bg-gray-800 dark:border-gray-700
+                    @if($car->hidden && auth()->check()) bg-[repeating-linear-gradient(45deg,_#e5e7eb_0px,_#e5e7eb_10px,_#d1d5db_10px,_#d1d5db_20px)] dark:bg-[repeating-linear-gradient(45deg,_#374151_0px,_#374151_10px,_#4b5563_10px,_#4b5563_20px)] opacity-75 border-dashed border-gray-400 dark:border-gray-500 @endif"
                     id="car-{{ $car->id }}">
 
                     @auth
@@ -71,19 +71,19 @@
                         @endforeach
 
                         @if(empty($images))
-                            <div class="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                                <span class="text-gray-500">No images available</span>
+                            <div class="absolute inset-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <span class="text-gray-500 dark:text-gray-400">No images available</span>
                             </div>
                         @endif
                     </div>
 
-                    <h2 class="text-xl font-semibold mb-1 z-0">{{ $car->model }}</h2>
+                    <h2 class="text-xl font-semibold mb-1 z-0 text-gray-900 dark:text-white">{{ $car->model }}</h2>
 
-                    <p class="text-green-700 font-bold mb-4">
+                    <p class="text-green-700 dark:text-green-400 font-bold mb-4">
                         {{ trans_currency('messages.from_per_day', $car->rental_prices['1-2'] ?? 0) }}
                     </p>
 
-                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 mb-4 text-gray-700 text-sm">
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 mb-4 text-gray-700 dark:text-gray-300 text-sm">
                         {{-- Left --}}
                         <ul class="space-y-2">
                             <li class="flex items-center space-x-2">

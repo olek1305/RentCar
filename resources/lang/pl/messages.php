@@ -18,6 +18,7 @@ return [
     'image_will_be_main' => 'To zdjęcie zostanie ustawione jako główne po zapisaniu zmian.',
     'confirm_delete_car' => 'Czy na pewno chcesz usunąć ten samochód? Tej czynności nie można cofnąć.',
     'phone' => 'Telefon',
+    'language' => 'Język',
     'disable' => 'Wyłączony',
     'order' => 'Zamówienie',
     'back' => 'Powrót',

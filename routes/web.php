@@ -10,6 +10,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -75,3 +76,6 @@ Route::get('/orders/{order}/verify-email-payment/{token}', [OrderController::cla
 
 Route::get('/payment/success/{order}', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/cancel/{order}', [PaymentController::class, 'cancel'])->name('payment.cancel')->middleware('signed');
+
+// Stripe Webhooks (excluded from CSRF in bootstrap/app.php)
+Route::post('/webhooks/stripe', [WebhookController::class, 'handleStripe'])->name('webhooks.stripe');

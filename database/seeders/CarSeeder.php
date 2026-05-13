@@ -21,9 +21,9 @@ class CarSeeder extends Seeder
 
     public function run(): void
     {
-        $types = CAR::TYPES;
-        $fuelTypes = CAR::fuelTypes;
-        $transmissions = CAR::transmissions;
+        $types = Car::TYPES;
+        $fuelTypes = Car::FUEL_TYPES;
+        $transmissions = Car::TRANSMISSIONS;
 
         for ($i = 0; $i < 30; $i++) {
             $model = $this->generateModelName();
