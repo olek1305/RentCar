@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Order;
+use App\Models\Car;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class FilterOrdersRequest extends FormRequest
+class FilterCarsRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,14 +14,14 @@ class FilterOrdersRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, mixed>>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'status' => ['nullable', Rule::in(array_keys(Order::statuses()))],
-            'email' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
+            'search' => 'nullable|string|max:255',
+            'type' => ['nullable', 'string', Rule::in(Car::TYPES)],
+            'hidden' => 'nullable|in:all,visible,hidden',
         ];
     }
 }

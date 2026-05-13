@@ -18,7 +18,7 @@ class CurrencySetting extends Model
         ];
     }
 
-    public static function getDefaultCurrency()
+    public static function getDefaultCurrency(): self
     {
         return self::where('is_default', true)->first() ?? new self([
             'currency_code' => 'USD',
@@ -27,7 +27,7 @@ class CurrencySetting extends Model
         ]);
     }
 
-    public function prepareForStripe($amount): array
+    public function prepareForStripe(float $amount): array
     {
         $currency = app('currency');
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,10 +46,9 @@ class Car extends Model
         'ROADSTER',
         'CROSSOVER',
         'LUXURY',
-        'SPORTS CAR',
-        'DIESEL',
-        'ELECTRIC',
-        'HYBRID',
+        'SPORTS_CAR',
+        'COMPACT',
+        'LIMOUSINE',
     ];
 
     public const FUEL_TYPES = [
@@ -73,5 +73,15 @@ class Car extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function scopeVisible(Builder $query): Builder
+    {
+        return $query->where('hidden', false);
+    }
+
+    public function scopeHidden(Builder $query): Builder
+    {
+        return $query->where('hidden', true);
     }
 }

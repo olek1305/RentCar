@@ -4,21 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
+use App\Services\CacheService;
 use App\Services\OrderService;
+use App\Services\PaymentService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 
 class OrderController extends Controller
 {
-    public function __construct(protected OrderService $orderService)
-    {
-        //
-    }
+    public function __construct(
+        protected OrderService $orderService,
+        protected PaymentService $paymentService,
+        protected CacheService $cacheService,
+    ) {}
 
     /**
      * Store a newly created order in storage.
-     *
-     * @param  StoreOrderRequest  $request  Validated request data
      *
      * @throws Exception
      */
@@ -40,29 +41,24 @@ class OrderController extends Controller
      */
     public function verifyEmailForPayment(Order $order, string $token): RedirectResponse
     {
-        // Verify token
         $hashedToken = hash('sha256', $token);
         if ($order->email_verification_token !== $hashedToken) {
             return redirect()->route('home')->with('error', __('messages.invalid_verification_token'));
         }
 
-        // Check if the token is expired (8 hours)
         if ($order->email_verification_sent_at && $order->email_verification_sent_at->addHours(8)->isPast()) {
             return redirect()->route('home')->with('error', __('messages.verification_token_expired'));
         }
 
-        // Mark email as verified (guarded fields - assign directly)
         $order->email_verified_at = now();
         $order->email_verification_token = null;
         $order->status = 'verified';
         $order->save();
 
-        // Hide car after verification
         $order->car->update(['hidden' => true]);
-        $this->orderService->getCacheService()->clearCarsCache();
+        $this->cacheService->clearCarsCache();
 
-        // Generate payment link
-        $paymentLink = $this->orderService->getPaymentService()->generateReservationPaymentLink($order);
+        $paymentLink = $this->paymentService->generateReservationPaymentLink($order);
 
         if (! $paymentLink) {
             return redirect()->route('home')->with('error', __('messages.error_generating_payment_link'));
@@ -71,7 +67,6 @@ class OrderController extends Controller
         $order->payment_link_sent_at = now();
         $order->save();
 
-        // Redirect to Stripe payment
         return redirect()->away($paymentLink);
     }
 }

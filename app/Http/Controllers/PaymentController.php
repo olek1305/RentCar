@@ -24,15 +24,26 @@ class PaymentController extends Controller
 
     /**
      * Handle successful payment callback from Stripe
-     *
-     * @throws ApiErrorException
      */
     public function success(Request $request, Order $order): Application|RedirectResponse|Redirector
     {
-        $stripe = new StripeClient(config('services.stripe.secret'));
-        $session = $stripe->checkout->sessions->retrieve($request->session_id);
+        $request->validate([
+            'session_id' => 'required|string|starts_with:cs_',
+            'type' => 'nullable|in:final',
+        ]);
 
-        // Check if this is a final payment
+        try {
+            $stripe = new StripeClient(config('services.stripe.secret'));
+            $session = $stripe->checkout->sessions->retrieve($request->string('session_id')->toString());
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe session retrieve failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect('/')->with('error', __('messages.payment_verification_failed'));
+        }
+
         $isFinalPayment = $request->query('type') === 'final';
 
         if ($session->payment_status === 'paid') {
@@ -91,7 +102,7 @@ class PaymentController extends Controller
     public function cancel(Order $order): Application|Redirector|RedirectResponse
     {
         // Only allow cancellation of pending/awaiting payment orders
-        if (!in_array($order->status, ['pending', 'awaiting_payment', 'awaiting_final_payment'])) {
+        if (! in_array($order->status, ['pending', 'awaiting_payment', 'awaiting_final_payment'])) {
             Log::warning('Attempted to cancel non-pending order', [
                 'order_id' => $order->id,
                 'status' => $order->status,

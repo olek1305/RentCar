@@ -43,8 +43,20 @@ class UpdateCarRequest extends FormRequest
             'main_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'daily_price' => 'required|numeric|min:1',
-            'delete_gallery_images' => 'nullable|array',
-            'delete_gallery_images.*' => 'string',
+            'delete_gallery_images' => ['nullable', 'array'],
+            'delete_gallery_images.*' => [
+                'string',
+                function ($attribute, $value, $fail) {
+                    $car = $this->route('car');
+                    if (! $car) {
+                        return;
+                    }
+                    $gallery = $car->gallery_images ?? [];
+                    if (! in_array($value, $gallery, true)) {
+                        $fail('The selected gallery image does not exist.');
+                    }
+                },
+            ],
             'new_main_image' => 'nullable|string',
         ];
     }

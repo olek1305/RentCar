@@ -206,6 +206,7 @@ return [
     'car_created' => 'Car has been created successfully!',
     'car_updated' => 'Car has been updated successfully!',
     'car_deleted' => 'Car has been deleted successfully.',
+    'car_visibility_updated' => 'Car visibility has been updated.',
     'auth_error' => 'Authentication failed',
     'order_already' => 'Maximum 3 orders per day. If you need more than 3 orders, please contact the owner.',
     'order_unavailable' => 'This car is currently unavailable for rental.',

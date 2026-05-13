@@ -62,7 +62,7 @@ class PaymentServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_returns_null_for_final_payment_when_stripe_key_is_missing(): void
+    public function it_throws_for_final_payment_when_stripe_key_is_missing(): void
     {
         config(['services.stripe.secret' => null]);
 
@@ -72,9 +72,10 @@ class PaymentServiceTest extends TestCase
             'payment_currency' => 'EUR',
         ]);
 
-        $result = $this->paymentService->generateFinalPaymentLink($order, 100.00, 'Test');
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Stripe secret key is not configured');
 
-        $this->assertNull($result);
+        $this->paymentService->sendFinalPaymentLink($order);
     }
 
     #[Test]

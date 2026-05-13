@@ -33,7 +33,7 @@ class StoreOrderRequest extends FormRequest
                     $this->validateEmailDomain($value, $fail);
                 },
             ],
-            'phone' => 'required|regex:/^[0-9 ]+$/|min:9',
+            'phone' => ['required', 'regex:/^\+?[0-9]{9,15}$/', 'max:20'],
             'car_id' => 'required|exists:cars,id',
             'rental_date' => 'required|date|after_or_equal:today',
             'return_date' => 'required|date|after:rental_date',
@@ -97,14 +97,20 @@ class StoreOrderRequest extends FormRequest
         }
     }
 
-    /**
-     * Prepare data for validation
-     */
     protected function prepareForValidation(): void
     {
-        // Convert checkbox value to boolean
         $this->merge([
             'additional_insurance' => $this->boolean('additional_insurance'),
+            'phone' => $this->normalizePhone($this->input('phone')),
         ]);
+    }
+
+    protected function normalizePhone(?string $phone): ?string
+    {
+        if (! $phone) {
+            return null;
+        }
+
+        return preg_replace('/[\s\-\(\)]/', '', $phone);
     }
 }

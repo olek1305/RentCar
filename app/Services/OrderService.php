@@ -18,21 +18,6 @@ class OrderService
         protected PaymentService $paymentService
     ) {}
 
-    public function getCacheService(): CacheService
-    {
-        return $this->cacheService;
-    }
-
-    public function getPaymentService(): PaymentService
-    {
-        return $this->paymentService;
-    }
-
-    public function getSmsService(): SmsService
-    {
-        return $this->smsService;
-    }
-
     /**
      * Create a new order.
      *
@@ -244,7 +229,7 @@ class OrderService
         if ($count >= 3) {
             return [
                 'limited' => true,
-                'message' => __('order_already'),
+                'message' => __('messages.order_already'),
                 'count' => $count,
             ];
         }

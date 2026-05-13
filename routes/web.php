@@ -16,14 +16,14 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
 Route::get('/condition', [HomeController::class, 'condition'])->name('condition');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
-Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
+Route::post('/contact', [ContactController::class, 'send'])->middleware('throttle:5,1')->name('contact.send');
 
 Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:login');
+Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('login.store');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/cars/create', [CarController::class, 'create'])->name('cars.create');
-    Route::get('/car/edit/{car}', [CarController::class, 'edit'])->name('cars.edit');
+    Route::get('/cars/{car}/edit', [CarController::class, 'edit'])->name('cars.edit');
     Route::post('/cars', [CarController::class, 'store'])->name('cars.store');
     Route::put('/cars/{car}', [CarController::class, 'update'])->name('cars.update');
     Route::delete('/cars/{car}', [CarController::class, 'destroy'])->name('cars.destroy');
@@ -70,6 +70,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 });
 
 Route::get('/orders/{order}/verify-email-payment/{token}', [OrderController::class, 'verifyEmailForPayment'])
+    ->middleware('throttle:verification')
     ->name('orders.verify-email-payment');
 
 Route::get('/payment/success/{order}', [PaymentController::class, 'success'])->name('payment.success');

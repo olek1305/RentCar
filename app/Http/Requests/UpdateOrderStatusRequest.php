@@ -6,7 +6,7 @@ use App\Models\Order;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class FilterOrdersRequest extends FormRequest
+class UpdateOrderStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,14 +14,12 @@ class FilterOrdersRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, mixed>>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'status' => ['nullable', Rule::in(array_keys(Order::statuses()))],
-            'email' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
+            'status' => ['required', 'string', Rule::in(array_keys(Order::statuses()))],
         ];
     }
 }

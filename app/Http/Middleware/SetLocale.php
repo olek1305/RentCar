@@ -14,9 +14,16 @@ class SetLocale
      *
      * @param  \Closure(Request): (Response)  $next
      */
+    private const SUPPORTED_LOCALES = ['en', 'pl'];
+
     public function handle(Request $request, Closure $next): Response
     {
         $lang = $request->query('lang', session('locale', 'en'));
+
+        if (! in_array($lang, self::SUPPORTED_LOCALES, true)) {
+            $lang = 'en';
+        }
+
         App::setLocale($lang);
         session(['locale' => $lang]);
 

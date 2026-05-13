@@ -1,3 +1,55 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Laravel 12 car-rental web app (single-tenant, no API layer). The public site lets visitors browse cars and submit a rental order; an admin area at `/admin` manages cars, orders, and currencies. Payments go through Stripe (via `laravel/cashier` v15) in two stages: a 5 EUR reservation fee, then a final balance for the actual rental.
+
+Stack: PHP 8.3 / Laravel 12 (streamlined skeleton — no `app/Console/Kernel.php`, middleware/exceptions/routing wired in `bootstrap/app.php`), MySQL 9.4, Valkey (Redis-compatible), Tailwind v4 + Vite 6, Blade views (no Inertia/Livewire/SPA). PHPUnit for tests.
+
+## Architecture Map
+
+- **Controllers** (`app/Http/Controllers/`): public-facing controllers at the top level (`Home`, `Car`, `Order`, `Payment`, `Contact`, `Auth`); admin counterparts under `Controllers/Admin/` (`AdminDashboardController`, `CarAdminController`, `OrderAdminController`, `CurrencyController`). Routes are defined in a single `routes/web.php` — admin routes live inside a `Route::middleware(['auth', 'admin'])` group.
+- **Service layer** (`app/Services/`): business logic lives here, not in controllers — `OrderService`, `PaymentService` (Stripe Checkout sessions), `MailService`, `SmsService`, `CarService`, `CacheService`. Controllers thin, services do the work.
+- **Form Requests** (`app/Http/Requests/`): all validation goes through Form Requests (`StoreOrderRequest`, `StoreCarRequest`, `UpdateCarRequest`, `SendContactRequest`, `FilterOrdersRequest`) — never inline `$request->validate()` in controllers.
+- **Policies** (`app/Policies/`): `CarPolicy`, `OrderPolicy` for authorization.
+- **Models** (`app/Models/`): `User`, `Car`, `Order`, `CurrencySetting`. `Car` ↔ `Order` is `hasMany`/`belongsTo`. Cashier billing tables (`subscriptions`, `subscription_items`, customer columns on users) exist via migrations even though no subscription UI is in use yet.
+- **Order is the central workflow object.** Statuses (string column, see `Order::statuses()`): `pending` → `verified` → `awaiting_payment` → `confirmed` → `paid` → `completed` → `returned` → `finished`, plus `awaiting_final_payment` and `cancelled`. The model deliberately splits `$fillable` (user-form fields) from `$guarded` (system fields like `status`, payment session IDs, verification tokens) — **never mass-assign guarded fields; assign them directly (`$order->status = ...; $order->save();`)**. Recent commits (`refactor: replace update calls with direct property assignment for guarded fields`) enforced this — don't regress it.
+- **Two-stage payment flow** (`PaymentService`): `sendReservationPaymentLink()` collects the 5 EUR reservation fee (`Order::getReservationFee()`); after the rental, `sendFinalPaymentLink` collects the balance (`Order::calculateFinalPaymentAmount()` — uses `rental_prices` JSON tiered by `1-2`/`3-6`/`7+` days, plus delivery surcharges and per-day insurance, minus the already-paid reservation fee).
+- **Order verification:** customers get email + SMS tokens before payment links are sent (`email_verification_token`, `sms_verification_token`, with `*_sent_at` and `*_verified_at` timestamps). Admin can renew either token via dedicated routes.
+
+## Cross-cutting middleware (registered in `bootstrap/app.php`)
+
+- `SetLocale` — locale comes from `?lang=` query param, then session, defaulting to `en`. Translation files in `resources/lang/{en,pl}/`.
+- `SetGlobalCurrency` — pulls active `CurrencySetting` from session or default, shares it as the `$currency` view variable, and binds it into the container as `app('currency')`. The helper `trans_currency($key, $price)` in `app/Helpers/translation.php` (autoloaded via `composer.json`'s `files`) formats prices with the active currency and is the canonical way to render money in translations.
+- `AdminMiddleware` (alias `admin`) — gates `/admin/*` routes by checking `User::isAdmin()` (boolean `is_admin` column).
+
+## Common commands
+
+This app runs in Docker — always shell into the dev container (no `-it` flag, this is a non-interactive terminal):
+
+```bash
+docker exec laravel-app-dev php artisan <command>
+docker exec laravel-app-dev php artisan test                              # full suite
+docker exec laravel-app-dev php artisan test --filter=<TestName>          # single test
+docker exec laravel-app-dev php artisan test tests/Feature/OrderServiceTest.php
+docker exec laravel-app-dev php artisan migrate
+docker exec laravel-app-dev php artisan make:migration <name>
+docker exec laravel-app-dev vendor/bin/pint --dirty                       # format changed files only
+```
+
+Frontend (Vite runs in its own container with HMR on `:5173`):
+```bash
+docker compose exec vite npm run build       # production build
+docker compose restart vite                  # restart HMR dev server
+```
+
+Create an admin user (interactive prompts for name/email/password):
+```bash
+docker compose exec app php artisan app:create-account --admin
+```
+
 === docker rules ===
 
 ## Docker Environment

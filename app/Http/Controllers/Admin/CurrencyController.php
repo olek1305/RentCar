@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCurrencyRequest;
+use App\Http\Requests\UpdateCurrencyRequest;
 use App\Models\CurrencySetting;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CurrencyController extends Controller
 {
@@ -20,17 +22,10 @@ class CurrencyController extends Controller
         return view('admin.currencies.index', compact('currencies', 'defaultCurrency'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreCurrencyRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'currency_code' => 'required|string|size:3|unique:currency_settings,currency_code',
-            'currency_symbol' => 'required|string|max:5',
-            'currency_name' => 'required|string|max:100',
-        ]);
+        $validated = $request->validated();
 
-        $validated['currency_code'] = strtoupper($validated['currency_code']);
-
-        // If this is the first currency, make it default
         if (CurrencySetting::count() === 0) {
             $validated['is_default'] = true;
         }
@@ -40,17 +35,9 @@ class CurrencyController extends Controller
         return back()->with('success', __('messages.currency_created'));
     }
 
-    public function update(Request $request, CurrencySetting $currency): RedirectResponse
+    public function update(UpdateCurrencyRequest $request, CurrencySetting $currency): RedirectResponse
     {
-        $validated = $request->validate([
-            'currency_code' => 'required|string|size:3|unique:currency_settings,currency_code,'.$currency->id,
-            'currency_symbol' => 'required|string|max:5',
-            'currency_name' => 'required|string|max:100',
-        ]);
-
-        $validated['currency_code'] = strtoupper($validated['currency_code']);
-
-        $currency->update($validated);
+        $currency->update($request->validated());
 
         return back()->with('success', __('messages.currency_updated'));
     }
@@ -68,14 +55,13 @@ class CurrencyController extends Controller
 
     public function setDefault(CurrencySetting $currency): RedirectResponse
     {
-        // Reset all defaults
-        CurrencySetting::query()->update(['is_default' => false]);
+        DB::transaction(function () use ($currency) {
+            CurrencySetting::query()->update(['is_default' => false]);
+            $currency->is_default = true;
+            $currency->save();
+        });
 
-        // Set new default
-        $currency->update(['is_default' => true]);
-
-        // Update session
-        session(['currency' => $currency]);
+        session(['currency' => $currency->fresh()]);
 
         return back()->with('success', __('messages.default_currency_updated'));
     }

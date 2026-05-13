@@ -3,25 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FilterCarsRequest;
 use App\Models\Car;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
 
 class CarAdminController extends Controller
 {
     /**
      * Display a listing of all cars for admin management.
      */
-    public function index(Request $request): Factory|Application|View
+    public function index(FilterCarsRequest $request): Factory|Application|View
     {
-        $request->validate([
-            'search' => 'nullable|string|max:255',
-            'type' => 'nullable|string|in:'.implode(',', Car::TYPES),
-            'hidden' => 'nullable|in:all,visible,hidden',
-        ]);
-
         $query = Car::query()->latest();
 
         if ($request->filled('search')) {
